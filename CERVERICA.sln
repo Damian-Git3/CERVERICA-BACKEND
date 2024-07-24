@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34728.123
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CERVERICA", "CERVERICA\CERVERICA.csproj", "{B9D8CD90-BF7A-4AB1-BE72-86311433C82D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B9D8CD90-BF7A-4AB1-BE72-86311433C82D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9D8CD90-BF7A-4AB1-BE72-86311433C82D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9D8CD90-BF7A-4AB1-BE72-86311433C82D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9D8CD90-BF7A-4AB1-BE72-86311433C82D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E6BF2F07-F31E-40E6-B4E4-3F2BEF8A5BC4}
+	EndGlobalSection
+EndGlobal
