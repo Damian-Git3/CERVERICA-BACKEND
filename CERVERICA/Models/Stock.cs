@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CERVERICA.Models
 {
-    [Table("stock", Schema = "cerverica")]
     public class Stock
     {
         [Key]
@@ -13,6 +12,10 @@ namespace CERVERICA.Models
 
         [Required]
         public int Cantidad { get; set; }
+ 
+        public string TipoEnvase { get; set; }
+
+        public int MedidaEnvase { get; set; }
 
         public int? Merma { get; set; }
 

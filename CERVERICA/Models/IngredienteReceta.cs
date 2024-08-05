@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CERVERICA.Models
 {
-    [Table("ingredientes_receta", Schema = "cerverica")]
     public class IngredienteReceta
     {
         [Key, Column(Order = 0)]

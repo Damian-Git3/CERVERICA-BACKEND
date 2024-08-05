@@ -3,10 +3,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CERVERICA.Models
 {
-    [Table("producciones", Schema = "cerverica")]
     public class Produccion
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
         [Required]
@@ -15,12 +15,14 @@ namespace CERVERICA.Models
         public string Mensaje { get; set; }
 
         [Required]
-        public byte Status { get; set; }
+        public byte Estatus { get; set; }
 
         [Required]
-        public int Tandas { get; set; }
+        public int NumeroTandas { get; set; }
 
         public float? LitrosFinales { get; set; }
+
+        public float? CostoProduccion { get; set; }
 
         [ForeignKey(nameof(Receta))]
         public int IdReceta { get; set; }
@@ -40,5 +42,8 @@ namespace CERVERICA.Models
         public int Paso { get; set; }
 
         public float? MermaLitros { get; set; }
+
+        public ICollection<ProduccionLoteInsumo> ProduccionLoteInsumos { get; set; }
+
     }
 }

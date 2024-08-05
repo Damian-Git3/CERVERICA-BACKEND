@@ -3,10 +3,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CERVERICA.Models
 {
-    [Table("logs", Schema = "cerverica")]
     public class Log
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
         [ForeignKey(nameof(IdUsuario))]
@@ -18,6 +18,6 @@ namespace CERVERICA.Models
 
         [Required]
         [StringLength(255)]
-        public string Mensaje { get; set; }
+        public string Descripcion { get; set; }
     }
 }
