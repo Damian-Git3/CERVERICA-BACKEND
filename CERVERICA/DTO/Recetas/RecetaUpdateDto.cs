@@ -25,6 +25,6 @@ namespace CERVERICA.Dtos
         [Required]
         public bool Activo { get; set; }
 
-        public List<IngredienteRecetaDto> IngredientesReceta { get; set; }
+        public List<IngredienteRecetaInsertDto> IngredientesReceta { get; set; }
     }
 }

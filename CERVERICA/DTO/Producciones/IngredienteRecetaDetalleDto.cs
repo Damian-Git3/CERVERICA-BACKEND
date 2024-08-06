@@ -1,12 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace CERVERICA.Dtos
+﻿namespace CERVERICA.Dtos
 {
-    public class IngredienteRecetaDto
+    public class IngredienteRecetaDetalleDto
     {
         public int IdInsumo { get; set; }
         public float Cantidad { get; set; }
         public string NombreInsumo { get; set; }
         public string UnidadMedida { get; set; }
+        public float CostoUnitario { get; set; }
     }
 }

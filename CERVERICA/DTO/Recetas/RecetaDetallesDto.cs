@@ -1,14 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using CERVERICA.Models;
 using System.ComponentModel.DataAnnotations;
 
-namespace CERVERICA.Models
+namespace CERVERICA.Dtos
 {
-    public class Receta
+    public class RecetaDetallesDto
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-
         [Required]
         public float LitrosEstimados { get; set; }
 
@@ -29,9 +26,7 @@ namespace CERVERICA.Models
         [Required]
         public bool Activo { get; set; }
 
-        public ICollection<IngredienteReceta> IngredientesReceta { get; set; }
-        public ICollection<Produccion> Producciones { get; set; }
-        public ICollection<Stock> Stocks { get; set; }
-        public ICollection<PasosReceta> PasosReceta { get; set; }
+        public ICollection<IngredienteRecetaDto> IngredientesReceta { get; set; }
+        public ICollection<PasosRecetaDto>? PasosReceta { get; set; }
     }
 }

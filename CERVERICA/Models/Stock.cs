@@ -6,6 +6,7 @@ namespace CERVERICA.Models
     public class Stock
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
         public DateTime? FechaEntrada { get; set; }

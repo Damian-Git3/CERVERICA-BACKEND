@@ -32,8 +32,22 @@ namespace CERVERICA.Data
             modelBuilder.Entity<DetalleVenta>()
                 .HasKey(dv => new { dv.IdVenta, dv.IdStock });
 
-            modelBuilder.Entity<ProduccionLoteInsumo>()
-                .HasKey(ir => new { ir.IdReceta, ir.IdProduccion,ir.IdLoteInsumo });
+            modelBuilder.Entity<ProduccionLoteInsumo>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.HasOne(e => e.Produccion)
+                    .WithMany(p => p.ProduccionLoteInsumos)
+                    .HasForeignKey(e => e.IdProduccion)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.LoteInsumo)
+                    .WithMany(l => l.ProduccionLoteInsumos)
+                    .HasForeignKey(e => e.IdLoteInsumo)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.Property(e => e.Cantidad).IsRequired();
+            });
 
             //Restricciones de eliminación
             modelBuilder.Entity<Receta>()

@@ -8,17 +8,17 @@ namespace CERVERICA.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-        public int RecetaId { get; set; }
+        public int IdReceta { get; set; }
         public Receta Receta { get; set; }
 
         [Required]
-        [StringLength(500)] // Establecer una longitud máxima razonable
+        [StringLength(2500)] 
         public string Descripcion { get; set; }
 
         [Required]
         public int Orden { get; set; }
 
         [Required]
-        public int Tiempo { get; set; } // Asumir que el tiempo está en minutos, por ejemplo
+        public int Tiempo { get; set; }
     }
 }

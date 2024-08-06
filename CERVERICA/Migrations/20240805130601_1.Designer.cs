@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CERVERICA.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240804232417_2")]
-    partial class _2
+    [Migration("20240805130601_1")]
+    partial class _1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -272,8 +272,9 @@ namespace CERVERICA.Migrations
                     b.Property<int>("IdProveedor")
                         .HasColumnType("int");
 
-                    b.Property<int>("IdUsuario")
-                        .HasColumnType("int");
+                    b.Property<string>("IdUsuario")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<float>("Merma")
                         .HasColumnType("real");
@@ -303,8 +304,11 @@ namespace CERVERICA.Migrations
 
                     b.Property<string>("Descripcion")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasMaxLength(2500)
+                        .HasColumnType("nvarchar(2500)");
+
+                    b.Property<int>("IdReceta")
+                        .HasColumnType("int");
 
                     b.Property<int>("Orden")
                         .HasColumnType("int");
@@ -388,26 +392,31 @@ namespace CERVERICA.Migrations
 
             modelBuilder.Entity("CERVERICA.Models.ProduccionLoteInsumo", b =>
                 {
-                    b.Property<int>("IdReceta")
-                        .HasColumnType("int")
-                        .HasColumnOrder(0);
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-                    b.Property<int>("IdProduccion")
-                        .HasColumnType("int")
-                        .HasColumnOrder(1);
-
-                    b.Property<int>("IdLoteInsumo")
-                        .HasColumnType("int")
-                        .HasColumnOrder(2);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<float>("Cantidad")
                         .HasColumnType("real");
 
-                    b.HasKey("IdReceta", "IdProduccion", "IdLoteInsumo");
+                    b.Property<int>("IdLoteInsumo")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdProduccion")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("RecetaId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("IdLoteInsumo");
 
                     b.HasIndex("IdProduccion");
+
+                    b.HasIndex("RecetaId");
 
                     b.ToTable("ProduccionLoteInsumos");
                 });
@@ -826,17 +835,13 @@ namespace CERVERICA.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("CERVERICA.Models.Receta", "Receta")
+                    b.HasOne("CERVERICA.Models.Receta", null)
                         .WithMany("ProduccionLoteInsumos")
-                        .HasForeignKey("IdReceta")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("RecetaId");
 
                     b.Navigation("LoteInsumo");
 
                     b.Navigation("Produccion");
-
-                    b.Navigation("Receta");
                 });
 
             modelBuilder.Entity("CERVERICA.Models.Stock", b =>

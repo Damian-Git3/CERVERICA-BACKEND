@@ -33,7 +33,7 @@ namespace CERVERICA.Dtos
         public float Merma { get; set; }
 
         [Required]
-        public float? Caducado { get; set; }
+        public float? Caducado { get; set; } = 0;
 
         [Required]
         public float PrecioUnidad { get; set; }

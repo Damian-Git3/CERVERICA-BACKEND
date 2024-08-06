@@ -25,21 +25,65 @@ namespace CERVERICA.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<RecetasDto>>> GetRecetas()
         {
-            return Ok(await _context.Recetas.ToListAsync());
+            RecetasDto[] recetas = await _context.Recetas
+                .Select(r => new RecetasDto
+                {
+                    Id = r.Id,
+                    LitrosEstimados = r.LitrosEstimados,
+                    PrecioLitro = r.PrecioLitro,
+                    Descripcion = r.Descripcion,
+                    Nombre = r.Nombre,
+                    CostoProduccion = r.CostoProduccion,
+                    Imagen = r.Imagen,
+                    Activo = r.Activo
+                })
+                .ToArrayAsync();
+
+            return Ok(recetas);
         }
 
         // GET: api/recetas/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<RecetasDto>> GetReceta(int id)
+        public async Task<ActionResult<RecetaDetallesDto>> GetReceta(int id)
         {
-            var receta = await _context.Recetas.FindAsync(id);
+            var receta = await _context.Recetas
+                .Include(r => r.IngredientesReceta)
+                    .ThenInclude(ir => ir.Insumo)
+                .Include(r => r.PasosReceta)
+                .Where(r => r.Id == id)
+                .Select(r => new RecetaDetallesDto
+                {
+                    Id = r.Id,
+                    LitrosEstimados = r.LitrosEstimados,
+                    PrecioLitro = r.PrecioLitro,
+                    Descripcion = r.Descripcion,
+                    Nombre = r.Nombre,
+                    CostoProduccion = r.CostoProduccion,
+                    Imagen = r.Imagen,
+                    Activo = r.Activo,
+                    IngredientesReceta = r.IngredientesReceta.Select(ir => new IngredienteRecetaDto
+                    {
+                        IdInsumo = ir.IdInsumo,
+                        Cantidad = ir.Cantidad,
+                        NombreInsumo = ir.Insumo.Nombre,
+                        UnidadMedida = ir.Insumo.UnidadMedida
+                    }).ToList(),
+                    PasosReceta = r.PasosReceta.Select(pr => new PasosRecetaDto
+                    {
+                        Orden = pr.Orden,
+                        Descripcion = pr.Descripcion,
+                        Tiempo = pr.Tiempo
+                    }).OrderBy(pr => pr.Orden).ToList()
+                })
+                .FirstOrDefaultAsync();
 
             if (receta == null)
             {
-                return NotFound(new {message="Receta no existe."});
+                return NotFound(new { message = "Receta no existe." });
             }
 
             return Ok(receta);
+
         }
 
         // POST: api/recetas
@@ -90,17 +134,17 @@ namespace CERVERICA.Controllers
         }
 
         // PUT: api/recetas/5
-        [HttpPut]
-        public async Task<IActionResult> UpdateReceta(RecetaUpdateDto recetaDto)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateReceta(int id, RecetaUpdateDto recetaDto)
         {
-            if (recetaDto == null || recetaDto.Id == 0)
+            if (recetaDto == null)
             {
                 return BadRequest(new { message = "Datos de la receta son requeridos." });
             }
 
             var receta = await _context.Recetas
                 .Include(r => r.IngredientesReceta)
-                .FirstOrDefaultAsync(r => r.Id == recetaDto.Id);
+                .FirstOrDefaultAsync(r => r.Id == id);
 
             if (receta == null)
             {
@@ -170,6 +214,66 @@ namespace CERVERICA.Controllers
             return Ok(new { message = "Receta actualizada exitosamente." });
         }
 
+        [HttpPut("{id}/pasos")]
+        public async Task<ActionResult> EditPasosInReceta(int id, List<PasosRecetaDto> pasosDto)
+        {
+            var receta = await _context.Recetas
+                .Include(r => r.PasosReceta)
+                .FirstOrDefaultAsync(r => r.Id == id);
+
+            if (receta == null)
+            {
+                return NotFound(new { message = "Receta no existe." });
+            }
+
+            // Eliminar pasos existentes que no están en la lista de pasosDto
+            var pasosExistentes = receta.PasosReceta.ToList();
+            foreach (var pasoExistente in pasosExistentes)
+            {
+                if (!pasosDto.Any(p => p.Orden == pasoExistente.Orden))
+                {
+                    _context.PasosRecetas.Remove(pasoExistente);
+                }
+            }
+
+            // Actualizar o agregar pasos
+            foreach (var pasoDto in pasosDto)
+            {
+                var pasoExistente = pasosExistentes.FirstOrDefault(p => p.Orden == pasoDto.Orden);
+                if (pasoExistente != null)
+                {
+                    // Actualizar paso existente
+                    pasoExistente.Descripcion = pasoDto.Descripcion;
+                    pasoExistente.Tiempo = pasoDto.Tiempo;
+                    _context.Entry(pasoExistente).State = EntityState.Modified;
+                }
+                else
+                {
+                    // Agregar nuevo paso
+                    var nuevoPaso = new PasosReceta
+                    {
+                        IdReceta = receta.Id,
+                        Orden = pasoDto.Orden,
+                        Tiempo = pasoDto.Tiempo,
+                        Descripcion = pasoDto.Descripcion
+                    };
+                    receta.PasosReceta.Add(nuevoPaso);
+                }
+            }
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error al actualizar los pasos.", error = ex.Message });
+            }
+
+            return Ok(new { message = "Pasos actualizados en la receta." });
+        }
+
+
         //activar receta
         [HttpPost("activar/{id}")]
         public async Task<IActionResult> ActivarReceta(int id)
@@ -233,6 +337,8 @@ namespace CERVERICA.Controllers
         }
 
         //calcular costo de produccion
+        //NOTA: el precio por litro de la receta se actualiza solo si el costo por litro es mayor al valor actual
+        //esto es para que el precio de venta sea siempre lo más estable posible y que solo se modifique si implica perdidas
         private async Task CalcularCostoProduccion(int idReceta)
         {
             var receta = await _context.Recetas

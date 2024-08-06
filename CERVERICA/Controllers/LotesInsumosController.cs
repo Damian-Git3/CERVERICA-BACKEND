@@ -13,7 +13,7 @@ namespace CERVERICA.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Admin,Vendedor")]
+    //[Authorize(Roles = "Admin,Vendedor")]
     public class LotesInsumosController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -248,6 +248,7 @@ namespace CERVERICA.Controllers
                 IdUsuario = GetCurrentUserId(),
                 FechaCaducidad = loteInsumoDto.FechaCaducidad,
                 Cantidad = loteInsumoDto.Cantidad,
+                Caducado = 0,
                 FechaCompra = System.DateTime.Now,
                 PrecioUnidad = precioUnidad,
                 MontoCompra = loteInsumoDto.MontoCompra,
@@ -405,6 +406,48 @@ namespace CERVERICA.Controllers
                 }
 
                 _context.Entry(insumo).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+
+                // Recalcular el costo de producción de todas las recetas que usan este insumo
+                var recetasConInsumo = await _context.Recetas
+                    .Include(r => r.IngredientesReceta)
+                    .Where(r => r.IngredientesReceta.Any(ir => ir.IdInsumo == idInsumo))
+                    .ToListAsync();
+
+                foreach (var receta in recetasConInsumo)
+                {
+                    await RecalcularCostoProduccion(receta.Id);
+                }
+            }
+        }
+
+        //calcular costo de produccion
+        private async Task RecalcularCostoProduccion(int idReceta)
+        {
+            var receta = await _context.Recetas
+                .Include(r => r.IngredientesReceta)
+                    .ThenInclude(ir => ir.Insumo)
+                .FirstOrDefaultAsync(r => r.Id == idReceta);
+
+            if (receta != null)
+            {
+                float costoTotal = 0;
+
+                foreach (var ingrediente in receta.IngredientesReceta)
+                {
+                    var costoUnitario = ingrediente.Insumo.CostoUnitario;
+
+                    costoTotal += ingrediente.Cantidad * costoUnitario;
+                }
+                var nuevoCostoLitro = costoTotal / receta.LitrosEstimados;
+
+                if (nuevoCostoLitro > receta.PrecioLitro)
+                {
+                    receta.PrecioLitro = nuevoCostoLitro;
+                }
+                receta.CostoProduccion = costoTotal;
+
+                _context.Entry(receta).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
             }
         }

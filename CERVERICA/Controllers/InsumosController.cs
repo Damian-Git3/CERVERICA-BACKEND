@@ -19,10 +19,10 @@ public class InsumosController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<InsumosDto>>> GetInsumos()
+    public async Task<ActionResult<IEnumerable<InsumosCantidadDto>>> GetInsumos()
     {
         return await _context.Insumos
-            .Select(insumo => new InsumosDto
+            .Select(insumo => new InsumosCantidadDto
             {
                 Id = insumo.Id,
                 Nombre = insumo.Nombre,
@@ -32,12 +32,15 @@ public class InsumosController : ControllerBase
                 CantidadMinima = insumo.CantidadMinima,
                 CostoUnitario = insumo.CostoUnitario,
                 Merma = insumo.Merma,
-                Activo = insumo.Activo
+                Activo = insumo.Activo,
+                CantidadTotalLotes = _context.LotesInsumos
+                    .Where(lote => lote.IdInsumo == insumo.Id)
+                    .Sum(lote => (float?)lote.Cantidad) ?? 0  // Nueva lógica para sumar las cantidades
             }).ToListAsync();
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<InsumosDto>> GetInsumo(int id)
+    public async Task<ActionResult<InsumosCantidadDto>> GetInsumo(int id)
     {
         var insumo = await _context.Insumos.FindAsync(id);
 
@@ -46,7 +49,7 @@ public class InsumosController : ControllerBase
             return NotFound();
         }
 
-        return new InsumosDto
+        return new InsumosCantidadDto
         {
             Id = insumo.Id,
             Nombre = insumo.Nombre,
@@ -56,7 +59,10 @@ public class InsumosController : ControllerBase
             CantidadMinima = insumo.CantidadMinima,
             CostoUnitario = insumo.CostoUnitario,
             Merma = insumo.Merma,
-            Activo = insumo.Activo
+            Activo = insumo.Activo,
+            CantidadTotalLotes = _context.LotesInsumos
+                    .Where(lote => lote.IdInsumo == insumo.Id)
+                    .Sum(lote => (float?)lote.Cantidad) ?? 0
         };
     }
 

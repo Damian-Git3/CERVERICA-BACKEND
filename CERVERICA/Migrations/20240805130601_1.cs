@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CERVERICA.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class _1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -290,7 +290,7 @@ namespace CERVERICA.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     IdProveedor = table.Column<int>(type: "int", nullable: false),
                     IdInsumo = table.Column<int>(type: "int", nullable: false),
-                    IdUsuario = table.Column<int>(type: "int", nullable: false),
+                    IdUsuario = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     FechaCaducidad = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Cantidad = table.Column<float>(type: "real", nullable: false),
                     FechaCompra = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -347,8 +347,9 @@ namespace CERVERICA.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    IdReceta = table.Column<int>(type: "int", nullable: false),
                     RecetaId = table.Column<int>(type: "int", nullable: false),
-                    Descripcion = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    Descripcion = table.Column<string>(type: "nvarchar(2500)", maxLength: 2500, nullable: false),
                     Orden = table.Column<int>(type: "int", nullable: false),
                     Tiempo = table.Column<int>(type: "int", nullable: false)
                 },
@@ -409,14 +410,16 @@ namespace CERVERICA.Migrations
                 name: "ProduccionLoteInsumos",
                 columns: table => new
                 {
-                    IdReceta = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     IdProduccion = table.Column<int>(type: "int", nullable: false),
                     IdLoteInsumo = table.Column<int>(type: "int", nullable: false),
-                    Cantidad = table.Column<float>(type: "real", nullable: false)
+                    Cantidad = table.Column<float>(type: "real", nullable: false),
+                    RecetaId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ProduccionLoteInsumos", x => new { x.IdReceta, x.IdProduccion, x.IdLoteInsumo });
+                    table.PrimaryKey("PK_ProduccionLoteInsumos", x => x.Id);
                     table.ForeignKey(
                         name: "FK_ProduccionLoteInsumos_LotesInsumos_IdLoteInsumo",
                         column: x => x.IdLoteInsumo,
@@ -430,11 +433,10 @@ namespace CERVERICA.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_ProduccionLoteInsumos_Recetas_IdReceta",
-                        column: x => x.IdReceta,
+                        name: "FK_ProduccionLoteInsumos_Recetas_RecetaId",
+                        column: x => x.RecetaId,
                         principalTable: "Recetas",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -599,6 +601,11 @@ namespace CERVERICA.Migrations
                 name: "IX_ProduccionLoteInsumos_IdProduccion",
                 table: "ProduccionLoteInsumos",
                 column: "IdProduccion");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProduccionLoteInsumos_RecetaId",
+                table: "ProduccionLoteInsumos",
+                column: "RecetaId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Stocks_IdProduccion",

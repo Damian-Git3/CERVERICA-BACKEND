@@ -28,7 +28,7 @@ namespace CERVERICA.Models
         public int IdReceta { get; set; }
         public Receta Receta { get; set; }
 
-        public DateTime? FechaSolicitud { get; set; }
+        public DateTime FechaSolicitud { get; set; }
 
         [ForeignKey(nameof(IdUsuarioSolicitud))]
         public string IdUsuarioSolicitud { get; set; }

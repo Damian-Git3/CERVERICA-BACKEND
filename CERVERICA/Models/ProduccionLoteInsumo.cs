@@ -1,21 +1,20 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace CERVERICA.Models
 {
     public class ProduccionLoteInsumo
     {
-        [Key, Column(Order = 0)]
-        [ForeignKey(nameof(Receta))]
-        public int IdReceta { get; set; }
-        public Receta Receta { get; set; }
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int Id { get; set; }
 
-        [Key, Column(Order = 1)]
+        [Required]
         [ForeignKey(nameof(Produccion))]
         public int IdProduccion { get; set; }
         public Produccion Produccion { get; set; }
 
-        [Key, Column(Order = 2)]
+        [Required]
         [ForeignKey(nameof(LoteInsumo))]
         public int IdLoteInsumo { get; set; }
         public LoteInsumo LoteInsumo { get; set; }
