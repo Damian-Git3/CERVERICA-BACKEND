@@ -58,7 +58,12 @@ namespace CERVERICA.Controllers
                     DescripcionPaso = _context.PasosRecetas
                         .Where(pp => pp.IdReceta == p.IdReceta && pp.Orden == p.Paso)
                         .Select(pp => pp.Descripcion)
-                        .FirstOrDefault() ?? "Sin descripción"
+                        .FirstOrDefault() ?? "Sin descripción",
+                    IdUsuario = p.IdUsuarioProduccion,
+                    NombreUsuario = _context.Users
+                        .Where(u => u.Id == p.IdUsuarioProduccion)
+                        .Select(u => u.FullName)
+                        .FirstOrDefault() ?? "Sin nombre"
                 })
                 .ToListAsync();
 
@@ -184,7 +189,7 @@ namespace CERVERICA.Controllers
                     produccion.IdReceta = solicitudDto.IdReceta;
                     produccion.FechaSolicitud = DateTime.Now;
                     produccion.IdUsuarioSolicitud = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "a0a0aaa0-0000-0aa0-0000-00aaa0aa0a00";
-                    produccion.IdUsuarioProduccion = "a0a0aaa0-0000-0aa0-0000-00aaa0aa0a00";
+                    produccion.IdUsuarioProduccion = solicitudDto.IdUsuario;
                     produccion.Paso = 0;
 
                     _context.Producciones.Add(produccion);
@@ -444,6 +449,31 @@ namespace CERVERICA.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(new { Message = "Production finalizada y almacenaje del producto en stock." });
+        }
+
+        //metodo para cambiar el usuario asignado a una produccion
+        [HttpPut("cambiarUsuario/{id}")]
+        public async Task<IActionResult> CambiarUsuarioProduccion(int id, [FromBody] string idUsuario)
+        {
+            var produccion = await _context.Producciones.FindAsync(id);
+
+            if (produccion == null)
+            {
+                return NotFound(new { Message = "Producción no encontrada." });
+            }
+
+            //validar que el usuario exista
+            var usuario = await _context.Users.FindAsync(idUsuario);
+            if (usuario == null)
+            {
+                return NotFound(new { Message = "Usuario no encontrado." });
+            }
+
+            produccion.IdUsuarioProduccion = idUsuario;
+            _context.Entry(produccion).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { Message = "Usuario de producción cambiado." });
         }
 
         [HttpPost("cambiarestdo")]

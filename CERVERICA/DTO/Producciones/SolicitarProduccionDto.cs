@@ -11,5 +11,7 @@ namespace CERVERICA.Dtos
 
         [Required]
         public int IdReceta { get; set; }
+
+        public string IdUsuario { get; set; }
     }
 }

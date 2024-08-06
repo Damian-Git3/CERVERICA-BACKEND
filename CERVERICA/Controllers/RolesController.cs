@@ -118,5 +118,22 @@ namespace CERVERICA.Controllers
 
             return BadRequest(error!.Description);
         }
+
+        //buscar usuarios del rol Produccion
+        [AllowAnonymous]
+        [HttpGet("users")]
+        public async Task<ActionResult<IEnumerable<UserResponseDto>>> GetUsers()
+        {
+            var users = await _userManager.GetUsersInRoleAsync("Produccion");
+
+            var usersDto = users.Select(u => new UserResponseDto
+            {
+                Id = u.Id,
+                FullName = u.FullName ?? "Sin nombre",
+                Email = u.Email ?? "Sin correo"
+            });
+
+            return Ok(usersDto);
+        }
     }
 }

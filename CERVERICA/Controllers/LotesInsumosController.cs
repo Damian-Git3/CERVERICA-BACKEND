@@ -41,6 +41,7 @@ namespace CERVERICA.Controllers
                     IdUsuario = l.IdUsuario,
                     FechaCaducidad = l.FechaCaducidad,
                     Cantidad = l.Cantidad,
+                    Caducado = l.Caducado,
                     FechaCompra = l.FechaCompra,
                     PrecioUnidad = l.PrecioUnidad,
                     MontoCompra = l.MontoCompra,
@@ -63,6 +64,7 @@ namespace CERVERICA.Controllers
                     IdUsuario = l.IdUsuario,
                     FechaCaducidad = l.FechaCaducidad,
                     Cantidad = l.Cantidad,
+                    Caducado = l.Caducado,
                     FechaCompra = l.FechaCompra,
                     PrecioUnidad = l.PrecioUnidad,
                     MontoCompra = l.MontoCompra,
@@ -85,6 +87,7 @@ namespace CERVERICA.Controllers
                     IdUsuario = l.IdUsuario,
                     FechaCaducidad = l.FechaCaducidad,
                     Cantidad = l.Cantidad,
+                    Caducado = l.Caducado,
                     FechaCompra = l.FechaCompra,
                     PrecioUnidad = l.PrecioUnidad,
                     MontoCompra = l.MontoCompra,
@@ -107,11 +110,11 @@ namespace CERVERICA.Controllers
                     IdUsuario = l.IdUsuario,
                     FechaCaducidad = l.FechaCaducidad,
                     Cantidad = l.Cantidad,
+                    Caducado = l.Caducado,
                     FechaCompra = l.FechaCompra,
                     PrecioUnidad = l.PrecioUnidad,
                     MontoCompra = l.MontoCompra,
-                    Merma = l.Merma,
-                    Caducado = l.Caducado
+                    Merma = l.Merma
 
                 })
                 .ToListAsync();
@@ -133,6 +136,7 @@ namespace CERVERICA.Controllers
                     IdUsuario = l.IdUsuario,
                     FechaCaducidad = l.FechaCaducidad,
                     Cantidad = l.Cantidad,
+                    Caducado = l.Caducado,
                     FechaCompra = l.FechaCompra,
                     PrecioUnidad = l.PrecioUnidad,
                     MontoCompra = l.MontoCompra,
@@ -170,6 +174,7 @@ namespace CERVERICA.Controllers
                     IdUsuario = l.IdUsuario,
                     FechaCaducidad = l.FechaCaducidad,
                     Cantidad = l.Cantidad,
+                    Caducado = l.Caducado,
                     FechaCompra = l.FechaCompra,
                     PrecioUnidad = l.PrecioUnidad,
                     MontoCompra = l.MontoCompra,
@@ -201,6 +206,7 @@ namespace CERVERICA.Controllers
                     IdUsuario = l.IdUsuario,
                     FechaCaducidad = l.FechaCaducidad,
                     Cantidad = l.Cantidad,
+                    Caducado = l.Caducado,
                     FechaCompra = l.FechaCompra,
                     PrecioUnidad = l.PrecioUnidad,
                     MontoCompra = l.MontoCompra,
