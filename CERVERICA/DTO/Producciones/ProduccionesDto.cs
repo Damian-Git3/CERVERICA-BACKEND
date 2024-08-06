@@ -6,6 +6,7 @@ namespace CERVERICA.Dtos
     {
         public int Id { get; set; }
         public DateTime FechaProduccion { get; set; }
+        public DateTime FechaProximoPaso { get; set; }
         public string Mensaje { get; set; }
         public int Estatus { get; set; }
         public int NumeroTandas { get; set; }

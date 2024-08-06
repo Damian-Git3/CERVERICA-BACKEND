@@ -3,20 +3,36 @@
   "WorkspaceRootPath": "C:\\Users\\Lenovo\\Documents\\ASP.NET\\CERVERICA\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{B9D8CD90-BF7A-4AB1-BE72-86311433C82D}|CERVERICA\\CERVERICA.csproj|c:\\users\\lenovo\\documents\\asp.net\\cerverica\\cerverica\\controllers\\ventascontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B9D8CD90-BF7A-4AB1-BE72-86311433C82D}|CERVERICA\\CERVERICA.csproj|solutionrelative:cerverica\\controllers\\ventascontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{B9D8CD90-BF7A-4AB1-BE72-86311433C82D}|CERVERICA\\CERVERICA.csproj|c:\\users\\lenovo\\documents\\asp.net\\cerverica\\cerverica\\controllers\\produccioncontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{B9D8CD90-BF7A-4AB1-BE72-86311433C82D}|CERVERICA\\CERVERICA.csproj|solutionrelative:cerverica\\controllers\\produccioncontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{B9D8CD90-BF7A-4AB1-BE72-86311433C82D}|CERVERICA\\CERVERICA.csproj|c:\\users\\lenovo\\documents\\asp.net\\cerverica\\cerverica\\dto\\producciones\\finalizarproducciondto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{B9D8CD90-BF7A-4AB1-BE72-86311433C82D}|CERVERICA\\CERVERICA.csproj|solutionrelative:cerverica\\dto\\producciones\\finalizarproducciondto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{B9D8CD90-BF7A-4AB1-BE72-86311433C82D}|CERVERICA\\CERVERICA.csproj|c:\\users\\lenovo\\documents\\asp.net\\cerverica\\cerverica\\models\\stock.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B9D8CD90-BF7A-4AB1-BE72-86311433C82D}|CERVERICA\\CERVERICA.csproj|solutionrelative:cerverica\\models\\stock.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{B9D8CD90-BF7A-4AB1-BE72-86311433C82D}|CERVERICA\\CERVERICA.csproj|c:\\users\\lenovo\\documents\\asp.net\\cerverica\\cerverica\\models\\produccion.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{B9D8CD90-BF7A-4AB1-BE72-86311433C82D}|CERVERICA\\CERVERICA.csproj|solutionrelative:cerverica\\models\\produccion.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{B9D8CD90-BF7A-4AB1-BE72-86311433C82D}|CERVERICA\\CERVERICA.csproj|c:\\users\\lenovo\\documents\\asp.net\\cerverica\\cerverica\\models\\stock.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{B9D8CD90-BF7A-4AB1-BE72-86311433C82D}|CERVERICA\\CERVERICA.csproj|solutionrelative:cerverica\\models\\stock.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{B9D8CD90-BF7A-4AB1-BE72-86311433C82D}|CERVERICA\\CERVERICA.csproj|c:\\users\\lenovo\\documents\\asp.net\\cerverica\\cerverica\\dto\\producciones\\produccionesdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B9D8CD90-BF7A-4AB1-BE72-86311433C82D}|CERVERICA\\CERVERICA.csproj|solutionrelative:cerverica\\dto\\producciones\\produccionesdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B9D8CD90-BF7A-4AB1-BE72-86311433C82D}|CERVERICA\\CERVERICA.csproj|c:\\users\\lenovo\\documents\\asp.net\\cerverica\\cerverica\\dto\\ventas\\stocksdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B9D8CD90-BF7A-4AB1-BE72-86311433C82D}|CERVERICA\\CERVERICA.csproj|solutionrelative:cerverica\\dto\\ventas\\stocksdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B9D8CD90-BF7A-4AB1-BE72-86311433C82D}|CERVERICA\\CERVERICA.csproj|c:\\users\\lenovo\\documents\\asp.net\\cerverica\\cerverica\\models\\receta.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B9D8CD90-BF7A-4AB1-BE72-86311433C82D}|CERVERICA\\CERVERICA.csproj|solutionrelative:cerverica\\models\\receta.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B9D8CD90-BF7A-4AB1-BE72-86311433C82D}|CERVERICA\\CERVERICA.csproj|c:\\users\\lenovo\\documents\\asp.net\\cerverica\\cerverica\\dto\\producciones\\producciondto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B9D8CD90-BF7A-4AB1-BE72-86311433C82D}|CERVERICA\\CERVERICA.csproj|solutionrelative:cerverica\\dto\\producciones\\producciondto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{B9D8CD90-BF7A-4AB1-BE72-86311433C82D}|CERVERICA\\CERVERICA.csproj|c:\\users\\lenovo\\documents\\asp.net\\cerverica\\cerverica\\controllers\\recetascontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -30,63 +46,115 @@
       "DocumentGroups": [
         {
           "DockedHeight": 382,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "Produccion.cs",
-              "DocumentMoniker": "C:\\Users\\Lenovo\\Documents\\ASP.NET\\CERVERICA\\CERVERICA\\Models\\Produccion.cs",
-              "RelativeDocumentMoniker": "CERVERICA\\Models\\Produccion.cs",
-              "ToolTip": "C:\\Users\\Lenovo\\Documents\\ASP.NET\\CERVERICA\\CERVERICA\\Models\\Produccion.cs",
-              "RelativeToolTip": "CERVERICA\\Models\\Produccion.cs",
-              "ViewState": "AQIAABkAAAAAAAAAAAAwwAAAAAAAAAAA",
+              "DocumentIndex": 5,
+              "Title": "StocksDto.cs",
+              "DocumentMoniker": "C:\\Users\\Lenovo\\Documents\\ASP.NET\\CERVERICA\\CERVERICA\\DTO\\Ventas\\StocksDto.cs",
+              "RelativeDocumentMoniker": "CERVERICA\\DTO\\Ventas\\StocksDto.cs",
+              "ToolTip": "C:\\Users\\Lenovo\\Documents\\ASP.NET\\CERVERICA\\CERVERICA\\DTO\\Ventas\\StocksDto.cs",
+              "RelativeToolTip": "CERVERICA\\DTO\\Ventas\\StocksDto.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-08-06T00:22:50.304Z",
+              "WhenOpened": "2024-08-06T07:08:01.679Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "ProduccionesDto.cs",
+              "DocumentMoniker": "C:\\Users\\Lenovo\\Documents\\ASP.NET\\CERVERICA\\CERVERICA\\DTO\\Producciones\\ProduccionesDto.cs",
+              "RelativeDocumentMoniker": "CERVERICA\\DTO\\Producciones\\ProduccionesDto.cs",
+              "ToolTip": "C:\\Users\\Lenovo\\Documents\\ASP.NET\\CERVERICA\\CERVERICA\\DTO\\Producciones\\ProduccionesDto.cs",
+              "RelativeToolTip": "CERVERICA\\DTO\\Producciones\\ProduccionesDto.cs",
+              "ViewState": "AQIAAAMAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-08-06T07:07:20.734Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 3,
-              "Title": "Stock.cs",
-              "DocumentMoniker": "C:\\Users\\Lenovo\\Documents\\ASP.NET\\CERVERICA\\CERVERICA\\Models\\Stock.cs",
-              "RelativeDocumentMoniker": "CERVERICA\\Models\\Stock.cs",
-              "ToolTip": "C:\\Users\\Lenovo\\Documents\\ASP.NET\\CERVERICA\\CERVERICA\\Models\\Stock.cs",
-              "RelativeToolTip": "CERVERICA\\Models\\Stock.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAgAAAA9AAAA",
+              "Title": "Produccion.cs",
+              "DocumentMoniker": "C:\\Users\\Lenovo\\Documents\\ASP.NET\\CERVERICA\\CERVERICA\\Models\\Produccion.cs",
+              "RelativeDocumentMoniker": "CERVERICA\\Models\\Produccion.cs",
+              "ToolTip": "C:\\Users\\Lenovo\\Documents\\ASP.NET\\CERVERICA\\CERVERICA\\Models\\Produccion.cs",
+              "RelativeToolTip": "CERVERICA\\Models\\Produccion.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABwAAAAIAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-08-05T21:47:35.223Z",
+              "WhenOpened": "2024-08-06T07:05:41.579Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "FinalizarProduccionDto.cs",
-              "DocumentMoniker": "C:\\Users\\Lenovo\\Documents\\ASP.NET\\CERVERICA\\CERVERICA\\DTO\\Producciones\\FinalizarProduccionDto.cs",
-              "RelativeDocumentMoniker": "CERVERICA\\DTO\\Producciones\\FinalizarProduccionDto.cs",
-              "ToolTip": "C:\\Users\\Lenovo\\Documents\\ASP.NET\\CERVERICA\\CERVERICA\\DTO\\Producciones\\FinalizarProduccionDto.cs",
-              "RelativeToolTip": "CERVERICA\\DTO\\Producciones\\FinalizarProduccionDto.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAoAAAA9AAAA",
+              "DocumentIndex": 6,
+              "Title": "Receta.cs",
+              "DocumentMoniker": "C:\\Users\\Lenovo\\Documents\\ASP.NET\\CERVERICA\\CERVERICA\\Models\\Receta.cs",
+              "RelativeDocumentMoniker": "CERVERICA\\Models\\Receta.cs",
+              "ToolTip": "C:\\Users\\Lenovo\\Documents\\ASP.NET\\CERVERICA\\CERVERICA\\Models\\Receta.cs",
+              "RelativeToolTip": "CERVERICA\\Models\\Receta.cs",
+              "ViewState": "AQIAABcAAAAAAAAAAAA9wCEAAAA2AAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-08-05T21:47:12.83Z",
+              "WhenOpened": "2024-08-06T07:00:12.839Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "VentasController.cs",
+              "DocumentMoniker": "C:\\Users\\Lenovo\\Documents\\ASP.NET\\CERVERICA\\CERVERICA\\Controllers\\VentasController.cs",
+              "RelativeDocumentMoniker": "CERVERICA\\Controllers\\VentasController.cs",
+              "ToolTip": "C:\\Users\\Lenovo\\Documents\\ASP.NET\\CERVERICA\\CERVERICA\\Controllers\\VentasController.cs",
+              "RelativeToolTip": "CERVERICA\\Controllers\\VentasController.cs",
+              "ViewState": "AQIAAAgAAAAAAAAAAAAxwBIAAAA0AAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-08-06T06:47:23.744Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "ProduccionController.cs",
               "DocumentMoniker": "C:\\Users\\Lenovo\\Documents\\ASP.NET\\CERVERICA\\CERVERICA\\Controllers\\ProduccionController.cs",
               "RelativeDocumentMoniker": "CERVERICA\\Controllers\\ProduccionController.cs",
               "ToolTip": "C:\\Users\\Lenovo\\Documents\\ASP.NET\\CERVERICA\\CERVERICA\\Controllers\\ProduccionController.cs",
               "RelativeToolTip": "CERVERICA\\Controllers\\ProduccionController.cs",
-              "ViewState": "AQIAAJEBAAAAAAAAAAAwwKABAABDAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAB8AAAArAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-08-05T21:18:32.6Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 2,
+              "Title": "Stock.cs",
+              "DocumentMoniker": "C:\\Users\\Lenovo\\Documents\\ASP.NET\\CERVERICA\\CERVERICA\\Models\\Stock.cs",
+              "RelativeDocumentMoniker": "CERVERICA\\Models\\Stock.cs",
+              "ToolTip": "C:\\Users\\Lenovo\\Documents\\ASP.NET\\CERVERICA\\CERVERICA\\Models\\Stock.cs",
+              "RelativeToolTip": "CERVERICA\\Models\\Stock.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABwAAAAqAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-08-06T06:40:48.202Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "ProduccionDto.cs",
+              "DocumentMoniker": "C:\\Users\\Lenovo\\Documents\\ASP.NET\\CERVERICA\\CERVERICA\\DTO\\Producciones\\ProduccionDto.cs",
+              "RelativeDocumentMoniker": "CERVERICA\\DTO\\Producciones\\ProduccionDto.cs",
+              "ToolTip": "C:\\Users\\Lenovo\\Documents\\ASP.NET\\CERVERICA\\CERVERICA\\DTO\\Producciones\\ProduccionDto.cs",
+              "RelativeToolTip": "CERVERICA\\DTO\\Producciones\\ProduccionDto.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAkAAAAoAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-08-06T06:01:39.287Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
               "Title": "RecetasController.cs",
               "DocumentMoniker": "C:\\Users\\Lenovo\\Documents\\ASP.NET\\CERVERICA\\CERVERICA\\Controllers\\RecetasController.cs",
               "RelativeDocumentMoniker": "CERVERICA\\Controllers\\RecetasController.cs",
@@ -94,8 +162,7 @@
               "RelativeToolTip": "CERVERICA\\Controllers\\RecetasController.cs",
               "ViewState": "AQIAAJwAAAAAAAAAAAAUwKwAAABMAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-08-05T13:32:56.994Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-08-05T13:32:56.994Z"
             }
           ]
         }
