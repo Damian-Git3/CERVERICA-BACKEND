@@ -12,6 +12,8 @@ namespace CERVERICA.Models
         [Required]
         public DateTime FechaProduccion { get; set; }
 
+        public DateTime FechaProximoPaso { get; set; }
+
         public string Mensaje { get; set; }
 
         [Required]

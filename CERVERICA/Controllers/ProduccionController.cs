@@ -80,6 +80,7 @@ namespace CERVERICA.Controllers
                 {
                     Id = p.Id,
                     FechaProduccion = p.FechaProduccion,
+                    FechaProximoPaso = p.FechaProximoPaso,
                     Mensaje = p.Mensaje,
                     Estatus = p.Estatus,
                     NumeroTandas = p.NumeroTandas,
@@ -87,7 +88,20 @@ namespace CERVERICA.Controllers
                     FechaSolicitud = p.FechaSolicitud,
                     IdUsuarioSolicitud = p.IdUsuarioSolicitud,
                     IdUsuarioProduccion = p.IdUsuarioProduccion,
-                    Paso = p.Paso,
+                    PasoActual = p.Paso,
+                    DescripcionPasoActual = _context.PasosRecetas
+                        .Where(pp => pp.IdReceta == p.IdReceta && pp.Orden == p.Paso)
+                        .Select(pp => pp.Descripcion)
+                        .FirstOrDefault() ?? "Sin descripción",
+                    PasosReceta = _context.PasosRecetas
+                        .Where(pp => pp.IdReceta == p.IdReceta)
+                        .Select(pp => new PasosRecetaDto
+                        {
+                            Orden = pp.Orden,
+                            Descripcion = pp.Descripcion,
+                            Tiempo = pp.Tiempo
+                        })
+                        .ToList(),
                     Receta = new RecetaProduccionDto
                     {
                         Id = p.Receta.Id,
@@ -121,6 +135,7 @@ namespace CERVERICA.Controllers
             return Ok(produccion);
         }
 
+        //Metodos del vendedor
 
         // POST: api/Produccion
         [HttpPost]
@@ -162,6 +177,7 @@ namespace CERVERICA.Controllers
                     var produccion = new Produccion();
 
                     produccion.FechaProduccion = DateTime.Now;
+                    produccion.FechaProximoPaso = DateTime.Now;
                     produccion.Mensaje = "";
                     produccion.Estatus = 1; //solicitud
                     produccion.NumeroTandas = solicitudDto.NumeroTandas;
@@ -384,7 +400,7 @@ namespace CERVERICA.Controllers
             {
                 production.MermaLitros = 0;
             }
-            if (production.LitrosFinales < 0)
+            if (production.LitrosFinales <= 0)
             {
                 production.MermaLitros = production.Receta.LitrosEstimados * production.NumeroTandas;
                 production.LitrosFinales = 0;
@@ -392,38 +408,21 @@ namespace CERVERICA.Controllers
                 await _context.SaveChangesAsync();
                 return Ok(new { Message = "Producción finalizada como fallida." });
             }
-            //fin de la validación de litros finales y merma
-
+            
             production.CostoProduccion = production.NumeroTandas * production.Receta.CostoProduccion;
 
-            // Calcular el stock
             var medidaEnvase = finalizeDto.MedidaEnvase ?? 355;
             medidaEnvase = medidaEnvase == 0 ? 355 : medidaEnvase;
 
+            float mililitrosParaEnvasar = (production.LitrosFinales??0) * 1000;
 
-            //parse a int
-            int mililitrosParaEnvasar = (int)(production.LitrosFinales*1000);
+            float proporcionLitrosStock = mililitrosParaEnvasar / medidaEnvase;
 
-            Debug.WriteLine("#####################################################################3");
-            Debug.WriteLine("medida envase: " + medidaEnvase);
-            Debug.WriteLine("litros finales: " + mililitrosParaEnvasar);
-            Debug.WriteLine("#####################################################################3");
+            int cantidadStock = (int)proporcionLitrosStock;
 
+            float sobranteMl = proporcionLitrosStock - cantidadStock;
 
-            var proporcionLitrosStock = mililitrosParaEnvasar / medidaEnvase;
-
-            int cantidadStock = (int)(proporcionLitrosStock);
-
-            int sobranteMl = proporcionLitrosStock - cantidadStock;
-            float sobrante = (float)(sobranteMl) / 1000;
-
-            Debug.WriteLine("#####################################################################3");
-            Debug.WriteLine("sobrante: " + proporcionLitrosStock);
-            Debug.WriteLine("sobrante: " + cantidadStock);
-            Debug.WriteLine("sobrante kilos: " + sobrante);
-            Debug.WriteLine("merma kilos: " + production.MermaLitros);
-            Debug.WriteLine("merma kilos: " + production.MermaLitros + sobrante);
-            Debug.WriteLine("#####################################################################3");
+            float sobrante = sobranteMl * medidaEnvase / 1000;
 
             production.MermaLitros = production.MermaLitros + sobrante;
 
@@ -445,6 +444,31 @@ namespace CERVERICA.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(new { Message = "Production finalizada y almacenaje del producto en stock." });
+        }
+
+        [HttpPost("cambiarestdo")]
+        public async Task<IActionResult> CambiarEstadoProduccion()
+        {
+            var produccion = await _context.Producciones.FindAsync(7);
+
+            produccion.Estatus = 3;
+
+            _context.Entry(produccion).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { Message = "Estatus de producción a 3 otra vez." });
+        }
+
+        //vaciar tabla stock
+        [HttpPost("vaciarstock")]
+        public async Task<IActionResult> VaciarStock()
+        {
+            var stocks = await _context.Stocks.ToListAsync();
+
+            _context.Stocks.RemoveRange(stocks);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { Message = "Stock vaciado." });
         }
 
         private async Task ActualizarCostoReceta(int idReceta)
@@ -474,6 +498,118 @@ namespace CERVERICA.Controllers
 
                 _context.Entry(receta).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
+            }
+        }
+
+        //Metodos del cocinero
+        [HttpGet("aceptar-solicitud/{idSolicitud}")]
+        public IActionResult AceptarSolicitud(int idSolicitud)
+        {
+            var produccion = _context.Producciones
+                .FirstOrDefault(p => p.Id == idSolicitud);
+
+            if (produccion != null)
+            {
+                if(produccion.Estatus != 1)
+                {
+                    return Ok(new { message = "La solicitud se encuentra en un estatus diferente a solicitud realizada, no se puede aceptar" });
+                }
+
+                produccion.Estatus = 2;
+
+                var ingredientesReceta = _context.IngredientesReceta
+                    .Where(ir => ir.IdReceta == produccion.IdReceta)
+                    .ToList();
+
+                var receta = _context.Recetas
+                    .FirstOrDefault(r => r.Id == produccion.IdReceta);
+
+                var mensajeReceta = $"Descripción receta: \n{receta.Descripcion}\n\n";
+                mensajeReceta += "Los ingredientes para esta receta son:\n";
+                foreach (var ingredienteReceta in ingredientesReceta)
+                {
+                    var insumo = _context.Insumos
+                        .FirstOrDefault(i => i.Id == ingredienteReceta.IdInsumo);
+
+                    var cantidadNecesaria = ingredienteReceta.Cantidad * produccion.NumeroTandas;
+
+                    string unidadMedida = insumo.UnidadMedida;
+                    double cantidadFormateada = cantidadNecesaria;
+
+                    mensajeReceta += $"{insumo.Nombre}: {cantidadFormateada:F2} {unidadMedida}\n";
+                }
+
+                _context.SaveChanges();
+
+                return Ok(new { message = mensajeReceta });
+            }
+            else
+            {
+                return Ok(new { message = "No se encontró la solicitud de producción con los datos proporcionados" });
+            }
+        }
+
+        [HttpPost("finalizar-solicitud/{idSolicitud}")]
+        public IActionResult FinalizarSolicitud(int idSolicitud, [FromForm] float mermaLitros)
+        {
+            var produccion = _context.Producciones
+                .FirstOrDefault(p => p.Id == idSolicitud);
+
+            if (produccion != null && produccion.Estatus == 2)
+            {
+                produccion.MermaLitros = mermaLitros;
+                produccion.Estatus = 3;
+
+                _context.SaveChanges();
+
+                return Ok(new { message = "Solicitud finalizada correctamente" });
+            }
+            else
+            {
+                return Ok(new { message = "La solicitud se encuentra en un estatus diferente a solicitud en preparación, no se puede finalizar" });
+            }
+        }
+
+        [HttpPost("rechazar-solicitud/{idSolicitud}")]
+        public IActionResult RechazarSolicitud(int idSolicitud, [FromForm] string mensaje)
+        {
+            var produccion = _context.Producciones
+                .FirstOrDefault(p => p.Id == idSolicitud);
+
+            if (produccion != null && produccion.Estatus == 1)
+            {
+                produccion.Mensaje = mensaje;
+                produccion.Estatus = 5;
+
+                _context.SaveChanges();
+
+                return Ok(new { message =  "Solicitud rechazada correctamente"});
+            }
+            else
+            {
+                return Ok(new { message = "La solicitud se encuentra en un estatus diferente a solicitud realizada, no se puede rechazar" });
+                
+            }
+        }
+
+        [HttpPost("posponer-solicitud/{idSolicitud}")]
+        public IActionResult PosponerSolicitud(int idSolicitud, [FromForm] string mensaje)
+        {
+            var produccion = _context.Producciones
+                .FirstOrDefault(p => p.Id == idSolicitud);
+
+            if (produccion != null && produccion.Estatus == 1)
+            {
+                produccion.Mensaje = mensaje;
+                produccion.Estatus = 6;
+
+                _context.SaveChanges();
+
+                return Ok(new { message = "Solicitud pospuesta correctamente" });
+            }
+            else
+            {
+                return Ok(new { message = "La solicitud se encuentra en un estatus diferente a solicitud realizada, no se puede posponer" });
             }
         }
     }
