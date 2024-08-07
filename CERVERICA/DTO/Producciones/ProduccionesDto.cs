@@ -16,6 +16,7 @@ namespace CERVERICA.Dtos
         public string NombreReceta { get; set; }
         public int Paso { get; set; }
         public string DescripcionPaso { get; set; }
+        public string IdUsuarioSolicitud { get; set; }
         public string IdUsuario { get; set; }
         public string NombreUsuario { get; set; }
 

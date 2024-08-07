@@ -59,6 +59,7 @@ namespace CERVERICA.Controllers
                         .Where(pp => pp.IdReceta == p.IdReceta && pp.Orden == p.Paso)
                         .Select(pp => pp.Descripcion)
                         .FirstOrDefault() ?? "Sin descripción",
+                    IdUsuarioSolicitud = p.IdUsuarioSolicitud,
                     IdUsuario = p.IdUsuarioProduccion,
                     NombreUsuario = _context.Users
                         .Where(u => u.Id == p.IdUsuarioProduccion)
@@ -179,6 +180,12 @@ namespace CERVERICA.Controllers
                         return NotFound("Receta no encontrada.");
                     }
 
+                    var usuarioProduccion = await _context.Users.FindAsync(solicitudDto.IdUsuario);
+                    if(usuarioProduccion == null)
+                    {
+                        return NotFound(new { message = "Usuario no existe. Escoja otro usuario de Producción."});
+                    }
+
                     var produccion = new Produccion();
 
                     produccion.FechaProduccion = DateTime.Now;
@@ -263,11 +270,14 @@ namespace CERVERICA.Controllers
                 return NotFound(new { Message = "Producción no encontrada." });
             }
 
-            if (production.Estatus != 4)
+            if (production.Estatus != 5 && production.Estatus != 6)
             {
                 return BadRequest(new { Message = "La producción tiene un estatus diferente a rechazado." });
             }
-
+            if(production.Estatus == 1)
+            {
+                return BadRequest(new { Message = "La producción ya ha sido solicitada." });
+            }
             production.Estatus = 1;
             await _context.SaveChangesAsync();
 
@@ -287,12 +297,12 @@ namespace CERVERICA.Controllers
 
             if (produccion == null)
             {
-                return NotFound("Solicitud de producción no encontrada.");
+                return NotFound(new{ message = "Solicitud de producción no encontrada."});
             }
 
-            if (produccion.Estatus != 1 && produccion.Estatus != 5)
+            if (produccion.Estatus != 1 && produccion.Estatus != 5 && produccion.Estatus != 6)
             {
-                return BadRequest("La solicitud no se encuentra en un estado cancelable.");
+                return BadRequest(new { message = "La solicitud no se encuentra en un estado cancelable." });
             }
 
             foreach (var prodLoteInsumo in produccion.ProduccionLoteInsumos)
@@ -307,10 +317,10 @@ namespace CERVERICA.Controllers
             _context.Producciones.Remove(produccion);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok(new {message="Produccion cancelada. Insumos devueltos al almacen."});
         }
 
-        [HttpPost("finalizar/{id}")]
+        [HttpPost("almacenar/{id}")]
         public async Task<IActionResult> FinalizeProduction(int id, FinalizarProduccionDto finalizeDto)
         {
             var production = await _context.Producciones
@@ -326,7 +336,7 @@ namespace CERVERICA.Controllers
 
             if (production.Estatus != 3)
             {
-                return BadRequest(new { Message = "La producción no se encuentra en fabricación." });
+                return BadRequest(new { Message = "La producción no se encuentra en espera de almacenamiento." });
             }
 
             production.Estatus = 4;
@@ -339,7 +349,7 @@ namespace CERVERICA.Controllers
                 production.LitrosFinales = 0;
                 _context.Entry(production).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
-                return Ok(new { Message = "Producción finalizada como fallida." });
+                return Ok(new { Message = "Producción perdida." });
             }
 
             //Valida valores de litros finales y merma
@@ -452,9 +462,11 @@ namespace CERVERICA.Controllers
         }
 
         //metodo para cambiar el usuario asignado a una produccion
-        [HttpPut("cambiarUsuario/{id}")]
-        public async Task<IActionResult> CambiarUsuarioProduccion(int id, [FromBody] string idUsuario)
+        [HttpPut("asignar-usuario/{id}")]
+        public async Task<IActionResult> CambiarUsuarioProduccion(int id, [FromBody] UserSelectDto userSelectDto)
         {
+
+            string idUsuario = userSelectDto.IdUsuario;
             var produccion = await _context.Producciones.FindAsync(id);
 
             if (produccion == null)
@@ -477,11 +489,11 @@ namespace CERVERICA.Controllers
         }
 
         [HttpPost("cambiarestdo")]
-        public async Task<IActionResult> CambiarEstadoProduccion()
+        public async Task<IActionResult> CambiarEstadoProduccion(int idproduccion, byte estatus)
         {
-            var produccion = await _context.Producciones.FindAsync(7);
+            var produccion = await _context.Producciones.FindAsync(idproduccion);
 
-            produccion.Estatus = 3;
+            produccion.Estatus = estatus;
 
             _context.Entry(produccion).State = EntityState.Modified;
             await _context.SaveChangesAsync();
@@ -579,27 +591,6 @@ namespace CERVERICA.Controllers
             }
         }
 
-        [HttpPost("finalizar-solicitud/{idSolicitud}")]
-        public IActionResult FinalizarSolicitud(int idSolicitud, [FromForm] float mermaLitros)
-        {
-            var produccion = _context.Producciones
-                .FirstOrDefault(p => p.Id == idSolicitud);
-
-            if (produccion != null && produccion.Estatus == 2)
-            {
-                produccion.MermaLitros = mermaLitros;
-                produccion.Estatus = 3;
-
-                _context.SaveChanges();
-
-                return Ok(new { message = "Solicitud finalizada correctamente" });
-            }
-            else
-            {
-                return Ok(new { message = "La solicitud se encuentra en un estatus diferente a solicitud en preparación, no se puede finalizar" });
-            }
-        }
-
         [HttpPost("rechazar-solicitud/{idSolicitud}")]
         public IActionResult RechazarSolicitud(int idSolicitud, [FromForm] string mensaje)
         {
@@ -642,5 +633,69 @@ namespace CERVERICA.Controllers
                 return Ok(new { message = "La solicitud se encuentra en un estatus diferente a solicitud realizada, no se puede posponer" });
             }
         }
+
+
+        [HttpPost("AvanzarPaso")]
+        public async Task<IActionResult> AvanzarPasoProduccion([FromBody] AvanzarPasoProduccionDto dto)
+        {
+            var produccion = await _context.Producciones
+                .Include(p => p.Receta)
+                    .ThenInclude(r => r.PasosReceta)
+                .FirstOrDefaultAsync(p => p.Id == dto.IdProduccion);
+
+            if (produccion == null)
+            {
+                return NotFound(new{ message= "Producción no encontrada."});
+            }
+
+            if (produccion.Estatus != 2)
+            {
+                return BadRequest(new { message = "El estatus de la producción no es válido para avanzar en los pasos."});
+            }
+
+            var pasos = produccion.Receta.PasosReceta.OrderBy(p => p.Orden).ToList();
+            var pasoActual = produccion.Paso;
+            var pasoSiguiente = pasos.FirstOrDefault(p => p.Orden == pasoActual + 1);
+
+            if (produccion.FechaProximoPaso > DateTime.Now)
+            {
+                return BadRequest(new {message= "Todavía no se ha alcanzado la fecha del próximo paso. No es posible avanzar." });
+            }
+
+            if (pasoActual == 0)
+            {
+                pasoSiguiente = pasos.FirstOrDefault();
+            }
+
+            if (pasoSiguiente == null)
+            {
+                produccion.Estatus = 3; // Producción en espera de almacenamiento
+                produccion.Mensaje = dto.Mensaje ?? "Producción completada. En espera de almacenamiento.";
+            }
+            else
+            {
+                produccion.Paso = pasoSiguiente.Orden;
+                produccion.Mensaje = pasoSiguiente.Descripcion;
+                produccion.FechaProximoPaso = DateTime.Now.AddHours(pasoSiguiente.Tiempo);
+                
+            }
+
+            if(dto.MermaLitros != null)
+            {
+                produccion.MermaLitros += dto.MermaLitros;
+            }
+            produccion.FechaProduccion = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+
+            var message = "Producción actualizada al siguiente paso.";
+            if (produccion.Estatus == 3)
+            {
+                message = "Producción completada. En espera de almacenamiento.";
+            }
+
+            return Ok(new { message });
+        }
+
     }
 }
