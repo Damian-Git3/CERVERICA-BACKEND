@@ -4,6 +4,7 @@ using CERVERICA.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CERVERICA.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240806084017_FavoritoUsuario")]
+    partial class FavoritoUsuario
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -119,31 +122,7 @@ namespace CERVERICA.Migrations
 
                     b.HasIndex("IdStock");
 
-                    b.ToTable("DetallesVenta", (string)null);
-                });
-
-            modelBuilder.Entity("CERVERICA.Models.FavoritoUsuario", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("IdReceta")
-                        .HasColumnType("int");
-
-                    b.Property<string>("IdUsuario")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IdReceta");
-
-                    b.HasIndex("IdUsuario");
-
-                    b.ToTable("FavoritosUsuarios", (string)null);
+                    b.ToTable("DetallesVenta");
                 });
 
             modelBuilder.Entity("CERVERICA.Models.IngredienteReceta", b =>
@@ -163,7 +142,7 @@ namespace CERVERICA.Migrations
 
                     b.HasIndex("IdInsumo");
 
-                    b.ToTable("IngredientesReceta", (string)null);
+                    b.ToTable("IngredientesReceta");
                 });
 
             modelBuilder.Entity("CERVERICA.Models.Insumo", b =>
@@ -205,7 +184,7 @@ namespace CERVERICA.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Insumos", (string)null);
+                    b.ToTable("Insumos");
                 });
 
             modelBuilder.Entity("CERVERICA.Models.Log", b =>
@@ -235,7 +214,7 @@ namespace CERVERICA.Migrations
 
                     b.HasIndex("UsuarioId");
 
-                    b.ToTable("Logs", (string)null);
+                    b.ToTable("Logs");
                 });
 
             modelBuilder.Entity("CERVERICA.Models.LogLogin", b =>
@@ -263,7 +242,7 @@ namespace CERVERICA.Migrations
 
                     b.HasIndex("UsuarioId");
 
-                    b.ToTable("LogsLogin", (string)null);
+                    b.ToTable("LogsLogin");
                 });
 
             modelBuilder.Entity("CERVERICA.Models.LoteInsumo", b =>
@@ -312,7 +291,7 @@ namespace CERVERICA.Migrations
 
                     b.HasIndex("IdProveedor");
 
-                    b.ToTable("LotesInsumos", (string)null);
+                    b.ToTable("LotesInsumos");
                 });
 
             modelBuilder.Entity("CERVERICA.Models.PasosReceta", b =>
@@ -344,7 +323,7 @@ namespace CERVERICA.Migrations
 
                     b.HasIndex("RecetaId");
 
-                    b.ToTable("PasosRecetas", (string)null);
+                    b.ToTable("PasosRecetas");
                 });
 
             modelBuilder.Entity("CERVERICA.Models.Produccion", b =>
@@ -411,7 +390,7 @@ namespace CERVERICA.Migrations
 
                     b.HasIndex("UsuarioSolicitudId");
 
-                    b.ToTable("Producciones", (string)null);
+                    b.ToTable("Producciones");
                 });
 
             modelBuilder.Entity("CERVERICA.Models.ProduccionLoteInsumo", b =>
@@ -437,37 +416,7 @@ namespace CERVERICA.Migrations
 
                     b.HasIndex("IdProduccion");
 
-                    b.ToTable("ProduccionLoteInsumos", (string)null);
-                });
-
-            modelBuilder.Entity("CERVERICA.Models.ProductoCarrito", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Cantidad")
-                        .HasColumnType("int");
-
-                    b.Property<int>("CantidadLote")
-                        .HasColumnType("int");
-
-                    b.Property<int>("IdReceta")
-                        .HasColumnType("int");
-
-                    b.Property<string>("IdUsuario")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IdReceta");
-
-                    b.HasIndex("IdUsuario");
-
-                    b.ToTable("ProductosCarrito", (string)null);
+                    b.ToTable("ProduccionLoteInsumos");
                 });
 
             modelBuilder.Entity("CERVERICA.Models.Proveedor", b =>
@@ -507,7 +456,7 @@ namespace CERVERICA.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Proveedores", (string)null);
+                    b.ToTable("Proveedores");
                 });
 
             modelBuilder.Entity("CERVERICA.Models.Receta", b =>
@@ -528,13 +477,6 @@ namespace CERVERICA.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Especificaciones")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("FechaRegistrado")
-                        .HasColumnType("Date");
-
                     b.Property<string>("Imagen")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -550,25 +492,9 @@ namespace CERVERICA.Migrations
                     b.Property<float?>("PrecioLitro")
                         .HasColumnType("real");
 
-                    b.Property<float?>("PrecioPaquete1")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("PrecioPaquete12")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("PrecioPaquete24")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("PrecioPaquete6")
-                        .HasColumnType("real");
-
-                    b.Property<string>("RutaFondo")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
 
-                    b.ToTable("Recetas", (string)null);
+                    b.ToTable("Recetas");
                 });
 
             modelBuilder.Entity("CERVERICA.Models.Stock", b =>
@@ -616,7 +542,7 @@ namespace CERVERICA.Migrations
 
                     b.HasIndex("UsuarioId");
 
-                    b.ToTable("Stocks", (string)null);
+                    b.ToTable("Stocks");
                 });
 
             modelBuilder.Entity("CERVERICA.Models.Venta", b =>
@@ -648,7 +574,7 @@ namespace CERVERICA.Migrations
 
                     b.HasIndex("UsuarioId");
 
-                    b.ToTable("Ventas", (string)null);
+                    b.ToTable("Ventas");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -803,25 +729,6 @@ namespace CERVERICA.Migrations
                     b.Navigation("Venta");
                 });
 
-            modelBuilder.Entity("CERVERICA.Models.FavoritoUsuario", b =>
-                {
-                    b.HasOne("CERVERICA.Models.Receta", "Receta")
-                        .WithMany()
-                        .HasForeignKey("IdReceta")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("CERVERICA.Models.ApplicationUser", "Usuario")
-                        .WithMany()
-                        .HasForeignKey("IdUsuario")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Receta");
-
-                    b.Navigation("Usuario");
-                });
-
             modelBuilder.Entity("CERVERICA.Models.IngredienteReceta", b =>
                 {
                     b.HasOne("CERVERICA.Models.Insumo", "Insumo")
@@ -929,25 +836,6 @@ namespace CERVERICA.Migrations
                     b.Navigation("LoteInsumo");
 
                     b.Navigation("Produccion");
-                });
-
-            modelBuilder.Entity("CERVERICA.Models.ProductoCarrito", b =>
-                {
-                    b.HasOne("CERVERICA.Models.Receta", "Receta")
-                        .WithMany()
-                        .HasForeignKey("IdReceta")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("CERVERICA.Models.ApplicationUser", "Usuario")
-                        .WithMany()
-                        .HasForeignKey("IdUsuario")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Receta");
-
-                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("CERVERICA.Models.Stock", b =>

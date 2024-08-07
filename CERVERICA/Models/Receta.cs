@@ -13,7 +13,12 @@ namespace CERVERICA.Models
         public float LitrosEstimados { get; set; }
 
         public float? PrecioLitro { get; set; }
+        public float? PrecioPaquete1 { get; set; }
+        public float? PrecioPaquete6 { get; set; }
+        public float? PrecioPaquete12 { get; set; }
+        public float? PrecioPaquete24 { get; set; }
 
+        public string Especificaciones { get; set; }
         public string Descripcion { get; set; }
 
         [Required]
@@ -25,9 +30,12 @@ namespace CERVERICA.Models
 
         [Required]
         public string Imagen { get; set; }
+        public string RutaFondo { get; set; }
 
         [Required]
         public bool Activo { get; set; }
+        [Column(TypeName = "Date")]
+        public DateTime FechaRegistrado { get; set; }
 
         public ICollection<IngredienteReceta> IngredientesReceta { get; set; }
         public ICollection<Produccion> Producciones { get; set; }
