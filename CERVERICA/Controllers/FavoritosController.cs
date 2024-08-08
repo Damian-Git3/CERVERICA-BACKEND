@@ -45,8 +45,6 @@ namespace CERVERICA.Controllers
             return Ok(new { message = "Favorito eliminado exitosamente." });
         }
 
-
-
         [HttpGet("obtener-favoritos/{idUsuario}")]
         public async Task<ActionResult<FavoritoUsuario>> obtenerFavoritos(string idUsuario)
         {
