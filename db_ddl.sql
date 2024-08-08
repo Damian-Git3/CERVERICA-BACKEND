@@ -321,3 +321,6 @@ CREATE TABLE cerverica.logs (
     ON UPDATE NO ACTION
 );
 GO
+
+
+#TEST
