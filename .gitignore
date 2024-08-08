@@ -487,3 +487,5 @@ $RECYCLE.BIN/
 CERVERICA/appsettings.json
 CERVERICA/appsettings.Development.json
 CERVERICA/Migrations/.
+
+*.vs/.
