@@ -66,7 +66,11 @@ namespace CERVERICA.Controllers
 
                     if (!result.Succeeded)
                     {
-                        return BadRequest(result.Errors);
+                        return BadRequest(new
+                        {
+                            IsSuccess = false,
+                            Message = "Faltan datos del registro."
+                        });
                     }
 
                     IdentityResult roleResult;
@@ -83,7 +87,11 @@ namespace CERVERICA.Controllers
                     {
                         // Rollback user creation
                         await _userManager.DeleteAsync(user);
-                        return BadRequest(roleResult.Errors);
+                        return BadRequest(new
+                        {
+                            IsSuccess = false,
+                            Message = "El registro no se pudo realizar."
+                        });
                     }
 
                     transaction.Complete();

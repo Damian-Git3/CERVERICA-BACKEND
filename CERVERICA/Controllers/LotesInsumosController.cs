@@ -451,6 +451,22 @@ namespace CERVERICA.Controllers
                 {
                     receta.PrecioLitro = nuevoCostoLitro;
                 }
+                if (nuevoCostoLitro > receta.PrecioPaquete1)
+                {
+                    receta.PrecioPaquete1 = nuevoCostoLitro;
+                }
+                if (nuevoCostoLitro * 6 > receta.PrecioPaquete6)
+                {
+                    receta.PrecioPaquete6 = nuevoCostoLitro * 6;
+                }
+                if (nuevoCostoLitro * 12 > receta.PrecioPaquete12)
+                {
+                    receta.PrecioPaquete12 = nuevoCostoLitro * 12;
+                }
+                if (nuevoCostoLitro * 24 > receta.PrecioPaquete24)
+                {
+                    receta.PrecioPaquete24 = nuevoCostoLitro * 24;
+                }
                 receta.CostoProduccion = costoTotal;
 
                 _context.Entry(receta).State = EntityState.Modified;

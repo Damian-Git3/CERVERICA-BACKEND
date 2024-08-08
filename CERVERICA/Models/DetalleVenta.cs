@@ -19,5 +19,7 @@ namespace CERVERICA.Models
         public float MontoVenta { get; set; }
 
         public int? Cantidad { get; set; }
+
+        public int? Pack { get; set; }
     }
 }
