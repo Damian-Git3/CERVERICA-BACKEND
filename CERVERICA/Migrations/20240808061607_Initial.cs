@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CERVERICA.Migrations
 {
     /// <inheritdoc />
-    public partial class _1 : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -100,11 +100,18 @@ namespace CERVERICA.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     LitrosEstimados = table.Column<float>(type: "real", nullable: false),
                     PrecioLitro = table.Column<float>(type: "real", nullable: true),
+                    PrecioPaquete1 = table.Column<float>(type: "real", nullable: true),
+                    PrecioPaquete6 = table.Column<float>(type: "real", nullable: true),
+                    PrecioPaquete12 = table.Column<float>(type: "real", nullable: true),
+                    PrecioPaquete24 = table.Column<float>(type: "real", nullable: true),
+                    Especificaciones = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Descripcion = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Nombre = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     CostoProduccion = table.Column<float>(type: "real", nullable: false),
                     Imagen = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Activo = table.Column<bool>(type: "bit", nullable: false)
+                    RutaFondo = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Activo = table.Column<bool>(type: "bit", nullable: false),
+                    FechaRegistrado = table.Column<DateTime>(type: "Date", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -317,6 +324,32 @@ namespace CERVERICA.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "FavoritosUsuarios",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    IdUsuario = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    IdReceta = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FavoritosUsuarios", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FavoritosUsuarios_AspNetUsers_IdUsuario",
+                        column: x => x.IdUsuario,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_FavoritosUsuarios_Recetas_IdReceta",
+                        column: x => x.IdReceta,
+                        principalTable: "Recetas",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "IngredientesReceta",
                 columns: table => new
                 {
@@ -371,13 +404,14 @@ namespace CERVERICA.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     FechaProduccion = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    FechaProximoPaso = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Mensaje = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Estatus = table.Column<byte>(type: "tinyint", nullable: false),
                     NumeroTandas = table.Column<int>(type: "int", nullable: false),
                     LitrosFinales = table.Column<float>(type: "real", nullable: true),
                     CostoProduccion = table.Column<float>(type: "real", nullable: true),
                     IdReceta = table.Column<int>(type: "int", nullable: false),
-                    FechaSolicitud = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    FechaSolicitud = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IdUsuarioSolicitud = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UsuarioSolicitudId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     IdUsuarioProduccion = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -407,6 +441,34 @@ namespace CERVERICA.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ProductosCarrito",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    IdUsuario = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    IdReceta = table.Column<int>(type: "int", nullable: false),
+                    CantidadLote = table.Column<int>(type: "int", nullable: false),
+                    Cantidad = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductosCarrito", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ProductosCarrito_AspNetUsers_IdUsuario",
+                        column: x => x.IdUsuario,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ProductosCarrito_Recetas_IdReceta",
+                        column: x => x.IdReceta,
+                        principalTable: "Recetas",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ProduccionLoteInsumos",
                 columns: table => new
                 {
@@ -414,8 +476,7 @@ namespace CERVERICA.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     IdProduccion = table.Column<int>(type: "int", nullable: false),
                     IdLoteInsumo = table.Column<int>(type: "int", nullable: false),
-                    Cantidad = table.Column<float>(type: "real", nullable: false),
-                    RecetaId = table.Column<int>(type: "int", nullable: true)
+                    Cantidad = table.Column<float>(type: "real", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -432,11 +493,6 @@ namespace CERVERICA.Migrations
                         principalTable: "Producciones",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ProduccionLoteInsumos_Recetas_RecetaId",
-                        column: x => x.RecetaId,
-                        principalTable: "Recetas",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -548,6 +604,16 @@ namespace CERVERICA.Migrations
                 column: "IdStock");
 
             migrationBuilder.CreateIndex(
+                name: "IX_FavoritosUsuarios_IdReceta",
+                table: "FavoritosUsuarios",
+                column: "IdReceta");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FavoritosUsuarios_IdUsuario",
+                table: "FavoritosUsuarios",
+                column: "IdUsuario");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_IngredientesReceta_IdInsumo",
                 table: "IngredientesReceta",
                 column: "IdInsumo");
@@ -603,9 +669,14 @@ namespace CERVERICA.Migrations
                 column: "IdProduccion");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ProduccionLoteInsumos_RecetaId",
-                table: "ProduccionLoteInsumos",
-                column: "RecetaId");
+                name: "IX_ProductosCarrito_IdReceta",
+                table: "ProductosCarrito",
+                column: "IdReceta");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductosCarrito_IdUsuario",
+                table: "ProductosCarrito",
+                column: "IdUsuario");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Stocks_IdProduccion",
@@ -650,6 +721,9 @@ namespace CERVERICA.Migrations
                 name: "DetallesVenta");
 
             migrationBuilder.DropTable(
+                name: "FavoritosUsuarios");
+
+            migrationBuilder.DropTable(
                 name: "IngredientesReceta");
 
             migrationBuilder.DropTable(
@@ -663,6 +737,9 @@ namespace CERVERICA.Migrations
 
             migrationBuilder.DropTable(
                 name: "ProduccionLoteInsumos");
+
+            migrationBuilder.DropTable(
+                name: "ProductosCarrito");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

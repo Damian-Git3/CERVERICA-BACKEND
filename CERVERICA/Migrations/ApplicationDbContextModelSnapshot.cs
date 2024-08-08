@@ -119,7 +119,7 @@ namespace CERVERICA.Migrations
 
                     b.HasIndex("IdStock");
 
-                    b.ToTable("DetallesVenta", (string)null);
+                    b.ToTable("DetallesVenta");
                 });
 
             modelBuilder.Entity("CERVERICA.Models.FavoritoUsuario", b =>
@@ -143,7 +143,7 @@ namespace CERVERICA.Migrations
 
                     b.HasIndex("IdUsuario");
 
-                    b.ToTable("FavoritosUsuarios", (string)null);
+                    b.ToTable("FavoritosUsuarios");
                 });
 
             modelBuilder.Entity("CERVERICA.Models.IngredienteReceta", b =>
@@ -163,7 +163,7 @@ namespace CERVERICA.Migrations
 
                     b.HasIndex("IdInsumo");
 
-                    b.ToTable("IngredientesReceta", (string)null);
+                    b.ToTable("IngredientesReceta");
                 });
 
             modelBuilder.Entity("CERVERICA.Models.Insumo", b =>
@@ -205,7 +205,7 @@ namespace CERVERICA.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Insumos", (string)null);
+                    b.ToTable("Insumos");
                 });
 
             modelBuilder.Entity("CERVERICA.Models.Log", b =>
@@ -235,7 +235,7 @@ namespace CERVERICA.Migrations
 
                     b.HasIndex("UsuarioId");
 
-                    b.ToTable("Logs", (string)null);
+                    b.ToTable("Logs");
                 });
 
             modelBuilder.Entity("CERVERICA.Models.LogLogin", b =>
@@ -263,7 +263,7 @@ namespace CERVERICA.Migrations
 
                     b.HasIndex("UsuarioId");
 
-                    b.ToTable("LogsLogin", (string)null);
+                    b.ToTable("LogsLogin");
                 });
 
             modelBuilder.Entity("CERVERICA.Models.LoteInsumo", b =>
@@ -312,7 +312,7 @@ namespace CERVERICA.Migrations
 
                     b.HasIndex("IdProveedor");
 
-                    b.ToTable("LotesInsumos", (string)null);
+                    b.ToTable("LotesInsumos");
                 });
 
             modelBuilder.Entity("CERVERICA.Models.PasosReceta", b =>
@@ -344,7 +344,7 @@ namespace CERVERICA.Migrations
 
                     b.HasIndex("RecetaId");
 
-                    b.ToTable("PasosRecetas", (string)null);
+                    b.ToTable("PasosRecetas");
                 });
 
             modelBuilder.Entity("CERVERICA.Models.Produccion", b =>
@@ -411,7 +411,7 @@ namespace CERVERICA.Migrations
 
                     b.HasIndex("UsuarioSolicitudId");
 
-                    b.ToTable("Producciones", (string)null);
+                    b.ToTable("Producciones");
                 });
 
             modelBuilder.Entity("CERVERICA.Models.ProduccionLoteInsumo", b =>
@@ -437,7 +437,7 @@ namespace CERVERICA.Migrations
 
                     b.HasIndex("IdProduccion");
 
-                    b.ToTable("ProduccionLoteInsumos", (string)null);
+                    b.ToTable("ProduccionLoteInsumos");
                 });
 
             modelBuilder.Entity("CERVERICA.Models.ProductoCarrito", b =>
@@ -467,7 +467,7 @@ namespace CERVERICA.Migrations
 
                     b.HasIndex("IdUsuario");
 
-                    b.ToTable("ProductosCarrito", (string)null);
+                    b.ToTable("ProductosCarrito");
                 });
 
             modelBuilder.Entity("CERVERICA.Models.Proveedor", b =>
@@ -507,7 +507,7 @@ namespace CERVERICA.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Proveedores", (string)null);
+                    b.ToTable("Proveedores");
                 });
 
             modelBuilder.Entity("CERVERICA.Models.Receta", b =>
@@ -568,7 +568,7 @@ namespace CERVERICA.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Recetas", (string)null);
+                    b.ToTable("Recetas");
                 });
 
             modelBuilder.Entity("CERVERICA.Models.Stock", b =>
@@ -616,7 +616,7 @@ namespace CERVERICA.Migrations
 
                     b.HasIndex("UsuarioId");
 
-                    b.ToTable("Stocks", (string)null);
+                    b.ToTable("Stocks");
                 });
 
             modelBuilder.Entity("CERVERICA.Models.Venta", b =>
@@ -648,7 +648,7 @@ namespace CERVERICA.Migrations
 
                     b.HasIndex("UsuarioId");
 
-                    b.ToTable("Ventas", (string)null);
+                    b.ToTable("Ventas");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

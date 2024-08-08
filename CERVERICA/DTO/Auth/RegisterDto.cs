@@ -13,6 +13,6 @@ namespace CERVERICA.Dtos
 
         public string Password { get; set; } = string.Empty;
 
-        public List<string>? Roles { get; set; }
+        public string? Role { get; set; }
     }
 }

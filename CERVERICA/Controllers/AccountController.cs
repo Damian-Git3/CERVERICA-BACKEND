@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using RestSharp;
 using System.Diagnostics;
+using System.Transactions;
 
 namespace CERVERICA.Controllers
 {
@@ -39,52 +40,72 @@ namespace CERVERICA.Controllers
 
         }
 
-        // api/account/register
-
         [AllowAnonymous]
         [HttpPost("register")]
         public async Task<ActionResult<string>> Register(RegisterDto registerDto)
         {
-            if (!ModelState.IsValid)
+            //mostrar un ejemplo de un try catch
+            try
             {
-                return BadRequest(ModelState);
-            }
-
-            var user = new ApplicationUser
-            {
-                Email = registerDto.Email,
-                FullName = registerDto.FullName,
-                UserName = registerDto.Email,
-                Activo = true
-            };
-
-            var result = await _userManager.CreateAsync(user, registerDto.Password);
-
-            if (!result.Succeeded)
-            {
-                return BadRequest(result.Errors);
-            }
-
-            if (registerDto.Roles is null)
-            {
-                await _userManager.AddToRoleAsync(user, "User");
-            }
-            else
-            {
-                foreach (var role in registerDto.Roles)
+                if (!ModelState.IsValid)
                 {
-                    await _userManager.AddToRoleAsync(user, role);
+                    return BadRequest(ModelState);
                 }
+
+                var user = new ApplicationUser
+                {
+                    Email = registerDto.Email,
+                    FullName = registerDto.FullName,
+                    UserName = registerDto.Email,
+                    Activo = true
+                };
+
+                using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    var result = await _userManager.CreateAsync(user, registerDto.Password);
+
+                    if (!result.Succeeded)
+                    {
+                        return BadRequest(result.Errors);
+                    }
+
+                    IdentityResult roleResult;
+                    if (registerDto.Role is null)
+                    {
+                        roleResult = await _userManager.AddToRoleAsync(user, "Cliente");
+                    }
+                    else
+                    {
+                        roleResult = await _userManager.AddToRoleAsync(user, registerDto.Role);
+                    }
+
+                    if (!roleResult.Succeeded)
+                    {
+                        // Rollback user creation
+                        await _userManager.DeleteAsync(user);
+                        return BadRequest(roleResult.Errors);
+                    }
+
+                    transaction.Complete();
+                }
+
+                return Ok(new 
+                {
+                    IsSuccess = true,
+                    Message = "Cuenta creada"
+                });
             }
-
-
-            return Ok(new AuthResponseDto
+            catch (Exception ex)
             {
-                IsSuccess = true,
-                Message = "Account Created Sucessfully!"
-            });
+                return BadRequest(new 
+                {
+                    IsSuccess = false,
+                    Message = "El registro no se pudo realizar."
+                });
+            }
 
         }
+
 
         //api
         //api/account/login
@@ -133,7 +154,10 @@ namespace CERVERICA.Controllers
                 Token = token,
                 IsSuccess = true,
                 Message = "Login Success.",
-                RefreshToken = refreshToken
+                RefreshToken = refreshToken,
+                IdUsuario = user.Id,
+                Nombre = user.FullName,
+                Rol = (await _userManager.GetRolesAsync(user)).FirstOrDefault()
 
             });
         }

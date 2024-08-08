@@ -484,5 +484,6 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 
-appsettings.json
-appsettings.Development.json
+CERVERICA/appsettings.json
+CERVERICA/appsettings.Development.json
+CERVERICA/Migrations/.
