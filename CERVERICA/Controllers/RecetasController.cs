@@ -363,6 +363,24 @@ namespace CERVERICA.Controllers
                 {
                     receta.PrecioLitro = nuevoCostoLitro;
                 }
+                if (nuevoCostoLitro > receta.PrecioPaquete1)
+                {
+                    receta.PrecioPaquete1 = nuevoCostoLitro;
+                }
+                if (nuevoCostoLitro*6 > receta.PrecioPaquete6)
+                {
+                    receta.PrecioPaquete6 = nuevoCostoLitro*6;
+                }
+                if (nuevoCostoLitro*12 > receta.PrecioPaquete12)
+                {
+                    receta.PrecioPaquete12 = nuevoCostoLitro*12;
+                }
+                if (nuevoCostoLitro*24 > receta.PrecioPaquete24)
+                {
+                    receta.PrecioPaquete24 = nuevoCostoLitro*24;
+                }
+
+
                 receta.CostoProduccion = costoTotal;
 
                 _context.Entry(receta).State = EntityState.Modified;
@@ -407,6 +425,98 @@ namespace CERVERICA.Controllers
             }).ToListAsync();
 
             return Ok(productos);
+        }
+
+        [HttpPut("{id}/ActualizarPrecios")]
+        public async Task<IActionResult> ActualizarPrecios(int id, [FromBody] UpdateRecetaPrecioDto dto)
+        {
+            var receta = await _context.Recetas.FindAsync(id);
+
+            if (receta == null)
+            {
+                return NotFound($"No se encontró la receta con ID {id}");
+            }
+
+            // Validar los precios ingresados
+            if ((dto.PrecioLitro.HasValue && dto.PrecioLitro.Value < receta.CostoProduccion/receta.LitrosEstimados) ||
+                (dto.PrecioPaquete1.HasValue && dto.PrecioPaquete1.Value < receta.CostoProduccion / receta.LitrosEstimados) ||
+                (dto.PrecioPaquete6.HasValue && dto.PrecioPaquete6.Value < 6 * receta.CostoProduccion / receta.LitrosEstimados) ||
+                (dto.PrecioPaquete12.HasValue && dto.PrecioPaquete12.Value < 12 * receta.CostoProduccion / receta.LitrosEstimados) ||
+                (dto.PrecioPaquete24.HasValue && dto.PrecioPaquete24.Value < 24 * receta.CostoProduccion / receta.LitrosEstimados))
+            {
+                return BadRequest("Uno o más precios son menores al costo de producción correspondiente.");
+            }
+
+            // Actualizar los precios si se proporcionaron
+            if (dto.PrecioLitro.HasValue)
+            {
+                receta.PrecioLitro = dto.PrecioLitro.Value;
+            }
+            if (dto.PrecioPaquete1.HasValue)
+            {
+                receta.PrecioPaquete1 = dto.PrecioPaquete1.Value;
+            }
+            if (dto.PrecioPaquete6.HasValue)
+            {
+                receta.PrecioPaquete6 = dto.PrecioPaquete6.Value;
+            }
+            if (dto.PrecioPaquete12.HasValue)
+            {
+                receta.PrecioPaquete12 = dto.PrecioPaquete12.Value;
+            }
+            if (dto.PrecioPaquete24.HasValue)
+            {
+                receta.PrecioPaquete24 = dto.PrecioPaquete24.Value;
+            }
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_context.Recetas.Any(r => r.Id == id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+        [HttpGet("{id}/ConStock")]
+        public async Task<ActionResult<RecetaConStockDto>> GetRecetaConStock(int id)
+        {
+            var receta = await _context.Recetas
+                .Where(r => r.Id == id)
+                .Select(r => new RecetaConStockDto
+                {
+                    Id = r.Id,
+                    Nombre = r.Nombre,
+                    Descripcion = r.Descripcion,
+                    LitrosEstimados = r.LitrosEstimados,
+                    PrecioLitro = r.PrecioLitro,
+                    PrecioPaquete1 = r.PrecioPaquete1,
+                    PrecioPaquete6 = r.PrecioPaquete6,
+                    PrecioPaquete12 = r.PrecioPaquete12,
+                    PrecioPaquete24 = r.PrecioPaquete24,
+                    CostoProduccion = r.CostoProduccion,
+                    CantidadEnStock = _context.Stocks
+                        .Where(s => s.IdReceta == r.Id)
+                        .Sum(s => s.Cantidad)
+                })
+                .FirstOrDefaultAsync();
+
+            if (receta == null)
+            {
+                return NotFound($"No se encontró la receta con ID {id}");
+            }
+
+            return Ok(receta);
         }
     }
 }
