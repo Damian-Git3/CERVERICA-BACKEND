@@ -86,6 +86,7 @@ namespace CERVERICA.Controllers
 
         }
 
+        //api
         //api/account/login
         [AllowAnonymous]
         [HttpPost("login")]

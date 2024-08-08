@@ -6,10 +6,11 @@ using Microsoft.EntityFrameworkCore;
 using CERVERICA.Models;
 using CERVERICA.Data;
 using CERVERICA.Dtos;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CERVERICA.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class RecetaController : ControllerBase
@@ -367,6 +368,45 @@ namespace CERVERICA.Controllers
                 _context.Entry(receta).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
             }
+        }
+
+        [AllowAnonymous]
+        [HttpGet("obtener-recetas-carousel")] // api/Usuario/1
+        public async Task<IActionResult> getRecetasCarousel()
+        {
+            var productosCarousel = await _context.Recetas
+                .Select(receta => new
+                {
+                    id = receta.Id,
+                    nombre = receta.Nombre,
+                    especificaciones = receta.Especificaciones,
+                    imagen = receta.Imagen,
+                    rutaFondo = receta.RutaFondo,
+                })
+                .ToListAsync();
+
+            return Ok(productosCarousel);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("obtener-recetas-landing")] // api/Usuario/1
+        public async Task<IActionResult> getRecetasLanding()
+        {
+            var productos = await _context.Recetas.Select(receta => new
+            {
+                id = receta.Id,
+                nombre = receta.Nombre,
+                especificaciones = receta.Especificaciones,
+                precioPaquete1 = receta.PrecioPaquete1,
+                precioPaquete6 = receta.PrecioPaquete6,
+                precioPaquete12 = receta.PrecioPaquete12,
+                precioPaquete24 = receta.PrecioPaquete24,
+                fechaRegistrado = receta.FechaRegistrado,
+                imagen = receta.Imagen,
+                rutaFondo = receta.RutaFondo
+            }).ToListAsync();
+
+            return Ok(productos);
         }
     }
 }

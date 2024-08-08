@@ -22,7 +22,8 @@ namespace CERVERICA.Data
         public DbSet<Log> Logs { get; set; }
         public DbSet<PasosReceta> PasosRecetas { get; set; }
         public DbSet<ProduccionLoteInsumo> ProduccionLoteInsumos { get; set; }
-
+        public DbSet<FavoritoUsuario> FavoritosUsuarios { get; set; }
+        public DbSet<ProductoCarrito> ProductosCarrito { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Definición de tablas intermedias de muchos a muchos
