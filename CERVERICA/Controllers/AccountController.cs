@@ -145,7 +145,7 @@ namespace CERVERICA.Controllers
             var token = GenerateToken(user);
             var refreshToken = GenerateRefreshToken();
             _ = int.TryParse(_configuration.GetSection("JWTSetting").GetSection("RefreshTokenValidityIn").Value!, out int RefreshTokenValidityIn);
-            user.RefreshToken = refreshToken;
+            user.RefreshToken = refreshToken;                                                                               
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddMinutes(RefreshTokenValidityIn);
             await _userManager.UpdateAsync(user);
 
@@ -173,7 +173,7 @@ namespace CERVERICA.Controllers
                 return NotFound(new AuthResponseDto
                 {
                     IsSuccess = false,
-                    Message = "Usuario no encontrado"
+                    Message = "Usuario no encontrado"                               
                 });
             }
 
