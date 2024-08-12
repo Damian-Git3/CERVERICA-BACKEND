@@ -76,7 +76,7 @@ namespace CERVERICA.Controllers
 
             await _db.SaveChangesAsync();
 
-            return Ok(new { message = "Favorito eliminado exitosamente." });
+            return Ok(new { message = "Favorito eliminado exitosamente" });
         }
 
         [HttpGet("obtener-favoritos")]

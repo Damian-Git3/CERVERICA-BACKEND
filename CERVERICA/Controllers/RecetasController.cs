@@ -421,7 +421,11 @@ namespace CERVERICA.Controllers
                 precioPaquete24 = receta.PrecioPaquete24,
                 fechaRegistrado = receta.FechaRegistrado,
                 imagen = receta.Imagen,
-                rutaFondo = receta.RutaFondo
+                rutaFondo = receta.RutaFondo,
+                cantidadEnStock = 200
+                /* cantidadEnStock = _context.Stocks
+                         .Where(stock => stock.IdReceta == receta.Id)
+                         .Sum(stock => stock.Cantidad)*/
             }).ToListAsync();
 
             return Ok(productos);

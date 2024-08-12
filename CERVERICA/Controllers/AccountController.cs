@@ -17,13 +17,13 @@ using System.Transactions;
 
 namespace CERVERICA.Controllers
 {
-    
+
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class AccountController : ControllerBase
     {
-        
+
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IConfiguration _configuration;
@@ -44,7 +44,6 @@ namespace CERVERICA.Controllers
         [HttpPost("register")]
         public async Task<ActionResult<string>> Register(RegisterDto registerDto)
         {
-            //mostrar un ejemplo de un try catch
             try
             {
                 if (!ModelState.IsValid)
@@ -66,10 +65,12 @@ namespace CERVERICA.Controllers
 
                     if (!result.Succeeded)
                     {
+                        var errors = result.Errors.Select(e => e.Description).ToList();
                         return BadRequest(new
                         {
                             IsSuccess = false,
-                            Message = "Faltan datos del registro."
+                            Message = "Faltan datos del registro.",
+                            Errors = errors
                         });
                     }
 
@@ -97,7 +98,7 @@ namespace CERVERICA.Controllers
                     transaction.Complete();
                 }
 
-                return Ok(new 
+                return Ok(new
                 {
                     IsSuccess = true,
                     Message = "Cuenta creada"
@@ -105,7 +106,7 @@ namespace CERVERICA.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new 
+                return BadRequest(new
                 {
                     IsSuccess = false,
                     Message = "El registro no se pudo realizar."
@@ -153,7 +154,7 @@ namespace CERVERICA.Controllers
             var token = GenerateToken(user);
             var refreshToken = GenerateRefreshToken();
             _ = int.TryParse(_configuration.GetSection("JWTSetting").GetSection("RefreshTokenValidityIn").Value!, out int RefreshTokenValidityIn);
-            user.RefreshToken = refreshToken;                                                                               
+            user.RefreshToken = refreshToken;
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddMinutes(RefreshTokenValidityIn);
             await _userManager.UpdateAsync(user);
 
@@ -181,7 +182,7 @@ namespace CERVERICA.Controllers
                 return NotFound(new AuthResponseDto
                 {
                     IsSuccess = false,
-                    Message = "Usuario no encontrado"                               
+                    Message = "Usuario no encontrado"
                 });
             }
 
@@ -472,7 +473,7 @@ namespace CERVERICA.Controllers
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.UtcNow.AddMinutes(tokenExpirationTime),
+                Expires = DateTime.UtcNow.AddMinutes(tokenExpirationTime),
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(key),
                     SecurityAlgorithms.HmacSha256

@@ -6,6 +6,5 @@
         public string IdUsuario { get; set; }
         public DateTime FechaVenta { get; set; }
         public float Total { get; set; }
-        public int TipoVenta { get; set; }
     }
 }
