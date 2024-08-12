@@ -1,4 +1,5 @@
 ﻿using CERVERICA.Data;
+using CERVERICA.Dtos;
 using CERVERICA.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -46,11 +47,21 @@ namespace CERVERICA.Controllers
         }
 
         [HttpGet("obtener-favoritos/{idUsuario}")]
-        public async Task<ActionResult<FavoritoUsuario>> obtenerFavoritos(string idUsuario)
+        public async Task<ActionResult<FavoritoDto>> obtenerFavoritos(string idUsuario)
         {
             var favoritos = await _db.FavoritosUsuarios
             .Where(f => f.IdUsuario == idUsuario)
-            .ToListAsync();
+            .Include(f => f.Receta).Select(f => new FavoritoDto
+            {
+                Id = f.Id,
+                IdReceta = f.IdReceta,
+                IdUsuario = f.IdUsuario,
+                Nombre = f.Receta.Nombre,
+                Descripcion = f.Receta.Descripcion,
+                Imagen = f.Receta.Imagen,
+                RutaFondo = f.Receta.RutaFondo,
+                Especificaciones = f.Receta.Especificaciones
+            }).ToListAsync();
 
             return Ok(favoritos);
         }

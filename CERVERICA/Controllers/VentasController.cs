@@ -1,4 +1,5 @@
 ﻿using CERVERICA.Data;
+using CERVERICA.DTO.Ventas;
 using CERVERICA.Dtos;
 using CERVERICA.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -18,31 +19,16 @@ namespace CERVERICA.Controllers
             _context = context;
         }
 
-        [HttpGet("stocks")]
-        public async Task<IActionResult> GetStocks()
+        [HttpGet("cliente/{id}")]
+        public async Task<List<VentasClienteDto>> GetVentasCliente(string id)
         {
-            var stocks = await _context.Stocks.Where(p => p.Cantidad > 0).Include(s => s.Receta).ToListAsync();
-
-            //var groupedStocks = stocks.GroupBy(s => s.Receta)
-            //    .Select(gr => new
-            //    {
-            //        RecetaId = gr.Key.Id,
-            //        Nombre = gr.Key.Nombre,
-            //        Imagen = gr.Key.Imagen,
-            //        PrecioLitro = gr.Key.PrecioLitro,
-            //        Activo = gr.Key.Activo,
-            //        StocksPorEnvase = gr.GroupBy(s => new { s.TipoEnvase, s.MedidaEnvase })
-            //                            .Select(g => new
-            //                            {
-            //                                TipoEnvase = g.Key.TipoEnvase,
-            //                                MedidaEnvase = g.Key.MedidaEnvase,
-            //                                CantidadTotal = g.Sum(s => s.Cantidad),
-            //                                PrecioPorEnvase = g.Key.MedidaEnvase * (gr.Key.PrecioLitro / 1000)
-            //                            })
-            //    })
-            //    .ToList();
-
-            return Ok();
+             return await _context.Ventas.Where(p => p.IdUsuario == id).Select(
+                 p => new VentasClienteDto
+                 {
+                     FechaVenta = p.FechaVenta,
+                     Total = p.Total,
+                     TipoVenta = p.TipoVenta
+                 }).ToListAsync();
         }
 
 
@@ -50,9 +36,10 @@ namespace CERVERICA.Controllers
         public async Task<IActionResult> CrearVenta([FromBody] CrearVentaDto dto)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
-
+            
             try
             {
+                //Insertamos primero una venta vacia para obtener el id de la venta
                 var venta = new Venta
                 {
                     IdUsuario = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "a0a0aaa0-0000-0aa0-0000-00aaa0aa0a00",
@@ -67,12 +54,18 @@ namespace CERVERICA.Controllers
                 float totalVenta = 0;
                 var detallesVentas = new List<DetalleVenta>();
 
-                foreach (var detalle in dto.Detalles.GroupBy(d => d.IdReceta))
+                //calculamos de que stock se van a restar los productos
+                //solo se puede descontar de un stock que tenga el mismo tipo de envase y de medida de envase
+
+                //considerar que el stock de una receta contiene productos de diferentes tamañanos y tipo de envase y la cantidad del stock 
+                //no es una cantidad en litros sino del total de botellas que se tienen en stock
+
+                foreach (var detalle in dto.Detalles)
                 {
-                    var recetaId = detalle.Key;
-                    var cantidadTotalRequerida = detalle.Sum(d => (d.Pack*0.355) * d.Cantidad);
+                    var recetaId = detalle.IdReceta;
+                    var cantidadTotalRequerida = detalle.Pack * detalle.Cantidad;
                     var stocks = await _context.Stocks
-                        .Where(s => s.IdReceta == recetaId && s.Cantidad > 0)
+                        .Where(s => s.IdReceta == recetaId && s.Cantidad >= detalle.Pack && s.MedidaEnvase == detalle.MedidaEnvase && s.TipoEnvase == detalle.TipoEnvase)
                         .OrderBy(s => s.FechaEntrada)
                         .ToListAsync();
 
@@ -80,27 +73,25 @@ namespace CERVERICA.Controllers
                     if (cantidadTotalDisponible < cantidadTotalRequerida)
                     {
                         var nombreReceta = await _context.Recetas.Where(r => r.Id == recetaId).Select(r => r.Nombre).FirstOrDefaultAsync();
-                        return BadRequest(new { message = $"No hay suficiente stock para {nombreReceta}. Litros Requeridos: {cantidadTotalRequerida:f2}, Disponibles: {cantidadTotalDisponible}"});
+                        return BadRequest(new { message = $"No hay suficiente stock para {nombreReceta}. Cervezas Requeridas: {cantidadTotalRequerida:f2}, Disponibles: {cantidadTotalDisponible}"});
                     }
 
-                    foreach (var detalleItem in detalle)
-                    {
-                        while (detalleItem.Cantidad > 0)
+                        while (detalle.Cantidad > 0)
                         {
-                            var stock = stocks.FirstOrDefault(s => s.Cantidad >= (detalleItem.Pack * 0.355));
+                            var stock = stocks.FirstOrDefault();
                             if (stock == null)
                             {
                                 var nombreReceta = await _context.Recetas.Where(r => r.Id == recetaId).Select(r => r.Nombre).FirstOrDefaultAsync();
                                 return BadRequest(new { message = $"No hay suficiente stock de la cerveza {nombreReceta}" });
                             }
 
-                            var reduccionMaximaPacks = (int)(stock.Cantidad / (detalleItem.Pack * 0.355));
+                            var reduccionMaximaPacks = (int)(stock.Cantidad / detalle.Pack);
 
-                            var cantidadADescontar = Math.Min(reduccionMaximaPacks, (detalleItem.Cantidad));
-                            stock.Cantidad -= cantidadADescontar;
-                            detalleItem.Cantidad -= cantidadADescontar;
+                            var cantidadADescontar = Math.Min(reduccionMaximaPacks, (detalle.Cantidad));
+                            stock.Cantidad -= cantidadADescontar*detalle.Pack;
+                            detalle.Cantidad -= cantidadADescontar;
 
-                            float montoVenta = detalleItem.Pack switch
+                            float montoVenta = detalle.Pack switch
                             {
                                 1 => stock.Receta.PrecioPaquete1 ?? 0,
                                 6 => stock.Receta.PrecioPaquete6 ?? 0,
@@ -111,7 +102,7 @@ namespace CERVERICA.Controllers
 
                             if (montoVenta == 0)
                             {
-                                return BadRequest(new {message = $"Pack de {detalleItem.Pack} de {stock.Receta.Nombre} no se encuentra disponible para la venta."});
+                                return BadRequest(new {message = $"Pack de {detalle.Pack} de {stock.Receta.Nombre} no se encuentra disponible para la venta."});
                             }
 
                             var detalleVenta = new DetalleVenta
@@ -120,14 +111,14 @@ namespace CERVERICA.Controllers
                                 IdStock = stock.Id,
                                 MontoVenta = montoVenta * cantidadADescontar,
                                 Cantidad = cantidadADescontar,
-                                Pack = detalleItem.Pack
+                                Pack = detalle.Pack
                             };
 
                             totalVenta += detalleVenta.MontoVenta;
                             detallesVentas.Add(detalleVenta);
                         }
                     }
-                }
+                
 
                 venta.Total = totalVenta;
                 _context.Ventas.Update(venta);

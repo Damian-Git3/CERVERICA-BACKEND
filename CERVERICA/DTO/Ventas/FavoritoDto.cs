@@ -1,15 +1,17 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CERVERICA.Dtos
 {
-    public class RecetasDto
+    public class FavoritoDto
     {
         public int Id { get; set; }
-        [Required]
-        public float LitrosEstimados { get; set; }
 
-        public float? PrecioLitro { get; set; }
+        public string IdUsuario { get; set; }
 
+        public int IdReceta { get; set; }
+
+        public string Especificaciones { get; set; }
         public string Descripcion { get; set; }
 
         [Required]
@@ -17,16 +19,7 @@ namespace CERVERICA.Dtos
         public string Nombre { get; set; }
 
         [Required]
-        public float CostoProduccion { get; set; }
-
-        [Required]
         public string Imagen { get; set; }
-
         public string RutaFondo { get; set; }
-
-        public DateTime FechaRegistrado { get; set; }
-
-        [Required]
-        public bool Activo { get; set; }
     }
 }
