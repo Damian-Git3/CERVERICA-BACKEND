@@ -447,27 +447,6 @@ namespace CERVERICA.Controllers
                 return NotFound($"No se encontró la receta con ID {id}");
             }
 
-            // Validar los precios ingresados
-            if (dto.PrecioLitro.HasValue && dto.PrecioLitro.Value < receta.CostoProduccion/receta.LitrosEstimados)
-            {
-                return BadRequest(new { message = "El precio por litro no cubre su costo de producción." });
-            }
-            if (dto.PrecioPaquete1.HasValue && dto.PrecioPaquete1.Value < receta.CostoProduccion / receta.LitrosEstimados)
-            {
-                return BadRequest(new { message = "El precio por litro del paquete uno costo de producción correspondiente." });
-            }
-            if (dto.PrecioPaquete6.HasValue && dto.PrecioPaquete6.Value < 6 * receta.CostoProduccion / receta.LitrosEstimados)
-            {
-                return BadRequest(new { message = "Uno o más precios son menores al costo de producción correspondiente." });
-            }
-            if (dto.PrecioPaquete12.HasValue && dto.PrecioPaquete12.Value < 12 * receta.CostoProduccion / receta.LitrosEstimados)
-            {
-                return BadRequest(new { message = "Uno o más precios son menores al costo de producción correspondiente." });
-            }
-            if (dto.PrecioPaquete24.HasValue && dto.PrecioPaquete24.Value < 24 * receta.CostoProduccion / receta.LitrosEstimados)
-            {
-                return BadRequest(new {message = "Uno o más precios son menores al costo de producción correspondiente."});
-            }
 
             // Actualizar los precios si se proporcionaron
             if (dto.PrecioLitro.HasValue)

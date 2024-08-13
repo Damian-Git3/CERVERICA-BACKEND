@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "gwns2/cG9cKgEHn/gnBqNwdUdTee7qlLkdt56Mg8OjIPBCgqBk24NHN6NLvucTQNCW4BI+BxMJ2VmFfXQaSNOA==",
+  "dgSpecHash": "mggryRzv0jGTi23RUEaLGZ6Kw+Ng+zjKlRmr3WCqPafMzIhJSq//qpuFur09arTYiaWJjiHAsghwDS21CG0M7w==",
   "success": true,
-  "projectFilePath": "C:\\Users\\Lenovo\\Documents\\ASP.NET\\CERVERICA\\CERVERICA\\CERVERICA.csproj",
+  "projectFilePath": "C:\\Users\\Lenovo\\Documents\\CERVERICA\\BACKEND\\CERVERICA\\CERVERICA.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Lenovo\\.nuget\\packages\\azure.core\\1.35.0\\azure.core.1.35.0.nupkg.sha512",
     "C:\\Users\\Lenovo\\.nuget\\packages\\azure.identity\\1.10.3\\azure.identity.1.10.3.nupkg.sha512",

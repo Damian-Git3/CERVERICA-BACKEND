@@ -4,6 +4,7 @@ using CERVERICA.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 using System.Security.Claims;
 
 namespace CERVERICA.Controllers
@@ -199,8 +200,8 @@ namespace CERVERICA.Controllers
                                 return BadRequest(new {message = $"Pack de {detalle.Pack} de {receta.Nombre} no se encuentra disponible para la venta."});
 
                             }
-
-                            var detalleVenta = new DetalleVenta
+                        
+                        var detalleVenta = new DetalleVenta
                             {
                                 IdVenta = venta.Id,
                                 IdStock = stock.Id,
