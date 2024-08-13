@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
-namespace CERVERICA.DTO.Ventas
+namespace CERVERICA.Dtos
 {
     public class VentasClienteDto
     {
@@ -11,6 +11,10 @@ namespace CERVERICA.DTO.Ventas
 
         public float Total { get; set; }
 
-        public int TipoVenta { get; set; }
+        public MetodoPago MetodoPago { get; set; }
+
+        public MetodoEnvio MetodoEnvio { get; set; }
+        
+        public EstatusVenta EstatusVenta { get; set; }
     }
 }

@@ -1,9 +1,7 @@
-﻿namespace CERVERICA.DTO.FavoritoUsuario
+﻿namespace CERVERICA.Dtos
 {
     public class EliminarFavoritoUsuarioDTO
     {
-        public int Id { get; set; }
-        public string IdUsuario { get; set; }
         public int IdReceta { get; set; }
     }
 }

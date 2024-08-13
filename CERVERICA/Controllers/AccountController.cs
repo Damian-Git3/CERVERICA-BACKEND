@@ -5,25 +5,23 @@ using System.Security.Cryptography;
 using System.Text;
 using CERVERICA.Dtos;
 using CERVERICA.Models;
-using CERVERICA.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using RestSharp;
-using System.Diagnostics;
 using System.Transactions;
 
 namespace CERVERICA.Controllers
 {
-    
+
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class AccountController : ControllerBase
     {
-        
+
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IConfiguration _configuration;
@@ -44,7 +42,6 @@ namespace CERVERICA.Controllers
         [HttpPost("register")]
         public async Task<ActionResult<string>> Register(RegisterDto registerDto)
         {
-            //mostrar un ejemplo de un try catch
             try
             {
                 if (!ModelState.IsValid)
@@ -66,10 +63,12 @@ namespace CERVERICA.Controllers
 
                     if (!result.Succeeded)
                     {
+                        var errors = result.Errors.Select(e => e.Description).ToList();
                         return BadRequest(new
                         {
                             IsSuccess = false,
-                            Message = "Faltan datos del registro."
+                            Message = "Faltan datos del registro.",
+                            Errors = errors
                         });
                     }
 
@@ -97,7 +96,7 @@ namespace CERVERICA.Controllers
                     transaction.Complete();
                 }
 
-                return Ok(new 
+                return Ok(new
                 {
                     IsSuccess = true,
                     Message = "Cuenta creada"
@@ -105,7 +104,7 @@ namespace CERVERICA.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new 
+                return BadRequest(new
                 {
                     IsSuccess = false,
                     Message = "El registro no se pudo realizar."
@@ -472,7 +471,7 @@ namespace CERVERICA.Controllers
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.UtcNow.AddMinutes(tokenExpirationTime),
+                Expires = DateTime.UtcNow.AddMinutes(tokenExpirationTime),
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(key),
                     SecurityAlgorithms.HmacSha256

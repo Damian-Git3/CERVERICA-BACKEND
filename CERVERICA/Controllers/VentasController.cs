@@ -1,7 +1,7 @@
 ﻿using CERVERICA.Data;
-using CERVERICA.DTO.Ventas;
 using CERVERICA.Dtos;
 using CERVERICA.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -13,22 +13,26 @@ namespace CERVERICA.Controllers
     public class VentasController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public VentasController(ApplicationDbContext context)
+        public VentasController(UserManager<ApplicationUser> userManager, ApplicationDbContext context)
         {
+            _userManager = userManager;
             _context = context;
         }
 
         [HttpGet("cliente/{id}")]
         public async Task<List<VentasClienteDto>> GetVentasCliente(string id)
         {
-             return await _context.Ventas.Where(p => p.IdUsuario == id).Select(
-                 p => new VentasClienteDto
-                 {
-                     FechaVenta = p.FechaVenta,
-                     Total = p.Total,
-                     TipoVenta = p.TipoVenta
-                 }).ToListAsync();
+            return await _context.Ventas.Where(p => p.IdUsuario == id).Select(
+                p => new VentasClienteDto
+                {
+                    FechaVenta = p.FechaVenta,
+                    Total = p.Total,
+                    MetodoEnvio = p.MetodoEnvio,
+                    MetodoPago = p.MetodoPago,
+                    EstatusVenta = p.EstatusVenta
+                }).ToListAsync();
         }
 
         //get todo el stock
@@ -41,18 +45,92 @@ namespace CERVERICA.Controllers
         [HttpPost("CrearVenta")]
         public async Task<IActionResult> CrearVenta([FromBody] CrearVentaDto dto)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _userManager.FindByIdAsync(currentUserId!);
+
+            if (user is null)
+            {
+                return NotFound(new AuthResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "User not found"
+                });
+            }
+
+            var productosEliminados = new List<string>();
+
+            foreach (var detalleVenta in dto.Detalles)
+            {
+                var stocks = await _context.Stocks
+                    .Where(s => s.IdReceta == detalleVenta.IdReceta && s.Cantidad > 0)
+                    .OrderBy(s => s.FechaEntrada)
+                    .ToListAsync();
+
+                var cantidadTotalDisponible = stocks.Sum(s => s.Cantidad);
+
+                if (cantidadTotalDisponible < detalleVenta.Pack * detalleVenta.Cantidad)
+                {
+                    var productosCarritoEliminar = await _context.ProductosCarrito
+                        .Where(productoCarrito => productoCarrito.IdUsuario == currentUserId && productoCarrito.IdReceta == detalleVenta.IdReceta && productoCarrito.CantidadLote == detalleVenta.Pack)
+                        .ToListAsync();
+
+                    foreach (var productoCarrito in productosCarritoEliminar)
+                    {
+                        var receta = await _context.Recetas.Where(r => r.Id == detalleVenta.IdReceta).FirstOrDefaultAsync();
+                        productosEliminados.Add(receta.Nombre + " - " + productoCarrito.CantidadLote + " Pack");
+                        _context.ProductosCarrito.Remove(productoCarrito);
+                    }
+                }
+            }
+
+            if (productosEliminados.Any())
+            {
+                await _context.SaveChangesAsync();
+                return StatusCode(409, new
+                {
+                    message = "Se eliminaron productos de tu carrito que no tenemos stock",
+                    productosCarritoEliminados = productosEliminados
+                });
+            }
+
+            // Si no hubo problemas de stock, guardar los cambios
+            await _context.SaveChangesAsync();
+
             using var transaction = await _context.Database.BeginTransactionAsync();
             
             try
             {
-                //Insertamos primero una venta vacia para obtener el id de la venta
-                var venta = new Venta
+                var venta = new Venta();
+
+                venta.IdUsuario = user.Id;
+                venta.FechaVenta = DateTime.Now;
+                venta.EstatusVenta = EstatusVenta.Recibido;
+                venta.MetodoEnvio = dto.MetodoEnvio;
+                venta.MetodoPago = dto.MetodoPago;
+
+                if (dto.MetodoEnvio == MetodoEnvio.EnvioDomicilio)
                 {
-                    IdUsuario = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "a0a0aaa0-0000-0aa0-0000-00aaa0aa0a00",
-                    FechaVenta = DateTime.Now,
-                    Total = 0,
-                    TipoVenta = dto.TipoVenta
-                };
+                    venta.NombrePersonaRecibe = dto.NombrePersonaRecibe;
+                    venta.Calle = dto.Calle;
+                    venta.NumeroCasa = dto.NumeroCasa;
+                    venta.CodigoPostal = dto.CodigoPostal;
+                    venta.Ciudad = dto.Ciudad;
+                    venta.Estado = dto.Estado;
+                }
+
+                if (dto.MetodoPago == MetodoPago.TarjetaCredito)
+                {
+                    venta.NombrePersonaTarjeta = dto.NombrePersonaTarjeta;
+                    venta.NumeroTarjeta = dto.NumeroTarjeta;
+                    venta.MesExpiracion = dto.MesExpiracion;
+                    venta.AnioExpiracion = dto.AnioExpiracion;
+                    venta.CVV = dto.CVV;
+                }
 
                 _context.Ventas.Add(venta);
                 await _context.SaveChangesAsync();
@@ -70,6 +148,7 @@ namespace CERVERICA.Controllers
                 {
                     var recetaId = detalle.IdReceta;
                     var cantidadTotalRequerida = detalle.Pack * detalle.Cantidad;
+
                     var stocks = await _context.Stocks
                         .Where(s => s.IdReceta == recetaId && s.Cantidad >= detalle.Pack && s.MedidaEnvase == detalle.MedidaEnvase && s.TipoEnvase == detalle.TipoEnvase)
                         .OrderBy(s => s.FechaEntrada)
@@ -79,7 +158,9 @@ namespace CERVERICA.Controllers
                     if (cantidadTotalDisponible < cantidadTotalRequerida)
                     {
                         var nombreReceta = await _context.Recetas.Where(r => r.Id == recetaId).Select(r => r.Nombre).FirstOrDefaultAsync();
-                        return BadRequest(new { message = $"No hay suficiente stock para {nombreReceta}. Cervezas Requeridas: {cantidadTotalRequerida:f2}, Disponibles: {cantidadTotalDisponible}"});
+
+                        return StatusCode(409, (new { message = $"No hay suficiente stock para {nombreReceta}. Cervezas Requeridas: {cantidadTotalRequerida:f2}, Disponibles: {cantidadTotalDisponible}"}));
+
                     }
 
                         while (detalle.Cantidad > 0)
@@ -116,6 +197,7 @@ namespace CERVERICA.Controllers
                             if (montoVenta == 0)
                             {
                                 return BadRequest(new {message = $"Pack de {detalle.Pack} de {receta.Nombre} no se encuentra disponible para la venta."});
+
                             }
 
                             var detalleVenta = new DetalleVenta
@@ -144,7 +226,7 @@ namespace CERVERICA.Controllers
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return StatusCode(500, new {message = $"Error al crear la venta"});
+                return StatusCode(500, new { message = $"Error al crear la venta " + ex.Message });
             }
         }
 
