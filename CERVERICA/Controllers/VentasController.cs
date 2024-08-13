@@ -22,12 +22,16 @@ namespace CERVERICA.Controllers
             _context = context;
         }
 
-        [HttpGet("cliente/{id}")]
-        public async Task<List<VentasClienteDto>> GetVentasCliente(string id)
+        [HttpGet("cliente")]
+        public async Task<List<VentasClienteDto>> GetVentasCliente()
         {
+            //obtener el id del usuario actual
+            var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
             return await _context.Ventas.Where(p => p.IdUsuario == id).Select(
                 p => new VentasClienteDto
                 {
+                    Id = p.Id,
                     FechaVenta = p.FechaVenta,
                     Total = p.Total,
                     MetodoEnvio = p.MetodoEnvio,

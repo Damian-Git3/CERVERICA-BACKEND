@@ -6,7 +6,7 @@ namespace CERVERICA.Dtos
 {
     public class VentasClienteDto
     {
-
+        public int Id { get; set; }
         public DateTime FechaVenta { get; set; }
 
         public float Total { get; set; }

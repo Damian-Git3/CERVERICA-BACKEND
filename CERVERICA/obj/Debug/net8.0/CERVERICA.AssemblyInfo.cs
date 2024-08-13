@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CERVERICA")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e7e4a2087807af044f18fc8005662ccf6fc99433")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d35bfd5fe07d6d9a8726fce815a7addc36c20f4b")]
 [assembly: System.Reflection.AssemblyProductAttribute("CERVERICA")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CERVERICA")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
