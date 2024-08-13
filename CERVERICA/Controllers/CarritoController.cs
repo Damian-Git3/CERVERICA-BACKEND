@@ -83,7 +83,7 @@ namespace CERVERICA.Controllers
                 return NotFound(new AuthResponseDto
                 {
                     IsSuccess = false,
-                    Message = "Product not found in cart"
+                    Message = "Producto en el carrito no encontrado"
                 });
             }
 
