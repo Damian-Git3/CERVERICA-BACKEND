@@ -11,7 +11,6 @@ namespace CERVERICA.Models
 
         [ForeignKey(nameof(IdUsuario))]
         public string IdUsuario { get; set; }
-        public ApplicationUser Usuario { get; set; }
 
         [Required]
         public DateTime FechaVenta { get; set; }

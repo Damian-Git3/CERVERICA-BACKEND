@@ -20,16 +20,30 @@ namespace CERVERICA.Controllers
         }
 
         [HttpPost("agregar-favorito")]
-        public async Task<ActionResult<FavoritoUsuario>> agregarFavorito(FavoritoUsuario favoritoUsuario)
+        public async Task<ActionResult<FavoritoUsuario>> agregarFavorito(AgregarFavoritoDto favoritoUsuario)
         {
-            _db.FavoritosUsuarios.Add(favoritoUsuario);
+            //verificar que no haya un favorito con el mismo id de usuario y receta
+            var favoritoUsuarioExistente = await _db.FavoritosUsuarios
+                .FirstOrDefaultAsync(f => f.IdUsuario == favoritoUsuario.IdUsuario && f.IdReceta == favoritoUsuario.IdReceta);
+            if(favoritoUsuarioExistente != null)
+            {
+                return BadRequest("La cerveza seleccionada ya es un favorito.");
+            }
+
+            FavoritoUsuario favoritoUsuario1 = new FavoritoUsuario
+            {
+                IdUsuario = favoritoUsuario.IdUsuario,
+                IdReceta = favoritoUsuario.IdReceta
+            };
+
+            _db.FavoritosUsuarios.Add(favoritoUsuario1);
             await _db.SaveChangesAsync();
 
             return Ok(favoritoUsuario);
         }
 
         [HttpPost("eliminar-favorito")]
-        public async Task<ActionResult<string>> EliminarFavorito(FavoritoUsuario favoritoUsuario)
+        public async Task<ActionResult<string>> EliminarFavorito(AgregarFavoritoDto favoritoUsuario)
         {
             var favoritoUsuarioEliminar = await _db.FavoritosUsuarios
                 .FirstOrDefaultAsync(f => f.IdUsuario == favoritoUsuario.IdUsuario && f.IdReceta == favoritoUsuario.IdReceta);

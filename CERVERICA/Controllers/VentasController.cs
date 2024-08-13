@@ -31,6 +31,12 @@ namespace CERVERICA.Controllers
                  }).ToListAsync();
         }
 
+        //get todo el stock
+        [HttpGet("stock")]
+        public async Task<List<Stock>> GetStock()
+        {
+            return await _context.Stocks.ToListAsync();
+        }
 
         [HttpPost("CrearVenta")]
         public async Task<IActionResult> CrearVenta([FromBody] CrearVentaDto dto)
@@ -90,19 +96,26 @@ namespace CERVERICA.Controllers
                             var cantidadADescontar = Math.Min(reduccionMaximaPacks, (detalle.Cantidad));
                             stock.Cantidad -= cantidadADescontar*detalle.Pack;
                             detalle.Cantidad -= cantidadADescontar;
+                            
+                            var receta = await _context.Recetas.FirstOrDefaultAsync(r => r.Id == recetaId);
+
+                            if(receta == null)
+                            {
+                                return NotFound(new{message= $"No se encontró la receta"});
+                            }
 
                             float montoVenta = detalle.Pack switch
                             {
-                                1 => stock.Receta.PrecioPaquete1 ?? 0,
-                                6 => stock.Receta.PrecioPaquete6 ?? 0,
-                                12 => stock.Receta.PrecioPaquete12 ?? 0,
-                                24 => stock.Receta.PrecioPaquete24 ?? 0,
+                                1 => receta.PrecioPaquete1 ?? 0,
+                                6 => receta.PrecioPaquete6 ?? 0,
+                                12 => receta.PrecioPaquete12 ?? 0,
+                                24 => receta.PrecioPaquete24 ?? 0,
                                 _ => 0
                             };
 
                             if (montoVenta == 0)
                             {
-                                return BadRequest(new {message = $"Pack de {detalle.Pack} de {stock.Receta.Nombre} no se encuentra disponible para la venta."});
+                                return BadRequest(new {message = $"Pack de {detalle.Pack} de {receta.Nombre} no se encuentra disponible para la venta."});
                             }
 
                             var detalleVenta = new DetalleVenta
