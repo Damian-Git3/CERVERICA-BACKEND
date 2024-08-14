@@ -87,7 +87,6 @@ namespace CERVERICA.Data
             .HasForeignKey(o => o.IdInsumo)
             .OnDelete(DeleteBehavior.Restrict);
 
-            
             base.OnModelCreating(modelBuilder);
         }
     }

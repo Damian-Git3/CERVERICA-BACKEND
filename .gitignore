@@ -489,3 +489,6 @@ CERVERICA/appsettings.Development.json
 CERVERICA/Migrations/
 
 .vs/
+
+CERVERICA/obj
+CERVERICA/bin
