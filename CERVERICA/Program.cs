@@ -16,14 +16,19 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Obtenemos la configuración del JWTSettings de appsettings
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.Listen(IPAddress.Parse("127.0.0.1"), 5000);
+});
+
+// Obtenemos la configuraciï¿½n del JWTSettings de appsettings
 var JWTSettings = builder.Configuration.GetSection("JWTSetting");
 
-// Configuración para SQL Server
+// Configuraciï¿½n para SQL Server
 var connectionString = builder.Configuration.GetConnectionString("cadenaSQL");
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
 
-// Agregamos la configuración para ASP.NET Core Identity
+// Agregamos la configuraciï¿½n para ASP.NET Core Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
@@ -75,7 +80,7 @@ builder.Services.AddHostedService<HostedServiceRoutines>();
 
 builder.Services.AddEndpointsApiExplorer();
 
-// Agregando la Definición de Seguridad
+// Agregando la Definiciï¿½n de Seguridad
 builder.Services.AddSwaggerGen(c =>
 {
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
