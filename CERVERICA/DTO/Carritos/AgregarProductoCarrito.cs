@@ -1,4 +1,4 @@
-﻿namespace CERVERICA.DTO.Carritos
+﻿namespace CERVERICA.Dtos
 {
     public class AgregarProductoCarrito
     {

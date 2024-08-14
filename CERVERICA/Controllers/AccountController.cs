@@ -5,14 +5,12 @@ using System.Security.Cryptography;
 using System.Text;
 using CERVERICA.Dtos;
 using CERVERICA.Models;
-using CERVERICA.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using RestSharp;
-using System.Diagnostics;
 using System.Transactions;
 
 namespace CERVERICA.Controllers

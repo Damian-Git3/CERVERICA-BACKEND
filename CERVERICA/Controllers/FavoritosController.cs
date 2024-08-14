@@ -1,5 +1,4 @@
 ﻿using CERVERICA.Data;
-using CERVERICA.DTO.FavoritoUsuario;
 using CERVERICA.Dtos;
 using CERVERICA.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -38,6 +37,13 @@ namespace CERVERICA.Controllers
                     IsSuccess = false,
                     Message = "User not found"
                 });
+            }
+
+            var favoritoUsuarioExistente = await _db.FavoritosUsuarios
+                .FirstOrDefaultAsync(f => f.IdUsuario == user.Id && f.IdReceta == favoritoUsuarioAgregar.IdReceta);
+            if(favoritoUsuarioExistente != null)
+            {
+                return BadRequest("La cerveza seleccionada ya es un favorito.");
             }
 
             var nuevoFavoritoUsuario = new FavoritoUsuario();
@@ -79,8 +85,38 @@ namespace CERVERICA.Controllers
             return Ok(new { message = "Favorito eliminado exitosamente" });
         }
 
+        [HttpGet("obtener-favoritos/{idUsuario}")]
+        public async Task<ActionResult<FavoritoDto>> obtenerFavoritos(string idUsuario)
+        {
+            //buscar usuario
+            var usuario = await _userManager.FindByIdAsync(idUsuario);
+            if (usuario == null)
+            {
+                return NotFound(new AuthResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "Usuario no encontrado"
+                });
+            }
+
+            var favoritos = await _db.FavoritosUsuarios.Where(f => f.IdUsuario == idUsuario)
+                .Include(f => f.Receta).Select(f => new FavoritoDto
+                {
+                    Id = f.Id,
+                    IdReceta = f.IdReceta,
+                    IdUsuario = f.IdUsuario,
+                    Nombre = f.Receta.Nombre,
+                    Descripcion = f.Receta.Descripcion,
+                    Imagen = f.Receta.Imagen,
+                    RutaFondo = f.Receta.RutaFondo,
+                    Especificaciones = f.Receta.Especificaciones
+                }).ToListAsync();
+                return Ok(favoritos);
+        }
+
         [HttpGet("obtener-favoritos")]
         public async Task<ActionResult<FavoritoUsuario>> obtenerFavoritos()
+
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var user = await _userManager.FindByIdAsync(currentUserId!);

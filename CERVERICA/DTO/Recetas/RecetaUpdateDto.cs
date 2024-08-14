@@ -12,6 +12,8 @@ namespace CERVERICA.Dtos
 
         public string Descripcion { get; set; }
 
+        public string Especificaciones { get; set; }
+
         [Required]
         [StringLength(100)]
         public string Nombre { get; set; }
@@ -21,6 +23,9 @@ namespace CERVERICA.Dtos
 
         [Required]
         public string Imagen { get; set; }
+
+        [Required]
+        public string RutaFondo { get; set; }
 
         [Required]
         public bool Activo { get; set; }

@@ -36,6 +36,7 @@ namespace CERVERICA.Controllers
                     Nombre = r.Nombre,
                     CostoProduccion = r.CostoProduccion,
                     Imagen = r.Imagen,
+                    FechaRegistrado = r.FechaRegistrado,
                     Activo = r.Activo
                 })
                 .ToArrayAsync();
@@ -102,8 +103,11 @@ namespace CERVERICA.Controllers
                 PrecioLitro = 0, 
                 Descripcion = recetaDto.Descripcion,
                 Nombre = recetaDto.Nombre,
+                Especificaciones = recetaDto.Especificaciones,
                 CostoProduccion = 0,
                 Imagen = recetaDto.Imagen,
+                RutaFondo = recetaDto.RutaFondo,
+                FechaRegistrado = System.DateTime.Now,
                 Activo = true,
                 IngredientesReceta = new List<IngredienteReceta>()
             };
@@ -155,9 +159,11 @@ namespace CERVERICA.Controllers
             // Actualizar propiedades de la receta
             receta.LitrosEstimados = recetaDto.LitrosEstimados;
             receta.Descripcion = recetaDto.Descripcion;
+            receta.Especificaciones = recetaDto.Especificaciones;
             receta.Nombre = recetaDto.Nombre;
             receta.CostoProduccion = recetaDto.CostoProduccion;
             receta.Imagen = recetaDto.Imagen;
+            receta.RutaFondo = recetaDto.RutaFondo;
             receta.Activo = recetaDto.Activo;
 
             // Actualizar ingredientes
@@ -441,15 +447,6 @@ namespace CERVERICA.Controllers
                 return NotFound($"No se encontró la receta con ID {id}");
             }
 
-            // Validar los precios ingresados
-            if ((dto.PrecioLitro.HasValue && dto.PrecioLitro.Value < receta.CostoProduccion/receta.LitrosEstimados) ||
-                (dto.PrecioPaquete1.HasValue && dto.PrecioPaquete1.Value < receta.CostoProduccion / receta.LitrosEstimados) ||
-                (dto.PrecioPaquete6.HasValue && dto.PrecioPaquete6.Value < 6 * receta.CostoProduccion / receta.LitrosEstimados) ||
-                (dto.PrecioPaquete12.HasValue && dto.PrecioPaquete12.Value < 12 * receta.CostoProduccion / receta.LitrosEstimados) ||
-                (dto.PrecioPaquete24.HasValue && dto.PrecioPaquete24.Value < 24 * receta.CostoProduccion / receta.LitrosEstimados))
-            {
-                return BadRequest("Uno o más precios son menores al costo de producción correspondiente.");
-            }
 
             // Actualizar los precios si se proporcionaron
             if (dto.PrecioLitro.HasValue)

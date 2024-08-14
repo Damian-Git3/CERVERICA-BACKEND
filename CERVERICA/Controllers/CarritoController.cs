@@ -1,6 +1,4 @@
 ﻿using CERVERICA.Data;
-using CERVERICA.DTO.Carritos;
-using CERVERICA.DTO.FavoritoUsuario;
 using CERVERICA.Dtos;
 using CERVERICA.Models;
 using Microsoft.AspNetCore.Authorization;
