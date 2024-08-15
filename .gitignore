@@ -485,8 +485,11 @@ $RECYCLE.BIN/
 *.swp
 
 CERVERICA/appsettings.json
+CERVERICA/launchSettings.json
 CERVERICA/appsettings.Development.json
 CERVERICA/Migrations/
+
+CERVERICA/Properties/launchSettings.json
 
 .vs/
 
