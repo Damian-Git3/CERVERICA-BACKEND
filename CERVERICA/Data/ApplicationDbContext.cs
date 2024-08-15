@@ -30,9 +30,6 @@ namespace CERVERICA.Data
             modelBuilder.Entity<IngredienteReceta>()
                 .HasKey(ir => new { ir.IdReceta, ir.IdInsumo });
 
-            modelBuilder.Entity<DetalleVenta>()
-                .HasKey(dv => new { dv.IdVenta, dv.IdStock });
-
             modelBuilder.Entity<ProduccionLoteInsumo>(entity =>
             {
                 entity.HasKey(e => e.Id);

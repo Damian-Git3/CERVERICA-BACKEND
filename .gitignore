@@ -489,6 +489,8 @@ CERVERICA/launchSettings.json
 CERVERICA/appsettings.Development.json
 CERVERICA/Migrations/
 
+CERVERICA/Properties/launchSettings.json
+
 .vs/
 
 CERVERICA/obj
