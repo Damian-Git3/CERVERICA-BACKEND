@@ -1,17 +1,13 @@
 using CERVERICA.Controllers;
 using CERVERICA.Data;
-using CERVERICA.Middleware;
 using CERVERICA.Models;
 using CERVERICA.Routines;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System;
+using System.Net;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
