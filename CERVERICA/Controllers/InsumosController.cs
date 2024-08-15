@@ -74,9 +74,9 @@ public class InsumosController : ControllerBase
             Nombre = insumoDto.Nombre,
             Descripcion = insumoDto.Descripcion,
             UnidadMedida = insumoDto.UnidadMedida,
-            CantidadMaxima = insumoDto.CantidadMaxima,
-            CantidadMinima = insumoDto.CantidadMinima,
-            Merma = insumoDto.Merma,
+            CantidadMaxima = insumoDto.CantidadMaxima ?? 0,
+            CantidadMinima = insumoDto.CantidadMinima ?? 0,
+            Merma = insumoDto.Merma ?? 0,
             Activo = true
         };
 
@@ -98,9 +98,9 @@ public class InsumosController : ControllerBase
         insumo.Nombre = insumoDto.Nombre;
         insumo.Descripcion = insumoDto.Descripcion;
         insumo.UnidadMedida = insumoDto.UnidadMedida;
-        insumo.CantidadMaxima = insumoDto.CantidadMaxima;
-        insumo.CantidadMinima = insumoDto.CantidadMinima;
-        insumo.Merma = insumoDto.Merma;
+        insumo.CantidadMaxima = insumoDto.CantidadMaxima ?? 0;
+        insumo.CantidadMinima = insumoDto.CantidadMinima ?? 0;
+        insumo.Merma = insumoDto.Merma??0;
 
         try
         {
