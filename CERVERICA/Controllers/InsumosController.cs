@@ -1,7 +1,6 @@
 ﻿using CERVERICA.Data;
 using CERVERICA.Dtos;
 using CERVERICA.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -83,7 +82,7 @@ public class InsumosController : ControllerBase
         _context.Insumos.Add(insumo);
         await _context.SaveChangesAsync();
 
-        return Ok(new { message = "Insumo insertado.",id = insumo.Id });
+        return Ok(new { message = "Insumo insertado.", id = insumo.Id });
     }
 
     [HttpPut("{id}")]
@@ -123,7 +122,7 @@ public class InsumosController : ControllerBase
 
     // POST: api/insumos/activar/{id}
 
-    [HttpPost("activar{id}/")]
+    [HttpPost("activar/{id}")]
     public async Task<IActionResult> ActivarInsumo(int id)
     {
         var insumo = await _context.Insumos.FindAsync(id);
@@ -140,7 +139,7 @@ public class InsumosController : ControllerBase
 
     // POST: api/insumos/desactivar/{id}
 
-    [HttpPost("desactivar{id}/")]
+    [HttpPost("desactivar/{id}")]
     public async Task<IActionResult> DesactivarInsumo(int id)
     {
         var insumo = await _context.Insumos.FindAsync(id);
