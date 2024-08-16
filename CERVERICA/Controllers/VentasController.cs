@@ -286,7 +286,7 @@ namespace CERVERICA.Controllers
 
                 //considerar que el stock de una receta contiene productos de diferentes tamañanos y tipo de envase y la cantidad del stock 
                 //no es una cantidad en litros sino del total de botellas que se tienen en stock
-
+                Debug.WriteLine("####################################################################################3");
                 foreach (var detalle in dto.Detalles)
                 {
                     var recetaId = detalle.IdReceta;
@@ -305,7 +305,7 @@ namespace CERVERICA.Controllers
                         return StatusCode(410, (new { message = $"No hay suficiente stock para {nombreReceta}. Cervezas Requeridas: {cantidadTotalRequerida:f2}, Disponibles: {cantidadTotalDisponible}" }));
 
                     }
-
+                    Debug.WriteLine("####################################################################################3");
                     while (detalle.Cantidad > 0)
                     {
                         var stock = stocks.FirstOrDefault();
@@ -315,7 +315,22 @@ namespace CERVERICA.Controllers
                             return BadRequest(new { message = $"No hay suficiente stock de la cerveza {nombreReceta}" });
                         }
 
+                        // Asegurarse de que el stock puede cubrir al menos un pack
+                        if (stock.Cantidad < detalle.Pack)
+                        {
+                            // Remover este stock de la lista y continuar con el siguiente
+                            stocks.Remove(stock);
+                            continue;
+                        }
+
+                        Debug.WriteLine("cantidad en stock" + stock.Cantidad);
+                        Debug.WriteLine("tamaño del pack " + detalle.Pack);
                         var reduccionMaximaPacks = (int)(stock.Cantidad / detalle.Pack);
+                        Debug.WriteLine("reduccion maxima " + reduccionMaximaPacks);
+                        if (reduccionMaximaPacks == 0)
+                        {
+                            break; 
+                        }
 
                         var cantidadADescontar = Math.Min(reduccionMaximaPacks, (detalle.Cantidad));
                         stock.Cantidad -= cantidadADescontar * detalle.Pack;
@@ -368,6 +383,25 @@ namespace CERVERICA.Controllers
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
+                try
+                {
+                    var notificacion = new Notificacion
+                    {
+                        IdUsuario = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? currentUserId,
+                        Mensaje = $"Se realizó una compra :) Disfruta tus cervezas bien frías",
+                        Fecha = DateTime.Now,
+                        Tipo = 8,
+                        Visto = false
+                    };
+                    _context.Notificaciones.Add(notificacion);
+
+                    await _context.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+
+                }
+
                 return Ok(venta);
             }
             catch (Exception ex)
@@ -402,6 +436,26 @@ namespace CERVERICA.Controllers
 
             _context.Stocks.Update(stock);
             await _context.SaveChangesAsync();
+
+            try
+            {
+                var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var notificacion = new Notificacion
+                {
+                    IdUsuario = currentUserId,
+                    Mensaje = $"Se registro merma en un stock por {stock.Merma} {stock.TipoEnvase}s",
+                    Fecha = DateTime.Now,
+                    Tipo = 8,
+                    Visto = false
+                };
+                _context.Notificaciones.Add(notificacion);
+
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+
+            }
 
             return Ok(stock);
         }

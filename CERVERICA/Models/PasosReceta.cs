@@ -19,6 +19,6 @@ namespace CERVERICA.Models
         public int Orden { get; set; }
 
         [Required]
-        public int Tiempo { get; set; }
+        public double Tiempo { get; set; }
     }
 }

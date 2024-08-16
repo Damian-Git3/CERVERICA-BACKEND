@@ -60,7 +60,7 @@ namespace CERVERICA.Controllers
             {
                 IdUsuario = user.Id,
                 Fecha = DateTime.Now,
-                Tipo = 1,
+                Tipo = 2,
                 //mostrar el mensaje de que guardo la cerveza en favoritos
                 Mensaje = "Guardaste la cerveza " + receta.Nombre + " en favoritos",
                 Visto = false
@@ -105,7 +105,7 @@ namespace CERVERICA.Controllers
             {
                 IdUsuario = user.Id,
                 Fecha = DateTime.Now,
-                Tipo = 1,
+                Tipo = 2,
                 //mostrar el mensaje de que guardo la cerveza en favoritos
                 Mensaje = "Quitaste la cerveza " + receta.Nombre + " de favoritos",
                 Visto = false

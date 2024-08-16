@@ -62,6 +62,33 @@ namespace CERVERICA.Controllers
             _context.Proveedores.Add(proveedor);
             await _context.SaveChangesAsync();
 
+            try
+            {
+
+                //encontrar la id del rol Admin
+                var adminRoleId = _context.Roles.Where(r => r.Name == "Admin").Select(r => r.Id).FirstOrDefault();
+
+                List<String> userIds = _context.UserRoles.Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToList();
+
+                foreach (var idAdmin in userIds)
+                {
+                    var notificacion = new Notificacion
+                    {
+                        IdUsuario = idAdmin,
+                        Mensaje = $"Se agregó un nuevo proveedor: {proveedor.Empresa}",
+                        Fecha = DateTime.Now,
+                        Tipo = 6,
+                        Visto = false
+                    };
+                    _context.Notificaciones.Add(notificacion);
+                }
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+
+            }
+
             return Ok(new { message = "Proveedor insertado.", id = proveedor.Id });
         }
 
@@ -99,7 +126,32 @@ namespace CERVERICA.Controllers
                     throw;
                 }
             }
+            try
+            {
 
+                //encontrar la id del rol Admin
+                var adminRoleId = _context.Roles.Where(r => r.Name == "Admin").Select(r => r.Id).FirstOrDefault();
+
+                List<String> userIds = _context.UserRoles.Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToList();
+
+                foreach (var idAdmin in userIds)
+                {
+                    var notificacion = new Notificacion
+                    {
+                        IdUsuario = idAdmin,
+                        Mensaje = $"Se modifico un proveedor: {proveedor.Empresa}",
+                        Fecha = DateTime.Now,
+                        Tipo = 6,
+                        Visto = false
+                    };
+                    _context.Notificaciones.Add(notificacion);
+                }
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+
+            }
             return Ok(new { message = "Proveedor actualizado."});
         }
 
@@ -132,6 +184,33 @@ namespace CERVERICA.Controllers
                 {
                     throw;
                 }
+            }
+
+            try
+            {
+
+                //encontrar la id del rol Admin
+                var adminRoleId = _context.Roles.Where(r => r.Name == "Admin").Select(r => r.Id).FirstOrDefault();
+
+                List<String> userIds = _context.UserRoles.Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToList();
+
+                foreach (var idAdmin in userIds)
+                {
+                    var notificacion = new Notificacion
+                    {
+                        IdUsuario = idAdmin,
+                        Mensaje = $"Se activó el proveedor: {proveedor.Empresa}",
+                        Fecha = DateTime.Now,
+                        Tipo = 6,
+                        Visto = false
+                    };
+                    _context.Notificaciones.Add(notificacion);
+                }
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+
             }
 
             return Ok(new { message = "Proveedor activado." });
@@ -167,6 +246,32 @@ namespace CERVERICA.Controllers
                     throw;
                 }
             }
+            try
+            {
+
+                //encontrar la id del rol Admin
+                var adminRoleId = _context.Roles.Where(r => r.Name == "Admin").Select(r => r.Id).FirstOrDefault();
+
+                List<String> userIds = _context.UserRoles.Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToList();
+
+                foreach (var idAdmin in userIds)
+                {
+                    var notificacion = new Notificacion
+                    {
+                        IdUsuario = idAdmin,
+                        Mensaje = $"Se desactivo proveedor: {proveedor.Empresa}",
+                        Fecha = DateTime.Now,
+                        Tipo = 6,
+                        Visto = false
+                    };
+                    _context.Notificaciones.Add(notificacion);
+                }
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+
+            }
 
             return Ok(new { message = "Proveedor desactivado." });
         }
@@ -186,9 +291,37 @@ namespace CERVERICA.Controllers
             {
                 return BadRequest(new { message = "El proveedor ya asignó a un lote, no se puede borrar." });
             }
+            var nombreProveedor = proveedor.Empresa;
 
             _context.Proveedores.Remove(proveedor);
             await _context.SaveChangesAsync();
+
+            try
+            {
+
+                //encontrar la id del rol Admin
+                var adminRoleId = _context.Roles.Where(r => r.Name == "Admin").Select(r => r.Id).FirstOrDefault();
+
+                List<String> userIds = _context.UserRoles.Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToList();
+
+                foreach (var idAdmin in userIds)
+                {
+                    var notificacion = new Notificacion
+                    {
+                        IdUsuario = idAdmin,
+                        Mensaje = $"Se eliminó un proveedor: {nombreProveedor}",
+                        Fecha = DateTime.Now,
+                        Tipo = 6,
+                        Visto = false
+                    };
+                    _context.Notificaciones.Add(notificacion);
+                }
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+
+            }
 
             return Ok(new {message = "Proveedor eliminado."});
         }
