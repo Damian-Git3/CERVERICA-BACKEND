@@ -11,6 +11,11 @@ namespace CERVERICA.Dtos
         public float? PrecioLitro { get; set; }
 
         public string Descripcion { get; set; }
+        public float? PrecioPaquete1 { get; set; }
+        public float? PrecioPaquete6 { get; set; }
+        public float? PrecioPaquete12 { get; set; }
+        public float? PrecioPaquete24 { get; set; }
+
 
         [Required]
         [StringLength(100)]

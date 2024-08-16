@@ -1,15 +1,12 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using CERVERICA.Data;
+using CERVERICA.Dtos;
+using CERVERICA.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using CERVERICA.Data;
-using CERVERICA.Models;
-using CERVERICA.Dtos;
 using System.Security.Claims;
 using System.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+
 
 namespace CERVERICA.Controllers
 {
@@ -174,9 +171,9 @@ namespace CERVERICA.Controllers
                             Activo = r.Activo,
                             IngredientesReceta = r.IngredientesReceta.Select(ir => new IngredienteRecetaDto
                             {
-                                IdInsumo = ir.IdInsumo,
+                                Id = ir.IdInsumo,
                                 Cantidad = ir.Cantidad,
-                                NombreInsumo = ir.Insumo.Nombre,
+                                Nombre = ir.Insumo.Nombre,
                                 UnidadMedida = ir.Insumo.UnidadMedida
                             }).ToList()
                         })
@@ -188,9 +185,9 @@ namespace CERVERICA.Controllers
                     }
 
                     var usuarioProduccion = await _context.Users.FindAsync(solicitudDto.IdUsuario);
-                    if(usuarioProduccion == null)
+                    if (usuarioProduccion == null)
                     {
-                        return NotFound(new { message = "Usuario no existe. Escoja otro usuario de Producción."});
+                        return NotFound(new { message = "Usuario no existe. Escoja otro usuario de Producción." });
                     }
 
                     var produccion = new Produccion();
@@ -216,7 +213,7 @@ namespace CERVERICA.Controllers
                     {
                         var cantidadNecesaria = ingrediente.Cantidad * produccion.NumeroTandas;
                         var lotesInsumo = await _context.LotesInsumos
-                            .Where(li => li.IdInsumo == ingrediente.IdInsumo && li.FechaCaducidad > DateTime.Today)
+                            .Where(li => li.IdInsumo == ingrediente.Id && li.FechaCaducidad > DateTime.Today)
                             .OrderBy(li => li.FechaCaducidad)
                             .ToListAsync();
 
@@ -242,7 +239,7 @@ namespace CERVERICA.Controllers
                         if (cantidadNecesaria > 0)
                         {
                             recetaSePuedeProcesar = false;
-                            mensajeInsumosCantidadesFaltantes += $"Faltan {cantidadNecesaria} {ingrediente.UnidadMedida} del insumo {ingrediente.NombreInsumo}\n";
+                            mensajeInsumosCantidadesFaltantes += $"Faltan {cantidadNecesaria} {ingrediente.UnidadMedida} del insumo {ingrediente.Nombre}\n";
                         }
                     }
 
@@ -315,7 +312,7 @@ namespace CERVERICA.Controllers
             {
                 return BadRequest(new { Message = "La producción tiene un estatus diferente a rechazado." });
             }
-            if(production.Estatus == 1)
+            if (production.Estatus == 1)
             {
                 return BadRequest(new { Message = "La producción ya ha sido solicitada." });
             }
@@ -373,7 +370,7 @@ namespace CERVERICA.Controllers
 
             if (produccion == null)
             {
-                return NotFound(new{ message = "Solicitud de producción no encontrada."});
+                return NotFound(new { message = "Solicitud de producción no encontrada." });
             }
 
             if (produccion.Estatus != 1 && produccion.Estatus != 5 && produccion.Estatus != 6)
@@ -428,7 +425,7 @@ namespace CERVERICA.Controllers
             }
             catch (Exception ex) { }
 
-            return Ok(new {message="Produccion cancelada. Insumos devueltos al almacen."});
+            return Ok(new { message = "Produccion cancelada. Insumos devueltos al almacen." });
         }
 
         [HttpPost("almacenar/{id}")]
@@ -482,7 +479,7 @@ namespace CERVERICA.Controllers
                 {
                     return BadRequest(new { Message = "Debe ingresar los litros finales para calcular la merma." });
                 }
-                if(finalizeDto.MermaLitros != null)
+                if (finalizeDto.MermaLitros != null)
                 {
                     return BadRequest(new { Message = "No se puede calcular la merma si ya se ingreso un valor." });
                 }
@@ -501,7 +498,7 @@ namespace CERVERICA.Controllers
             }
             else
             {
-                if(finalizeDto.MermaLitros == null)
+                if (finalizeDto.MermaLitros == null)
                 {
                     return BadRequest(new { Message = "Debe ingresar la merma o escoger que se calcule." });
                 }
@@ -557,13 +554,13 @@ namespace CERVERICA.Controllers
                 await _context.SaveChangesAsync();
                 return Ok(new { Message = "Producción finalizada como fallida." });
             }
-            
+
             production.CostoProduccion = production.NumeroTandas * production.Receta.CostoProduccion;
 
             var medidaEnvase = finalizeDto.MedidaEnvase ?? 355;
             medidaEnvase = medidaEnvase == 0 ? 355 : medidaEnvase;
 
-            float mililitrosParaEnvasar = (production.LitrosFinales??0) * 1000;
+            float mililitrosParaEnvasar = (production.LitrosFinales ?? 0) * 1000;
 
             float proporcionLitrosStock = mililitrosParaEnvasar / medidaEnvase;
 
@@ -756,7 +753,7 @@ namespace CERVERICA.Controllers
 
             if (produccion != null)
             {
-                if(produccion.Estatus != 1)
+                if (produccion.Estatus != 1)
                 {
                     return Ok(new { message = "La solicitud se encuentra en un estatus diferente a solicitud realizada, no se puede aceptar" });
                 }
@@ -883,7 +880,7 @@ namespace CERVERICA.Controllers
             else
             {
                 return Ok(new { message = "La solicitud se encuentra en un estatus diferente a solicitud realizada, no se puede rechazar" });
-                
+
             }
         }
 
@@ -954,12 +951,12 @@ namespace CERVERICA.Controllers
 
             if (produccion == null)
             {
-                return NotFound(new{ message= "Producción no encontrada."});
+                return NotFound(new { message = "Producción no encontrada." });
             }
 
             if (produccion.Estatus != 2)
             {
-                return BadRequest(new { message = "El estatus de la producción no es válido para avanzar en los pasos."});
+                return BadRequest(new { message = "El estatus de la producción no es válido para avanzar en los pasos." });
             }
 
             var pasos = produccion.Receta.PasosReceta.OrderBy(p => p.Orden).ToList();
@@ -968,7 +965,7 @@ namespace CERVERICA.Controllers
 
             if (produccion.FechaProximoPaso > DateTime.Now)
             {
-                return BadRequest(new {message= "Todavía no se ha alcanzado la fecha del próximo paso. No es posible avanzar." });
+                return BadRequest(new { message = "Todavía no se ha alcanzado la fecha del próximo paso. No es posible avanzar." });
             }
 
             if (pasoActual == 0)
@@ -986,10 +983,10 @@ namespace CERVERICA.Controllers
                 produccion.Paso = pasoSiguiente.Orden;
                 produccion.Mensaje = pasoSiguiente.Descripcion;
                 produccion.FechaProximoPaso = DateTime.Now.AddHours(pasoSiguiente.Tiempo);
-                
+
             }
 
-            if(dto.MermaLitros != null)
+            if (dto.MermaLitros != null)
             {
                 produccion.MermaLitros += dto.MermaLitros;
             }
