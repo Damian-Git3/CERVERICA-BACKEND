@@ -1,6 +1,6 @@
-﻿namespace CERVERICA.Dtos
+namespace CERVERICA.Dtos
 {
-    public class PasosRecetaDto
+    public class PasosUpdateDto
     {
         public int Id { get; set; }
         public string Descripcion { get; set; }

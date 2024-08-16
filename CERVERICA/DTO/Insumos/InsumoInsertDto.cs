@@ -15,13 +15,10 @@ namespace CERVERICA.Dtos
         [Required]
         public string UnidadMedida { get; set; }
 
-        [Required]
-        public float CantidadMaxima { get; set; }
+        public float? CantidadMaxima { get; set; } = 0;
 
-        [Required]
-        public float CantidadMinima { get; set; }
+        public float? CantidadMinima { get; set; } = 0;
 
-        [Required]
-        public float Merma { get; set; }
+        public float? Merma { get; set; } = 0;
     }
 }

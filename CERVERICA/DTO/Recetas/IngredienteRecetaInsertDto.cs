@@ -2,7 +2,7 @@
 {
     public class IngredienteRecetaInsertDto
     {
-        public int IdInsumo { get; set; }
+        public int Id { get; set; }
         public float Cantidad { get; set; }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using CERVERICA.Data;
 using CERVERICA.Dtos;
 using CERVERICA.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -74,16 +73,16 @@ public class InsumosController : ControllerBase
             Nombre = insumoDto.Nombre,
             Descripcion = insumoDto.Descripcion,
             UnidadMedida = insumoDto.UnidadMedida,
-            CantidadMaxima = insumoDto.CantidadMaxima,
-            CantidadMinima = insumoDto.CantidadMinima,
-            Merma = insumoDto.Merma,
+            CantidadMaxima = insumoDto.CantidadMaxima ?? 0,
+            CantidadMinima = insumoDto.CantidadMinima ?? 0,
+            Merma = insumoDto.Merma ?? 0,
             Activo = true
         };
 
         _context.Insumos.Add(insumo);
         await _context.SaveChangesAsync();
 
-        return Ok(new { message = "Insumo insertado.",id = insumo.Id });
+        return Ok(new { message = "Insumo insertado.", id = insumo.Id });
     }
 
     [HttpPut("{id}")]
@@ -98,9 +97,9 @@ public class InsumosController : ControllerBase
         insumo.Nombre = insumoDto.Nombre;
         insumo.Descripcion = insumoDto.Descripcion;
         insumo.UnidadMedida = insumoDto.UnidadMedida;
-        insumo.CantidadMaxima = insumoDto.CantidadMaxima;
-        insumo.CantidadMinima = insumoDto.CantidadMinima;
-        insumo.Merma = insumoDto.Merma;
+        insumo.CantidadMaxima = insumoDto.CantidadMaxima ?? 0;
+        insumo.CantidadMinima = insumoDto.CantidadMinima ?? 0;
+        insumo.Merma = insumoDto.Merma??0;
 
         try
         {
@@ -123,7 +122,7 @@ public class InsumosController : ControllerBase
 
     // POST: api/insumos/activar/{id}
 
-    [HttpPost("activar{id}/")]
+    [HttpPost("activar/{id}")]
     public async Task<IActionResult> ActivarInsumo(int id)
     {
         var insumo = await _context.Insumos.FindAsync(id);
@@ -140,7 +139,7 @@ public class InsumosController : ControllerBase
 
     // POST: api/insumos/desactivar/{id}
 
-    [HttpPost("desactivar{id}/")]
+    [HttpPost("desactivar/{id}")]
     public async Task<IActionResult> DesactivarInsumo(int id)
     {
         var insumo = await _context.Insumos.FindAsync(id);
