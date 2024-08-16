@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CERVERICA.Controllers
 {
-    [Authorize]
+    /*[Authorize]*/
     [Route("api/[controller]")]
     [ApiController]
     public class RecetaController : ControllerBase
@@ -232,8 +232,83 @@ namespace CERVERICA.Controllers
             return Ok(new { message = "Receta actualizada exitosamente." });
         }
 
+        /* OBTENER PASOS RECETA */
+
+        [HttpGet("{id}/pasos")]
+        public async Task<ActionResult<IEnumerable<PasosRecetaDto>>>
+            GetPasosReceta(int id)
+        {
+            var receta = await _context.Recetas
+                .Include(r => r.PasosReceta)
+                .FirstOrDefaultAsync(r => r.Id == id);
+
+            if (receta == null)
+            {
+                return NotFound(new { message = "Receta no existe." });
+            }
+
+            var pasos = receta.PasosReceta
+                .Select(p => new PasosRecetaDto
+                {
+                    Id = p.Id,
+                    Orden = p.Orden,
+                    Descripcion = p.Descripcion,
+                    Tiempo = p.Tiempo
+                })
+                .OrderBy(p => p.Orden)
+                .ToList();
+
+            return Ok(pasos);
+        }
+
+        /* CREAR PASOS RECETA */
+
+        [HttpPost("{id}/pasos")]
+        public async Task<ActionResult> CreatePasosInReceta(int id, List<PasosInsertDto> pasosDto)
+        {
+            var receta = await _context.Recetas
+                .Include(r => r.PasosReceta)
+                .FirstOrDefaultAsync(r => r.Id == id);
+
+            if (receta == null)
+            {
+                return NotFound(new { message = "Receta no existe." });
+            }
+
+            // Eliminar pasos existentes
+            foreach (var pasoExistente in receta.PasosReceta.ToList())
+            {
+                _context.PasosRecetas.Remove(pasoExistente);
+            }
+
+            // Agregar nuevos pasos
+            foreach (var pasoDto in pasosDto)
+            {
+                var nuevoPaso = new PasosReceta
+                {
+                    IdReceta = id,
+                    Orden = pasoDto.Orden,
+                    Tiempo = pasoDto.Tiempo,
+                    Descripcion = pasoDto.Descripcion
+                };
+                receta.PasosReceta.Add(nuevoPaso);
+            }
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error al crear los pasos.", error = ex.Message });
+            }
+
+            return Ok(new { message = "Pasos creados en la receta." });
+        }
+
+
         [HttpPut("{id}/pasos")]
-        public async Task<ActionResult> EditPasosInReceta(int id, List<PasosRecetaDto> pasosDto)
+        public async Task<ActionResult> EditPasosInReceta(int id, List<PasosUpdateDto> pasosDto)
         {
             var receta = await _context.Recetas
                 .Include(r => r.PasosReceta)
@@ -248,7 +323,7 @@ namespace CERVERICA.Controllers
             var pasosExistentes = receta.PasosReceta.ToList();
             foreach (var pasoExistente in pasosExistentes)
             {
-                if (!pasosDto.Any(p => p.Orden == pasoExistente.Orden))
+                if (!pasosDto.Any(p => p.Id == pasoExistente.Id))
                 {
                     _context.PasosRecetas.Remove(pasoExistente);
                 }
