@@ -24,8 +24,5 @@ namespace CERVERICA.Models
 
         [Required]
         public bool Visto { get; set; }
-
-
-
     }
 }
