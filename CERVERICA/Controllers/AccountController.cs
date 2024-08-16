@@ -180,6 +180,7 @@ namespace CERVERICA.Controllers
                 RefreshToken = refreshToken,
                 IdUsuario = user.Id,
                 Nombre = user.FullName,
+                Email = user.Email,
                 Rol = (await _userManager.GetRolesAsync(user)).FirstOrDefault()
 
             });
