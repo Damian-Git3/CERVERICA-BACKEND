@@ -143,6 +143,33 @@ namespace CERVERICA.Controllers
 
             await CalcularCostoProduccion(receta.Id);
 
+            try
+            {
+
+                //encontrar la id del rol Admin
+                var adminRoleId = _context.Roles.Where(r => r.Name == "Admin").Select(r => r.Id).FirstOrDefault();
+
+                List<String> userIds = _context.UserRoles.Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToList();
+
+                foreach (var idAdmin in userIds)
+                {
+                    var notificacion = new Notificacion
+                    {
+                        IdUsuario = idAdmin,
+                        Mensaje = $"Se agregó una nueva receta: {receta.Nombre}",
+                        Fecha = DateTime.Now,
+                        Tipo = 7,
+                        Visto = false
+                    };
+                    _context.Notificaciones.Add(notificacion);
+                }
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+
+            }
+
             return Ok(new { message = "Receta insertada.", id = receta.Id });
         }
 
@@ -228,7 +255,32 @@ namespace CERVERICA.Controllers
                 }
             }
 
+            try
+            {
 
+                //encontrar la id del rol Admin
+                var adminRoleId = _context.Roles.Where(r => r.Name == "Admin").Select(r => r.Id).FirstOrDefault();
+
+                List<String> userIds = _context.UserRoles.Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToList();
+
+                foreach (var idAdmin in userIds)
+                {
+                    var notificacion = new Notificacion
+                    {
+                        IdUsuario = idAdmin,
+                        Mensaje = $"Se modificó una receta: {receta.Nombre}",
+                        Fecha = DateTime.Now,
+                        Tipo = 7,
+                        Visto = false
+                    };
+                    _context.Notificaciones.Add(notificacion);
+                }
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+
+            }
             return Ok(new { message = "Receta actualizada exitosamente." });
         }
 
@@ -363,6 +415,33 @@ namespace CERVERICA.Controllers
                 return StatusCode(500, new { message = "Error al actualizar los pasos.", error = ex.Message });
             }
 
+            try
+            {
+
+                //encontrar la id del rol Admin
+                var adminRoleId = _context.Roles.Where(r => r.Name == "Admin").Select(r => r.Id).FirstOrDefault();
+
+                List<String> userIds = _context.UserRoles.Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToList();
+
+                foreach (var idAdmin in userIds)
+                {
+                    var notificacion = new Notificacion
+                    {
+                        IdUsuario = idAdmin,
+                        Mensaje = $"Se modificaron los pasos de la receta: {receta.Nombre}",
+                        Fecha = DateTime.Now,
+                        Tipo = 7,
+                        Visto = false
+                    };
+                    _context.Notificaciones.Add(notificacion);
+                }
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+
+            }
+
             return Ok(new { message = "Pasos actualizados en la receta." });
         }
 
@@ -382,7 +461,32 @@ namespace CERVERICA.Controllers
             _context.Entry(receta).State = EntityState.Modified;
 
             await _context.SaveChangesAsync();
+            try
+            {
 
+                //encontrar la id del rol Admin
+                var adminRoleId = _context.Roles.Where(r => r.Name == "Admin").Select(r => r.Id).FirstOrDefault();
+
+                List<String> userIds = _context.UserRoles.Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToList();
+
+                foreach (var idAdmin in userIds)
+                {
+                    var notificacion = new Notificacion
+                    {
+                        IdUsuario = idAdmin,
+                        Mensaje = $"Se activo la receta: {receta.Nombre}",
+                        Fecha = DateTime.Now,
+                        Tipo = 7,
+                        Visto = false
+                    };
+                    _context.Notificaciones.Add(notificacion);
+                }
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+
+            }
             return Ok(new { message = "Receta activada." });
         }
 
@@ -403,25 +507,78 @@ namespace CERVERICA.Controllers
 
             await _context.SaveChangesAsync();
 
+            try
+            {
+
+                //encontrar la id del rol Admin
+                var adminRoleId = _context.Roles.Where(r => r.Name == "Admin").Select(r => r.Id).FirstOrDefault();
+
+                List<String> userIds = _context.UserRoles.Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToList();
+
+                foreach (var idAdmin in userIds)
+                {
+                    var notificacion = new Notificacion
+                    {
+                        IdUsuario = idAdmin,
+                        Mensaje = $"Se desactivó la receta: {receta.Nombre}",
+                        Fecha = DateTime.Now,
+                        Tipo = 7,
+                        Visto = false
+                    };
+                    _context.Notificaciones.Add(notificacion);
+                }
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+
+            }
+
             return Ok(new { message = "Receta desactivada." });
         }
 
         // DELETE: api/recetas/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteReceta(int id)
-        {
-            var receta = await _context.Recetas.FindAsync(id);
+        //[HttpDelete("{id}")]
+        //public async Task<IActionResult> DeleteReceta(int id)
+        //{
+        //    var receta = await _context.Recetas.FindAsync(id);
 
-            if (receta == null)
-            {
-                return NotFound(new { message = "Receta no existe." });
-            }
+        //    if (receta == null)
+        //    {
+        //        return NotFound(new { message = "Receta no existe." });
+        //    }
 
-            _context.Recetas.Remove(receta);
-            await _context.SaveChangesAsync();
+        //    _context.Recetas.Remove(receta);
+        //    await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Receta eliminada." });
-        }
+        //    try
+        //    {
+
+        //        //encontrar la id del rol Admin
+        //        var adminRoleId = _context.Roles.Where(r => r.Name == "Admin").Select(r => r.Id).FirstOrDefault();
+
+        //        List<String> userIds = _context.UserRoles.Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToList();
+
+        //        foreach (var idAdmin in userIds)
+        //        {
+        //            var notificacion = new Notificacion
+        //            {
+        //                IdUsuario = idAdmin,
+        //                Mensaje = $"Se eliminó la receta: {receta.Nombre}",
+        //                Fecha = DateTime.Now,
+        //                Tipo = 7,
+        //                Visto = false
+        //            };
+        //            _context.Notificaciones.Add(notificacion);
+        //        }
+        //        await _context.SaveChangesAsync();
+        //    }
+        //    catch (Exception ex)
+        //    {
+
+        //    }
+        //    return Ok(new { message = "Receta eliminada." });
+        //}
 
         private bool RecetaExists(int id)
         {
@@ -568,6 +725,33 @@ namespace CERVERICA.Controllers
                 {
                     throw;
                 }
+            }
+
+            try
+            {
+
+                //encontrar la id del rol Admin
+                var adminRoleId = _context.Roles.Where(r => r.Name == "Admin").Select(r => r.Id).FirstOrDefault();
+
+                List<String> userIds = _context.UserRoles.Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToList();
+
+                foreach (var idAdmin in userIds)
+                {
+                    var notificacion = new Notificacion
+                    {
+                        IdUsuario = idAdmin,
+                        Mensaje = $"Se actualizaron los precios de la receta: {receta.Nombre}",
+                        Fecha = DateTime.Now,
+                        Tipo = 7,
+                        Visto = false
+                    };
+                    _context.Notificaciones.Add(notificacion);
+                }
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+
             }
 
             return NoContent();

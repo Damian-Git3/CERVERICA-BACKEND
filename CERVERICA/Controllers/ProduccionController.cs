@@ -4,6 +4,9 @@ using CERVERICA.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.Diagnostics;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+
 
 namespace CERVERICA.Controllers
 {
@@ -142,6 +145,12 @@ namespace CERVERICA.Controllers
         [HttpPost]
         public async Task<IActionResult> SolicitarProduccion([FromBody] SolicitarProduccionDto solicitudDto)
         {
+            //si el numero de tandas es menor a 1
+            if (solicitudDto.NumeroTandas < 1)
+            {
+                return BadRequest(new { message = "El número de tandas debe ser mayor a 0." });
+            }
+
             using (var transaction = await _context.Database.BeginTransactionAsync())
             {
                 try
@@ -245,6 +254,40 @@ namespace CERVERICA.Controllers
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
 
+                    
+
+                    try
+                    {
+
+                        var s = "";
+                        if (produccion.NumeroTandas > 1)
+                        {
+                            s = "s";
+                        }
+                        Notificacion notificacion = new Notificacion
+                        {
+                            IdUsuario = produccion.IdUsuarioSolicitud,
+                            Fecha = DateTime.Now,
+                            Tipo = 5,
+                            Mensaje = "Se ha hecho una solicitud de producción de " + produccion.NumeroTandas + $" tanda{s} de " + receta.Nombre,
+                            Visto = false
+                        };
+
+                        _context.Notificaciones.Add(notificacion);
+
+                        Notificacion notificacion2 = new Notificacion
+                        {
+                            IdUsuario = produccion.IdUsuarioProduccion,
+                            Fecha = DateTime.Now,
+                            Tipo = 5,
+                            Mensaje = "Se ha hecho una solicitud de producción de " + produccion.NumeroTandas + $" tanda{s} de " + receta.Nombre,
+                            Visto = false
+                        };
+
+                        _context.Notificaciones.Add(notificacion2);
+                        await _context.SaveChangesAsync();
+                    }catch(Exception ex){}
+
                     return Ok(new { id = produccion.Id, message = "Solicitud de produccion de receta realizada. Verifique la reduccion de insumos." });
                 }
                 catch (Exception ex)
@@ -275,6 +318,41 @@ namespace CERVERICA.Controllers
             }
             production.Estatus = 1;
             await _context.SaveChangesAsync();
+
+            try
+            {
+                //encontrar el nombre de la receta
+                var receta = await _context.Recetas.FindAsync(production.IdReceta);
+                var s = "";
+                if (production.NumeroTandas > 1)
+                {
+                    s = "s";
+                }
+
+                Notificacion notificacion = new Notificacion
+                {
+                    IdUsuario = production.IdUsuarioSolicitud,
+                    Fecha = DateTime.Now,
+                    Tipo = 5,
+                    Mensaje = "Se ha vuelto a solicitar producción de " + production.NumeroTandas + $" tanda{s} de " + receta?.Nombre,
+                    Visto = false
+                };
+
+                _context.Notificaciones.Add(notificacion);
+
+                Notificacion notificacion2 = new Notificacion
+                {
+                    IdUsuario = production.IdUsuarioProduccion,
+                    Fecha = DateTime.Now,
+                    Tipo = 5,
+                    Mensaje = "Se ha vuelto a solicitar producción de " + production.NumeroTandas + $" tanda{s} de " + receta?.Nombre,
+                    Visto = false
+                };
+
+                _context.Notificaciones.Add(notificacion2);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex) { }
 
             return Ok(new { Message = "Produccion solicitada nuevamente." });
         }
@@ -312,6 +390,41 @@ namespace CERVERICA.Controllers
             _context.Producciones.Remove(produccion);
             await _context.SaveChangesAsync();
 
+            try
+            {
+                //encontrar el nombre de la receta
+                var receta = await _context.Recetas.FindAsync(produccion.IdReceta);
+                var s = "";
+                if (produccion.NumeroTandas > 1)
+                {
+                    s = "s";
+                }
+
+                Notificacion notificacion = new Notificacion
+                {
+                    IdUsuario = produccion.IdUsuarioSolicitud,
+                    Fecha = DateTime.Now,
+                    Tipo = 5,
+                    Mensaje = "Se canceló la producción de " + produccion.NumeroTandas + $" tanda{s} de " + receta?.Nombre,
+                    Visto = false
+                };
+
+                _context.Notificaciones.Add(notificacion);
+
+                Notificacion notificacion2 = new Notificacion
+                {
+                    IdUsuario = produccion.IdUsuarioProduccion,
+                    Fecha = DateTime.Now,
+                    Tipo = 5,
+                    Mensaje = "Se canceló la producción de " + produccion.NumeroTandas + $" tanda{s} de " + receta?.Nombre,
+                    Visto = false
+                };
+
+                _context.Notificaciones.Add(notificacion2);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex) { }
+
             return Ok(new { message = "Produccion cancelada. Insumos devueltos al almacen." });
         }
 
@@ -343,6 +456,18 @@ namespace CERVERICA.Controllers
                 production.MermaLitros = production.Receta.LitrosEstimados * production.NumeroTandas;
                 production.LitrosFinales = 0;
                 _context.Entry(production).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+
+                Notificacion notificacion = new Notificacion
+                {
+                    IdUsuario = production.IdUsuarioSolicitud,
+                    Fecha = DateTime.Now,
+                    Tipo = 5,
+                    Mensaje = $"Se almacenó una producción como fallida",
+                    Visto = false
+                };
+
+                _context.Notificaciones.Add(notificacion);
                 await _context.SaveChangesAsync();
                 return Ok(new { Message = "Producción perdida." });
             }
@@ -416,6 +541,17 @@ namespace CERVERICA.Controllers
                 production.LitrosFinales = 0;
                 _context.Entry(production).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
+                Notificacion notificacion = new Notificacion
+                {
+                    IdUsuario = production.IdUsuarioSolicitud,
+                    Fecha = DateTime.Now,
+                    Tipo = 5,
+                    Mensaje = $"Se almacenó una producción como fallida",
+                    Visto = false
+                };
+
+                _context.Notificaciones.Add(notificacion);
+                await _context.SaveChangesAsync();
                 return Ok(new { Message = "Producción finalizada como fallida." });
             }
 
@@ -453,6 +589,41 @@ namespace CERVERICA.Controllers
             _context.Stocks.Add(stock);
             await _context.SaveChangesAsync();
 
+            try
+            {
+                //encontrar el nombre de la receta
+                var receta = await _context.Recetas.FindAsync(production.IdReceta);
+
+                var s = "";
+                if (production.NumeroTandas > 1)
+                {
+                    s = "s";
+                }
+                Notificacion notificacion = new Notificacion
+                {
+                    IdUsuario = production.IdUsuarioSolicitud,
+                    Fecha = DateTime.Now,
+                    Tipo = 5,
+                    Mensaje = $"Se almacenó en stock {stock.Cantidad} {stock.TipoEnvase}s de {receta?.Nombre} de {stock.MedidaEnvase} ml",
+                    Visto = false
+                };
+
+                _context.Notificaciones.Add(notificacion);
+
+                Notificacion notificacion2 = new Notificacion
+                {
+                    IdUsuario = production.IdUsuarioProduccion,
+                    Fecha = DateTime.Now,
+                    Tipo = 5,
+                    Mensaje = "Se almacenó la producción de " + production.NumeroTandas + $" tanda{s} de " + receta?.Nombre,
+                    Visto = false
+                };
+
+                _context.Notificaciones.Add(notificacion2);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex) { }
+
             return Ok(new { Message = "Production finalizada y almacenaje del producto en stock." });
         }
 
@@ -480,33 +651,68 @@ namespace CERVERICA.Controllers
             _context.Entry(produccion).State = EntityState.Modified;
             await _context.SaveChangesAsync();
 
+            try
+            {
+                //encontrar el nombre de la receta
+                var receta = await _context.Recetas.FindAsync(produccion.IdReceta);
+                var s = "";
+                if (produccion.NumeroTandas > 1)
+                {
+                    s = "s";
+                }
+
+                Notificacion notificacion = new Notificacion
+                {
+                    IdUsuario = produccion.IdUsuarioSolicitud,
+                    Fecha = DateTime.Now,
+                    Tipo = 5,
+                    Mensaje = "Se re-asignó la producción de " + produccion.NumeroTandas + $" tanda{s} de " + receta?.Nombre,
+                    Visto = false
+                };
+
+                _context.Notificaciones.Add(notificacion);
+
+                Notificacion notificacion2 = new Notificacion
+                {
+                    IdUsuario = produccion.IdUsuarioProduccion,
+                    Fecha = DateTime.Now,
+                    Tipo = 5,
+                    Mensaje = "Se le re-asignó la producción de " + produccion.NumeroTandas + $" tanda{s} de " + receta?.Nombre,
+                    Visto = false
+                };
+
+                _context.Notificaciones.Add(notificacion2);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex) { }
+
             return Ok(new { Message = "Usuario de producción cambiado." });
         }
 
-        [HttpPost("cambiarestdo")]
-        public async Task<IActionResult> CambiarEstadoProduccion(int idproduccion, byte estatus)
-        {
-            var produccion = await _context.Producciones.FindAsync(idproduccion);
+        //[HttpPost("cambiarestdo")]
+        //public async Task<IActionResult> CambiarEstadoProduccion(int idproduccion, byte estatus)
+        //{
+        //    var produccion = await _context.Producciones.FindAsync(idproduccion);
 
-            produccion.Estatus = estatus;
+        //    produccion.Estatus = estatus;
 
-            _context.Entry(produccion).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
+        //    _context.Entry(produccion).State = EntityState.Modified;
+        //    await _context.SaveChangesAsync();
 
-            return Ok(new { Message = "Estatus de producción a 3 otra vez." });
-        }
+        //    return Ok(new { Message = "Estatus de producción a 3 otra vez." });
+        //}
 
-        //vaciar tabla stock
-        [HttpPost("vaciarstock")]
-        public async Task<IActionResult> VaciarStock()
-        {
-            var stocks = await _context.Stocks.ToListAsync();
+        ////vaciar tabla stock
+        //[HttpPost("vaciarstock")]
+        //public async Task<IActionResult> VaciarStock()
+        //{
+        //    var stocks = await _context.Stocks.ToListAsync();
 
-            _context.Stocks.RemoveRange(stocks);
-            await _context.SaveChangesAsync();
+        //    _context.Stocks.RemoveRange(stocks);
+        //    await _context.SaveChangesAsync();
 
-            return Ok(new { Message = "Stock vaciado." });
-        }
+        //    return Ok(new { Message = "Stock vaciado." });
+        //}
 
         private async Task ActualizarCostoReceta(int idReceta)
         {
@@ -578,6 +784,40 @@ namespace CERVERICA.Controllers
 
                 _context.SaveChanges();
 
+                try
+                {
+                    
+                    var s = "";
+                    if (produccion.NumeroTandas > 1)
+                    {
+                        s = "s";
+                    }
+
+                    Notificacion notificacion = new Notificacion
+                    {
+                        IdUsuario = produccion.IdUsuarioSolicitud,
+                        Fecha = DateTime.Now,
+                        Tipo = 5,
+                        Mensaje = "El usuario operador aceptó la producción de " + produccion.NumeroTandas + $" tanda{s} de " + receta?.Nombre,
+                        Visto = false
+                    };
+
+                    _context.Notificaciones.Add(notificacion);
+
+                    Notificacion notificacion2 = new Notificacion
+                    {
+                        IdUsuario = produccion.IdUsuarioProduccion,
+                        Fecha = DateTime.Now,
+                        Tipo = 5,
+                        Mensaje = "Aceptó la producción de " + produccion.NumeroTandas + $" tanda{s} de " + receta?.Nombre,
+                        Visto = false
+                    };
+
+                    _context.Notificaciones.Add(notificacion2);
+                    _context.SaveChangesAsync();
+                }
+                catch (Exception ex) { }
+
                 return Ok(new { message = mensajeReceta });
             }
             else
@@ -599,7 +839,43 @@ namespace CERVERICA.Controllers
 
                 _context.SaveChanges();
 
-                return Ok(new { message = "Solicitud rechazada correctamente" });
+                try
+                {
+                    var receta = _context.Recetas
+                        .FirstOrDefault(r => r.Id == produccion.IdReceta)?.Nombre;
+
+                    var s = "";
+                    if (produccion.NumeroTandas > 1)
+                    {
+                        s = "s";
+                    }
+
+                    Notificacion notificacion = new Notificacion
+                    {
+                        IdUsuario = produccion.IdUsuarioSolicitud,
+                        Fecha = DateTime.Now,
+                        Tipo = 5,
+                        Mensaje = "El usuario operador rechazó la producción de " + produccion.NumeroTandas + $" tanda{s} de " + receta,
+                        Visto = false
+                    };
+
+                    _context.Notificaciones.Add(notificacion);
+
+                    Notificacion notificacion2 = new Notificacion
+                    {
+                        IdUsuario = produccion.IdUsuarioProduccion,
+                        Fecha = DateTime.Now,
+                        Tipo = 5,
+                        Mensaje = "Rechazó la producción de " + produccion.NumeroTandas + $" tanda{s} de " + receta,
+                        Visto = false
+                    };
+
+                    _context.Notificaciones.Add(notificacion2);
+                    _context.SaveChangesAsync();
+                }
+                catch (Exception ex) { }
+
+                return Ok(new { message =  "Solicitud rechazada correctamente"});
             }
             else
             {
@@ -620,6 +896,41 @@ namespace CERVERICA.Controllers
                 produccion.Estatus = 6;
 
                 _context.SaveChanges();
+
+                try
+                {
+                    var receta = _context.Recetas
+                        .FirstOrDefault(r => r.Id == produccion.IdReceta)?.Nombre;
+
+                    var s = "";
+                    if (produccion.NumeroTandas > 1)
+                    {
+                        s = "s";
+                    }
+                    Notificacion notificacion = new Notificacion
+                    {
+                        IdUsuario = produccion.IdUsuarioSolicitud,
+                        Fecha = DateTime.Now,
+                        Tipo = 5,
+                        Mensaje = "El usuario operador pospuso la producción de " + produccion.NumeroTandas + $" tanda{s} de " + receta,
+                        Visto = false
+                    };
+
+                    _context.Notificaciones.Add(notificacion);
+
+                    Notificacion notificacion2 = new Notificacion
+                    {
+                        IdUsuario = produccion.IdUsuarioProduccion,
+                        Fecha = DateTime.Now,
+                        Tipo = 5,
+                        Mensaje = "Pospuso la producción de " + produccion.NumeroTandas + $" tanda{s} de " + receta,
+                        Visto = false
+                    };
+
+                    _context.Notificaciones.Add(notificacion2);
+                    _context.SaveChangesAsync();
+                }
+                catch (Exception ex) { }
 
                 return Ok(new { message = "Solicitud pospuesta correctamente" });
             }
@@ -650,7 +961,7 @@ namespace CERVERICA.Controllers
 
             var pasos = produccion.Receta.PasosReceta.OrderBy(p => p.Orden).ToList();
             var pasoActual = produccion.Paso;
-            var pasoSiguiente = pasos.FirstOrDefault(p => p.Orden == pasoActual + 1);
+            var pasoSiguiente = pasos.FirstOrDefault(p => p.Orden > pasoActual);
 
             if (produccion.FechaProximoPaso > DateTime.Now)
             {
@@ -688,6 +999,58 @@ namespace CERVERICA.Controllers
             {
                 message = "Producción completada. En espera de almacenamiento.";
             }
+
+            try
+            {
+                var receta = _context.Recetas
+                    .FirstOrDefault(r => r.Id == produccion.IdReceta)?.Nombre;
+
+                var s = "";
+                if (produccion.NumeroTandas > 1)
+                {
+                    s = "s";
+                }
+
+                if(produccion.Estatus == 3)
+                {
+                    Notificacion notificacion = new Notificacion
+                    {
+                        IdUsuario = produccion.IdUsuarioProduccion,
+                        //poner la fecha de la notificacion con la fecha actual mas el tiempo del paso
+                        Fecha = DateTime.Now,
+                        Tipo = 5,
+                        Mensaje = $"Ya finalizaste la producción de {produccion.NumeroTandas} tanda{s} de {receta}",
+                        Visto = false
+                    };
+                    _context.Notificaciones.Add(notificacion);
+
+                    Notificacion notificacion2 = new Notificacion
+                    {
+                        IdUsuario = produccion.IdUsuarioSolicitud,
+                        //poner la fecha de la notificacion con la fecha actual mas el tiempo del paso
+                        Fecha = DateTime.Now,
+                        Tipo = 5,
+                        Mensaje = $"La producción de {produccion.NumeroTandas} tanda{s} de {receta} espera almacenaje",
+                        Visto = false
+                    };
+                    _context.Notificaciones.Add(notificacion2);
+                }
+                else
+                {
+                    Notificacion notificacion = new Notificacion
+                    {
+                        IdUsuario = produccion.IdUsuarioProduccion,
+                        //poner la fecha de la notificacion con la fecha actual mas el tiempo del paso
+                        Fecha = DateTime.Now.AddHours(pasoSiguiente.Tiempo),
+                        Tipo = 5,
+                        Mensaje = $"Ya se puede avanzar en la producción de {produccion.NumeroTandas} tanda{s} de {receta}",
+                        Visto = false
+                    };
+                    _context.Notificaciones.Add(notificacion);
+                }
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex) { }
 
             return Ok(new { message });
         }

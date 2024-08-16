@@ -266,6 +266,30 @@ namespace CERVERICA.Controllers
 
             await RecalcularCostoUnitario(loteInsumo.IdInsumo);
 
+            try
+            { //##########  Enviar notificación a los Admins ##########
+
+                //encontrar la id del rol Admin
+                var adminRoleId = _context.Roles.Where(r => r.Name == "Admin").Select(r => r.Id).FirstOrDefault();
+
+                List<String> userIds = _context.UserRoles.Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToList();
+
+                foreach (var idAdmin in userIds)
+                {
+                    var notificacion = new Notificacion
+                    {
+                        IdUsuario = idAdmin,
+                        Mensaje = $"Se ha comprado un nuevo lote del insumo: {insumo.Nombre}",
+                        Fecha = DateTime.Now,
+                        Tipo = 4,
+                        Visto = false
+                    };
+                    _context.Notificaciones.Add(notificacion);
+                }
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex){}
+
             return Ok(new { message = "Lote de Insumo insertado.", id = loteInsumo.Id });
         }
 
@@ -313,6 +337,33 @@ namespace CERVERICA.Controllers
                     throw;
                 }
             }
+
+            try
+            { //##########  Enviar notificación a los Admins ##########
+
+                //encontrar la id del rol Admin
+                var adminRoleId = _context.Roles.Where(r => r.Name == "Admin").Select(r => r.Id).FirstOrDefault();
+
+                List<String> userIds = _context.UserRoles.Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToList();
+
+                //encontrar el insumo
+                var insumo = await _context.Insumos.FindAsync(loteInsumo.IdInsumo);
+
+                foreach (var idAdmin in userIds)
+                {
+                    var notificacion = new Notificacion
+                    {
+                        IdUsuario = idAdmin,
+                        Mensaje = $"Se ha modificado la compra de un nuevo lote del insumo: {insumo.Nombre}",
+                        Fecha = DateTime.Now,
+                        Tipo = 4,
+                        Visto = false
+                    };
+                    _context.Notificaciones.Add(notificacion);
+                }
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex) { }
 
             return Ok(new { message = "Lote de Insumo actualizado." });
         }
@@ -384,6 +435,31 @@ namespace CERVERICA.Controllers
                     throw;
                 }
             }
+
+            try
+            { //##########  Enviar notificación a los Admins ##########
+
+                //encontrar la id del rol Admin
+                var adminRoleId = _context.Roles.Where(r => r.Name == "Admin").Select(r => r.Id).FirstOrDefault();
+
+                List<String> userIds = _context.UserRoles.Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToList();
+                //encontrar el insumo
+                var insumo = await _context.Insumos.FindAsync(loteInsumo.IdInsumo);
+                foreach (var idAdmin in userIds)
+                {
+                    var notificacion = new Notificacion
+                    {
+                        IdUsuario = idAdmin,
+                        Mensaje = $"Se ha registrado merma de un lote del insumo: {insumo.Nombre}",
+                        Fecha = DateTime.Now,
+                        Tipo = 4,
+                        Visto = false
+                    };
+                    _context.Notificaciones.Add(notificacion);
+                }
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex) { }
 
             return Ok(new { message = "Cantidad del Lote de Insumo y Precio Unidad actualizados." });
         }
