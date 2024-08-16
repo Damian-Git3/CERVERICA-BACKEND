@@ -69,9 +69,9 @@ namespace CERVERICA.Controllers
                     Activo = r.Activo,
                     IngredientesReceta = r.IngredientesReceta.Select(ir => new IngredienteRecetaDto
                     {
-                        IdInsumo = ir.IdInsumo,
+                        Id = ir.IdInsumo,
                         Cantidad = ir.Cantidad,
-                        NombreInsumo = ir.Insumo.Nombre,
+                        Nombre = ir.Insumo.Nombre,
                         UnidadMedida = ir.Insumo.UnidadMedida
                     }).ToList(),
                     PasosReceta = r.PasosReceta.Select(pr => new PasosRecetaDto
@@ -108,25 +108,29 @@ namespace CERVERICA.Controllers
                 Descripcion = recetaDto.Descripcion,
                 Nombre = recetaDto.Nombre,
                 Especificaciones = recetaDto.Especificaciones,
+                PrecioPaquete1 = recetaDto.PrecioPaquete1,
+                PrecioPaquete6 = recetaDto.PrecioPaquete6,
+                PrecioPaquete12 = recetaDto.PrecioPaquete12,
+                PrecioPaquete24 = recetaDto.PrecioPaquete24,
                 CostoProduccion = 0,
                 Imagen = recetaDto.Imagen,
                 RutaFondo = recetaDto.RutaFondo,
                 FechaRegistrado = System.DateTime.Now,
                 Activo = true,
-                IngredientesReceta = new List<IngredienteReceta>()
+                IngredientesReceta = []
             };
 
             foreach (var ingredienteDto in recetaDto.IngredientesReceta)
             {
-                var insumo = await _context.Insumos.FindAsync(ingredienteDto.IdInsumo);
+                var insumo = await _context.Insumos.FindAsync(ingredienteDto.Id);
                 if (insumo == null)
                 {
-                    return NotFound(new { message = $"Insumo con ID {ingredienteDto.IdInsumo} no encontrado." });
+                    return NotFound(new { message = $"Insumo con ID {ingredienteDto.Id} no encontrado." });
                 }
 
                 var ingredienteReceta = new IngredienteReceta
                 {
-                    IdInsumo = ingredienteDto.IdInsumo,
+                    IdInsumo = ingredienteDto.Id,
                     Cantidad = ingredienteDto.Cantidad,
                     Receta = receta
                 };
@@ -178,7 +182,7 @@ namespace CERVERICA.Controllers
             foreach (var ingredienteDto in recetaDto.IngredientesReceta)
             {
                 var ingredienteExistente = ingredientesExistentes
-                    .FirstOrDefault(i => i.IdInsumo == ingredienteDto.IdInsumo);
+                    .FirstOrDefault(i => i.IdInsumo == ingredienteDto.Id);
 
                 if (ingredienteExistente != null)
                 {
@@ -193,7 +197,7 @@ namespace CERVERICA.Controllers
                     var ingredienteNuevo = new IngredienteReceta
                     {
                         IdReceta = receta.Id,
-                        IdInsumo = ingredienteDto.IdInsumo,
+                        IdInsumo = ingredienteDto.Id,
                         Cantidad = ingredienteDto.Cantidad
                     };
                     _context.IngredientesReceta.Add(ingredienteNuevo);
