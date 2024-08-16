@@ -384,12 +384,13 @@ namespace CERVERICA.Controllers
             // Actualizar o agregar pasos
             foreach (var pasoDto in pasosDto)
             {
-                var pasoExistente = pasosExistentes.FirstOrDefault(p => p.Orden == pasoDto.Orden);
+                var pasoExistente = pasosExistentes.FirstOrDefault(p => p.Id == pasoDto.Id);
                 if (pasoExistente != null)
                 {
                     // Actualizar paso existente
                     pasoExistente.Descripcion = pasoDto.Descripcion;
                     pasoExistente.Tiempo = pasoDto.Tiempo;
+                    pasoExistente.Orden = pasoDto.Orden;
                     _context.Entry(pasoExistente).State = EntityState.Modified;
                 }
                 else
