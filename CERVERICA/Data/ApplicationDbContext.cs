@@ -24,14 +24,12 @@ namespace CERVERICA.Data
         public DbSet<ProduccionLoteInsumo> ProduccionLoteInsumos { get; set; }
         public DbSet<FavoritoUsuario> FavoritosUsuarios { get; set; }
         public DbSet<ProductoCarrito> ProductosCarrito { get; set; }
+        public DbSet<Notificacion> Notificaciones { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Definición de tablas intermedias de muchos a muchos
             modelBuilder.Entity<IngredienteReceta>()
                 .HasKey(ir => new { ir.IdReceta, ir.IdInsumo });
-
-            modelBuilder.Entity<DetalleVenta>()
-                .HasKey(dv => new { dv.IdVenta, dv.IdStock });
 
             modelBuilder.Entity<ProduccionLoteInsumo>(entity =>
             {

@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using RestSharp;
 using System.Transactions;
+using CERVERICA.Data;
 
 namespace CERVERICA.Controllers
 {
@@ -24,16 +25,19 @@ namespace CERVERICA.Controllers
 
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly ApplicationDbContext _context;
         private readonly IConfiguration _configuration;
 
 
         public AccountController(UserManager<ApplicationUser> userManager,
         RoleManager<IdentityRole> roleManager,
+        ApplicationDbContext context,
         IConfiguration configuration
         )
         {
             _userManager = userManager;
             _roleManager = roleManager;
+            _context = context;
             _configuration = configuration;
 
         }
@@ -92,6 +96,18 @@ namespace CERVERICA.Controllers
                             Message = "El registro no se pudo realizar."
                         });
                     }
+
+                    Notificacion notificacion = new Notificacion
+                    {
+                        IdUsuario = user.Id,
+                        Fecha = DateTime.Now,
+                        Tipo = 1,
+                        Mensaje = "Bienvenido a Cerverica",
+                        Visto = false
+                    };
+
+                    _context.Notificaciones.Add(notificacion);
+                    await _context.SaveChangesAsync();
 
                     transaction.Complete();
                 }
@@ -213,6 +229,18 @@ namespace CERVERICA.Controllers
             user.Activo = true;
             await _userManager.UpdateAsync(user);
 
+            Notificacion notificacion = new Notificacion
+            {
+                IdUsuario = user.Id,
+                Fecha = DateTime.Now,
+                Tipo = 1,
+                Mensaje = "Tu usuario ha sido activado otra vez",
+                Visto = false
+            };
+
+            _context.Notificaciones.Add(notificacion);
+            await _context.SaveChangesAsync();
+
             return Ok(new AuthResponseDto
             {
                 IsSuccess = true,
@@ -237,6 +265,18 @@ namespace CERVERICA.Controllers
 
             user.Activo = false;
             await _userManager.UpdateAsync(user);
+
+            Notificacion notificacion = new Notificacion
+            {
+                IdUsuario = user.Id,
+                Fecha = DateTime.Now,
+                Tipo = 1,
+                Mensaje = "Tu usuario ha sido desactivado",
+                Visto = false
+            };
+
+            _context.Notificaciones.Add(notificacion);
+            await _context.SaveChangesAsync();
 
             return Ok(new AuthResponseDto
             {
@@ -383,6 +423,19 @@ namespace CERVERICA.Controllers
 
             if (result.Succeeded)
             {
+
+                Notificacion notificacion = new Notificacion
+                {
+                    IdUsuario = user.Id,
+                    Fecha = DateTime.Now,
+                    Tipo = 1,
+                    Mensaje = "Restauraste tu contraseña",
+                    Visto = false
+                };
+
+                _context.Notificaciones.Add(notificacion);
+                await _context.SaveChangesAsync();
+
                 return Ok(new AuthResponseDto
                 {
                     IsSuccess = true,
@@ -415,6 +468,18 @@ namespace CERVERICA.Controllers
 
             if (result.Succeeded)
             {
+
+                Notificacion notificacion = new Notificacion
+                {
+                    IdUsuario = user.Id,
+                    Fecha = DateTime.Now,
+                    Tipo = 1,
+                    Mensaje = "Cambiaste tu contraseña",
+                    Visto = false
+                };
+
+                _context.Notificaciones.Add(notificacion);
+                await _context.SaveChangesAsync();
                 return Ok(new AuthResponseDto
                 {
                     IsSuccess = true,

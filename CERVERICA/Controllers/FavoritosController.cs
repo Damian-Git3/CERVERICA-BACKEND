@@ -53,6 +53,22 @@ namespace CERVERICA.Controllers
             _db.FavoritosUsuarios.Add(nuevoFavoritoUsuario);
             await _db.SaveChangesAsync();
 
+            //obtener el nombre de la cerveza 
+            var receta = await _db.Recetas.FirstOrDefaultAsync(r => r.Id == favoritoUsuarioAgregar.IdReceta);
+
+            Notificacion notificacion = new Notificacion
+            {
+                IdUsuario = user.Id,
+                Fecha = DateTime.Now,
+                Tipo = 1,
+                //mostrar el mensaje de que guardo la cerveza en favoritos
+                Mensaje = "Guardaste la cerveza " + receta.Nombre + " en favoritos",
+                Visto = false
+            };
+
+            _db.Notificaciones.Add(notificacion);
+            await _db.SaveChangesAsync();
+
             return Ok(nuevoFavoritoUsuario);
         }
 
@@ -80,6 +96,22 @@ namespace CERVERICA.Controllers
 
             _db.FavoritosUsuarios.Remove(favoritoUsuarioEliminar);
 
+            await _db.SaveChangesAsync();
+
+            //obtener el nombre de la cerveza 
+            var receta = await _db.Recetas.FirstOrDefaultAsync(r => r.Id == favoritoUsuario.IdReceta);
+
+            Notificacion notificacion = new Notificacion
+            {
+                IdUsuario = user.Id,
+                Fecha = DateTime.Now,
+                Tipo = 1,
+                //mostrar el mensaje de que guardo la cerveza en favoritos
+                Mensaje = "Quitaste la cerveza " + receta.Nombre + " de favoritos",
+                Visto = false
+            };
+
+            _db.Notificaciones.Add(notificacion);
             await _db.SaveChangesAsync();
 
             return Ok(new { message = "Favorito eliminado exitosamente" });

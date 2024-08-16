@@ -1,12 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using CERVERICA.Models;
-using CERVERICA.Data;
+﻿using CERVERICA.Data;
 using CERVERICA.Dtos;
+using CERVERICA.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace CERVERICA.Controllers
 {
@@ -48,9 +45,10 @@ namespace CERVERICA.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<RecetaDetallesDto>> GetReceta(int id)
         {
-            var receta = await _context.Recetas
+            var receta = await _context
+                .Recetas
                 .Include(r => r.IngredientesReceta)
-                    .ThenInclude(ir => ir.Insumo)
+                .ThenInclude(ir => ir.Insumo)
                 .Include(r => r.PasosReceta)
                 .Where(r => r.Id == id)
                 .Select(r => new RecetaDetallesDto
@@ -58,6 +56,12 @@ namespace CERVERICA.Controllers
                     Id = r.Id,
                     LitrosEstimados = r.LitrosEstimados,
                     PrecioLitro = r.PrecioLitro,
+                    PrecioPaquete1 = r.PrecioPaquete1,
+                    PrecioPaquete6 = r.PrecioPaquete6,
+                    PrecioPaquete12 = r.PrecioPaquete12,
+                    PrecioPaquete24 = r.PrecioPaquete24,
+                    Especificaciones = r.Especificaciones,
+                    RutaFondo = r.RutaFondo,
                     Descripcion = r.Descripcion,
                     Nombre = r.Nombre,
                     CostoProduccion = r.CostoProduccion,
@@ -65,9 +69,9 @@ namespace CERVERICA.Controllers
                     Activo = r.Activo,
                     IngredientesReceta = r.IngredientesReceta.Select(ir => new IngredienteRecetaDto
                     {
-                        IdInsumo = ir.IdInsumo,
+                        Id = ir.IdInsumo,
                         Cantidad = ir.Cantidad,
-                        NombreInsumo = ir.Insumo.Nombre,
+                        Nombre = ir.Insumo.Nombre,
                         UnidadMedida = ir.Insumo.UnidadMedida
                     }).ToList(),
                     PasosReceta = r.PasosReceta.Select(pr => new PasosRecetaDto
@@ -100,29 +104,33 @@ namespace CERVERICA.Controllers
             var receta = new Receta
             {
                 LitrosEstimados = recetaDto.LitrosEstimados,
-                PrecioLitro = 0, 
+                PrecioLitro = 0,
                 Descripcion = recetaDto.Descripcion,
                 Nombre = recetaDto.Nombre,
                 Especificaciones = recetaDto.Especificaciones,
+                PrecioPaquete1 = recetaDto.PrecioPaquete1,
+                PrecioPaquete6 = recetaDto.PrecioPaquete6,
+                PrecioPaquete12 = recetaDto.PrecioPaquete12,
+                PrecioPaquete24 = recetaDto.PrecioPaquete24,
                 CostoProduccion = 0,
                 Imagen = recetaDto.Imagen,
                 RutaFondo = recetaDto.RutaFondo,
                 FechaRegistrado = System.DateTime.Now,
                 Activo = true,
-                IngredientesReceta = new List<IngredienteReceta>()
+                IngredientesReceta = []
             };
 
             foreach (var ingredienteDto in recetaDto.IngredientesReceta)
             {
-                var insumo = await _context.Insumos.FindAsync(ingredienteDto.IdInsumo);
+                var insumo = await _context.Insumos.FindAsync(ingredienteDto.Id);
                 if (insumo == null)
                 {
-                    return NotFound(new { message = $"Insumo con ID {ingredienteDto.IdInsumo} no encontrado." });
+                    return NotFound(new { message = $"Insumo con ID {ingredienteDto.Id} no encontrado." });
                 }
 
                 var ingredienteReceta = new IngredienteReceta
                 {
-                    IdInsumo = ingredienteDto.IdInsumo,
+                    IdInsumo = ingredienteDto.Id,
                     Cantidad = ingredienteDto.Cantidad,
                     Receta = receta
                 };
@@ -135,7 +143,7 @@ namespace CERVERICA.Controllers
 
             await CalcularCostoProduccion(receta.Id);
 
-            return Ok(new {message="Receta insertada.", id = receta.Id });
+            return Ok(new { message = "Receta insertada.", id = receta.Id });
         }
 
         // PUT: api/recetas/5
@@ -158,13 +166,15 @@ namespace CERVERICA.Controllers
 
             // Actualizar propiedades de la receta
             receta.LitrosEstimados = recetaDto.LitrosEstimados;
+            receta.PrecioPaquete1 = recetaDto.PrecioPaquete1;
+            receta.PrecioPaquete6 = recetaDto.PrecioPaquete6;
+            receta.PrecioPaquete12 = recetaDto.PrecioPaquete12;
+            receta.PrecioPaquete24 = recetaDto.PrecioPaquete24;
             receta.Descripcion = recetaDto.Descripcion;
             receta.Especificaciones = recetaDto.Especificaciones;
             receta.Nombre = recetaDto.Nombre;
-            receta.CostoProduccion = recetaDto.CostoProduccion;
             receta.Imagen = recetaDto.Imagen;
             receta.RutaFondo = recetaDto.RutaFondo;
-            receta.Activo = recetaDto.Activo;
 
             // Actualizar ingredientes
             var ingredientesExistentes = receta.IngredientesReceta.ToList();
@@ -172,7 +182,7 @@ namespace CERVERICA.Controllers
             foreach (var ingredienteDto in recetaDto.IngredientesReceta)
             {
                 var ingredienteExistente = ingredientesExistentes
-                    .FirstOrDefault(i => i.IdInsumo == ingredienteDto.IdInsumo);
+                    .FirstOrDefault(i => i.IdInsumo == ingredienteDto.Id);
 
                 if (ingredienteExistente != null)
                 {
@@ -187,12 +197,13 @@ namespace CERVERICA.Controllers
                     var ingredienteNuevo = new IngredienteReceta
                     {
                         IdReceta = receta.Id,
-                        IdInsumo = ingredienteDto.IdInsumo,
+                        IdInsumo = ingredienteDto.Id,
                         Cantidad = ingredienteDto.Cantidad
                     };
                     _context.IngredientesReceta.Add(ingredienteNuevo);
                 }
             }
+
 
             // Eliminar ingredientes que ya no están en la lista
             foreach (var ingredienteEliminar in ingredientesExistentes)
@@ -280,7 +291,6 @@ namespace CERVERICA.Controllers
             return Ok(new { message = "Pasos actualizados en la receta." });
         }
 
-
         //activar receta
         [HttpPost("activar/{id}")]
         public async Task<IActionResult> ActivarReceta(int id)
@@ -365,7 +375,7 @@ namespace CERVERICA.Controllers
                 }
                 var nuevoCostoLitro = costoTotal / receta.LitrosEstimados;
 
-                if(nuevoCostoLitro > receta.PrecioLitro)
+                if (nuevoCostoLitro > receta.PrecioLitro)
                 {
                     receta.PrecioLitro = nuevoCostoLitro;
                 }
@@ -373,17 +383,17 @@ namespace CERVERICA.Controllers
                 {
                     receta.PrecioPaquete1 = nuevoCostoLitro;
                 }
-                if (nuevoCostoLitro*6 > receta.PrecioPaquete6)
+                if (nuevoCostoLitro * 6 > receta.PrecioPaquete6)
                 {
-                    receta.PrecioPaquete6 = nuevoCostoLitro*6;
+                    receta.PrecioPaquete6 = nuevoCostoLitro * 6;
                 }
-                if (nuevoCostoLitro*12 > receta.PrecioPaquete12)
+                if (nuevoCostoLitro * 12 > receta.PrecioPaquete12)
                 {
-                    receta.PrecioPaquete12 = nuevoCostoLitro*12;
+                    receta.PrecioPaquete12 = nuevoCostoLitro * 12;
                 }
-                if (nuevoCostoLitro*24 > receta.PrecioPaquete24)
+                if (nuevoCostoLitro * 24 > receta.PrecioPaquete24)
                 {
-                    receta.PrecioPaquete24 = nuevoCostoLitro*24;
+                    receta.PrecioPaquete24 = nuevoCostoLitro * 24;
                 }
 
 
@@ -428,10 +438,9 @@ namespace CERVERICA.Controllers
                 fechaRegistrado = receta.FechaRegistrado,
                 imagen = receta.Imagen,
                 rutaFondo = receta.RutaFondo,
-                cantidadEnStock = 200
-                /* cantidadEnStock = _context.Stocks
-                         .Where(stock => stock.IdReceta == receta.Id)
-                         .Sum(stock => stock.Cantidad)*/
+                cantidadEnStock = _context.Stocks
+                        .Where(stock => stock.IdReceta == receta.Id)
+                        .Sum(stock => stock.Cantidad)
             }).ToListAsync();
 
             return Ok(productos);
