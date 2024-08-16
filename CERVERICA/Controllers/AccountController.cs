@@ -71,7 +71,7 @@ namespace CERVERICA.Controllers
                         return BadRequest(new
                         {
                             IsSuccess = false,
-                            Message = "Faltan datos del registro.",
+                            Message = "Faltan datos del registro",
                             Errors = errors
                         });
                     }
@@ -130,11 +130,8 @@ namespace CERVERICA.Controllers
         }
 
 
-        //api
-        //api/account/login
         [AllowAnonymous]
         [HttpPost("login")]
-
         public async Task<ActionResult<AuthResponseDto>> Login(LoginDto loginDto)
         {
             if (!ModelState.IsValid)
@@ -149,7 +146,16 @@ namespace CERVERICA.Controllers
                 return Unauthorized(new AuthResponseDto
                 {
                     IsSuccess = false,
-                    Message = "User not found with this email",
+                    Message = "Usuario no encontrado con este email",
+                });
+            }
+
+            if (!user.Activo)
+            {
+                return Unauthorized(new AuthResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "Tu cuenta esta inactiva. Contacta a soporte al cliente"
                 });
             }
 
@@ -160,10 +166,9 @@ namespace CERVERICA.Controllers
                 return Unauthorized(new AuthResponseDto
                 {
                     IsSuccess = false,
-                    Message = "Invalid Password."
+                    Message = "Contraseña incorrecta"
                 });
             }
-
 
             var token = GenerateToken(user);
             var refreshToken = GenerateRefreshToken();
@@ -182,9 +187,9 @@ namespace CERVERICA.Controllers
                 Nombre = user.FullName,
                 Email = user.Email,
                 Rol = (await _userManager.GetRolesAsync(user)).FirstOrDefault()
-
             });
         }
+
 
         [HttpPost("logout")]
         public async Task<ActionResult<AuthResponseDto>> Logout()
