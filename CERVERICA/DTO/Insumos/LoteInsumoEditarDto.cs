@@ -5,6 +5,11 @@ namespace CERVERICA.Dtos
     public class LoteInsumoEditarDto
     {
         [Required]
+        public int IdProveedor { get; set; }
+
+        [Required]
+        public int IdInsumo { get; set; }
+        [Required]
         [DataType(DataType.Date)]
         public DateTime FechaCaducidad { get; set; }
 
