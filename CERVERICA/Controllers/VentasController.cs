@@ -339,7 +339,7 @@ namespace CERVERICA.Controllers
             //obtener el id del usuario actual
             var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            return await _context.Ventas.Where(p => p.IdUsuario == id).Select(
+            var compras = await _context.Ventas.Where(p => p.IdUsuario == id).Select(
                 p => new VentasClienteDto
                 {
                     Id = p.Id,
@@ -349,6 +349,11 @@ namespace CERVERICA.Controllers
                     MetodoPago = p.MetodoPago,
                     EstatusVenta = p.EstatusVenta
                 }).ToListAsync();
+
+            //ordenar por fecha descendente
+            compras = compras.OrderByDescending(p => p.FechaVenta).ToList();
+
+            return compras;
         }
 
         //get todo el stock
