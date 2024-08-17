@@ -1,6 +1,7 @@
 ﻿using CERVERICA.Models;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace CERVERICA.Dtos
 {
@@ -37,10 +38,14 @@ namespace CERVERICA.Dtos
 
         [Required]
         public float PrecioUnidad { get; set; }
+        public int? NumeroProducciones { get; set; }
 
         [Required]
 
         [Range(0, float.MaxValue, ErrorMessage = "La cantidad debe ser mayor a 0")]
         public float MontoCompra { get; set; }
+        public Proveedor? Proveedor { get; set; }
+        public Insumo? Insumo { get; set; }
+        public ApplicationUser? Usuario { get; set; }
     }
 }

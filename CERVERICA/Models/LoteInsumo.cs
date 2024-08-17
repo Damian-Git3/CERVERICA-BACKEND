@@ -16,7 +16,7 @@ namespace CERVERICA.Models
         [ForeignKey(nameof(Insumo))]
         public int IdInsumo { get; set; }
 
-        [ForeignKey(nameof(IdUsuario))]
+        [ForeignKey(nameof(Usuario))]
         public string IdUsuario { get; set; }
 
         [Required]
@@ -44,6 +44,7 @@ namespace CERVERICA.Models
 
         public Proveedor Proveedor { get; set; }
         public Insumo Insumo { get; set; }
+        public ApplicationUser Usuario { get; set; }
         public ICollection<ProduccionLoteInsumo> ProduccionLoteInsumos { get; set; }
     }
 }
