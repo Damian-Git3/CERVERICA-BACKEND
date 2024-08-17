@@ -1058,5 +1058,64 @@ namespace CERVERICA.Controllers
             return Ok(new { message });
         }
 
+
+        [HttpGet("Solicitud")]
+        public async Task<ActionResult<IEnumerable<ConsultaSolicitudesOperador>>> GetProduccionesSolicitud()
+        {
+
+            //obtener la id del usuario actual
+            var idUsuario = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var producciones = await _context.Producciones
+                .Where(p => p.Estatus == 1 && p.IdUsuarioProduccion == idUsuario)
+                .Include(p => p.Receta)
+                    .ThenInclude(r => r.IngredientesReceta)
+                    .ThenInclude(ir => ir.Insumo)
+                .Select(p => new ConsultaSolicitudesOperador
+                {
+                    Id = p.Id,
+                    Estatus = p.Estatus,
+                    NumeroTandas = p.NumeroTandas,
+                    IdReceta = p.IdReceta,
+                    NombreReceta = p.Receta.Nombre,
+                    FechaSolicitud = p.FechaSolicitud,
+                    IdUsuarioSolicitud = p.IdUsuarioSolicitud
+                })
+                .ToListAsync();
+
+            return Ok(producciones);
+        }
+
+        [HttpGet("Aceptadas")]
+        public async Task<ActionResult<IEnumerable<ConsultaProduccionesOperador>>> GetProduccionesAceptadas()
+        {
+            var idUsuario = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var producciones = await _context.Producciones
+                .Where(p => p.Estatus == 2 && p.IdUsuarioProduccion ==idUsuario)
+                .Include(p => p.Receta)
+                    .ThenInclude(r => r.IngredientesReceta)
+                    .ThenInclude(ir => ir.Insumo)
+                .Select(p => new ConsultaProduccionesOperador
+                {
+                    Id = p.Id,
+                    Estatus = p.Estatus,
+                    NumeroTandas = p.NumeroTandas,
+                    IdReceta = p.IdReceta,
+                    FechaProximoPaso = p.FechaProximoPaso,
+                    NombreReceta = p.Receta.Nombre,
+                    FechaSolicitud = p.FechaSolicitud,
+                    Paso = p.Paso,
+                    DescripcionPaso = _context.PasosRecetas
+                        .Where(pp => pp.IdReceta == p.IdReceta && pp.Orden == p.Paso)
+                        .Select(pp => pp.Descripcion)
+                        .FirstOrDefault() ?? "Sin descripción",
+                    IdUsuarioSolicitud = p.IdUsuarioSolicitud,
+                    IdUsuarioProduccion = p.IdUsuarioProduccion
+
+                })
+                .ToListAsync();
+
+            return Ok(producciones);
+        }
+
     }
 }
