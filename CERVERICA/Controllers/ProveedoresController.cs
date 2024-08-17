@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace CERVERICA.Controllers
 {
-    //[Authorize]
+    [Authorize(Roles = "Admin")]
     [ApiController]
     [Route("api/[controller]")]
     public class ProveedoresController : ControllerBase

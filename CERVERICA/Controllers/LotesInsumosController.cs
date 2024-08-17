@@ -11,9 +11,9 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace CERVERICA.Controllers
 {
+    [Authorize(Roles = "Admin")]
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize(Roles = "Admin,Vendedor")]
     public class LotesInsumosController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -375,9 +375,6 @@ namespace CERVERICA.Controllers
                 var adminRoleId = _context.Roles.Where(r => r.Name == "Admin").Select(r => r.Id).FirstOrDefault();
 
                 List<String> userIds = _context.UserRoles.Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToList();
-
-                //encontrar el insumo
-                var insumo = await _context.Insumos.FindAsync(loteInsumo.IdInsumo);
 
                 foreach (var idAdmin in userIds)
                 {

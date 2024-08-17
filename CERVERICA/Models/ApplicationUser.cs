@@ -11,5 +11,6 @@ namespace CERVERICA.Models
 
         [Required]
         public bool Activo { get; set; }
+        public DateTime? FechaRegistro { get; set; } = DateTime.Now;
     }
 }
