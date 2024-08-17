@@ -12,6 +12,6 @@ namespace CERVERICA.DTO.Ventas
         public MetodoPago MetodoPago { get; set; }
         public MetodoEnvio MetodoEnvio { get; set; }
         public EstatusVenta EstatusVenta { get; set; }
-        public DetalleVenta[] ProductosPedido { get; set; }
+        public DetalleVentaInformacionDTO[] ProductosPedido { get; set; }
     }
 }

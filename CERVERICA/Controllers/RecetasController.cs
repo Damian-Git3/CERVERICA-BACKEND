@@ -656,7 +656,7 @@ namespace CERVERICA.Controllers
         [HttpGet("obtener-recetas-carousel")] // api/Usuario/1
         public async Task<IActionResult> getRecetasCarousel()
         {
-            var productosCarousel = await _context.Recetas
+            var productosCarousel = await _context.Recetas.Where(r => r.Activo == true)
                 .Select(receta => new
                 {
                     id = receta.Id,
@@ -674,7 +674,7 @@ namespace CERVERICA.Controllers
         [HttpGet("obtener-recetas-landing")] // api/Usuario/1
         public async Task<IActionResult> getRecetasLanding()
         {
-            var productos = await _context.Recetas.Select(receta => new
+            var productos = await _context.Recetas.Where(r => r.Activo == true).Select(receta => new
             {
                 id = receta.Id,
                 nombre = receta.Nombre,

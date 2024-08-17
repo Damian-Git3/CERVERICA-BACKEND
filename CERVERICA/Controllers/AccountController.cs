@@ -13,6 +13,8 @@ using Microsoft.IdentityModel.Tokens;
 using RestSharp;
 using System.Transactions;
 using CERVERICA.Data;
+using Bogus;
+using Microsoft.AspNetCore.Rewrite;
 
 namespace CERVERICA.Controllers
 {
@@ -41,6 +43,79 @@ namespace CERVERICA.Controllers
             _configuration = configuration;
 
         }
+
+        [AllowAnonymous]
+        [HttpGet("generate-fake-users/{count}")]
+        public async Task<ActionResult> GenerateFakeUsers(int count)
+        {
+            if (count <= 0)
+            {
+                return BadRequest(new
+                {
+                    IsSuccess = false,
+                    Message = "El número de usuarios debe ser mayor que cero."
+                });
+            }
+
+            try
+            {
+                using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    var fakeUsers = new Faker<ApplicationUser>()
+                        .RuleFor(u => u.Email, f => f.Internet.Email())
+                        .RuleFor(u => u.FullName, f => f.Name.FullName())
+                        .RuleFor(u => u.UserName, f => f.Internet.UserName())
+                        .RuleFor(u => u.Activo, f => true)
+                        .RuleFor(u => u.FechaRegistro, f => f.Date.Past(1));
+
+                    var users = fakeUsers.Generate(count);
+                    var result = new List<string>();
+
+                    foreach (var user in users)
+                    {
+                        var identityResult = await _userManager.CreateAsync(user, "Contra1234?");
+
+                        if (identityResult.Succeeded)
+                        {
+                            var roleResult = await _userManager.AddToRoleAsync(user, "Cliente");
+
+                            if (roleResult.Succeeded)
+                            {
+                                result.Add($"Usuario {user.Email} creado exitosamente.");
+                            }
+                            else
+                            {
+                                result.Add($"Error al asignar rol cliente {user.Email}: {string.Join(", ", identityResult.Errors.Select(e => e.Description))}");
+                            }
+
+                        }
+                        else
+                        {
+                            result.Add($"Error al crear usuario {user.Email}: {string.Join(", ", identityResult.Errors.Select(e => e.Description))}");
+                        }
+                    }
+
+                    transaction.Complete();
+
+                    return Ok(new
+                    {
+                        IsSuccess = true,
+                        Message = "Usuarios generados exitosamente.",
+                        Results = result
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    IsSuccess = false,
+                    Message = "Error al generar usuarios.",
+                    Error = ex.Message
+                });
+            }
+        }
+
 
         [AllowAnonymous]
         [HttpPost("register")]
