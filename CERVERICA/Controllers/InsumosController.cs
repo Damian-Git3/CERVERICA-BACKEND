@@ -1,11 +1,12 @@
 ﻿using CERVERICA.Data;
 using CERVERICA.Dtos;
 using CERVERICA.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
-//[Authorize(Roles = "Admin")]
+[Authorize(Roles = "Admin")]
 [Route("api/[controller]")]
 [ApiController]
 public class InsumosController : ControllerBase
@@ -68,6 +69,13 @@ public class InsumosController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<InsumoInsertDto>> PostInsumo(InsumoInsertDto insumoDto)
     {
+
+        //verificar que no existe un insumo con el mismo nombre
+        if (_context.Insumos.Any(i => i.Nombre == insumoDto.Nombre))
+        {
+            return BadRequest(new { message = "Ya existe un insumo con el mismo nombre." });
+        }
+
         var insumo = new Insumo
         {
             Nombre = insumoDto.Nombre,
@@ -82,6 +90,33 @@ public class InsumosController : ControllerBase
         _context.Insumos.Add(insumo);
         await _context.SaveChangesAsync();
 
+        try
+        {
+
+            //encontrar la id del rol Admin
+            var adminRoleId = _context.Roles.Where(r => r.Name == "Admin").Select(r => r.Id).FirstOrDefault();
+
+            List<String> userIds = _context.UserRoles.Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToList();
+
+            foreach (var id in userIds)
+            {
+                var notificacion = new Notificacion
+                {
+                    IdUsuario = id,
+                    Mensaje = $"Se ha agregado un nuevo insumo: {insumo.Nombre}",
+                    Fecha = DateTime.Now,
+                    Tipo = 3,
+                    Visto = false
+                };
+                _context.Notificaciones.Add(notificacion);
+            }
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+
+        }
+
         return Ok(new { message = "Insumo insertado.", id = insumo.Id });
     }
 
@@ -94,12 +129,18 @@ public class InsumosController : ControllerBase
             return NotFound();
         }
 
+        //verificar que no existe un insumo con el mismo nombre
+        if (_context.Insumos.Any(i => i.Nombre == insumoDto.Nombre && i.Id != id))
+        {
+            return BadRequest(new { message = "Ya existe un insumo con el mismo nombre." });
+        }
+
         insumo.Nombre = insumoDto.Nombre;
         insumo.Descripcion = insumoDto.Descripcion;
         insumo.UnidadMedida = insumoDto.UnidadMedida;
         insumo.CantidadMaxima = insumoDto.CantidadMaxima ?? 0;
         insumo.CantidadMinima = insumoDto.CantidadMinima ?? 0;
-        insumo.Merma = insumoDto.Merma??0;
+        insumo.Merma = insumoDto.Merma ?? 0;
 
         try
         {
@@ -115,6 +156,33 @@ public class InsumosController : ControllerBase
             {
                 throw;
             }
+        }
+
+        try
+        {
+
+            //encontrar la id del rol Admin
+            var adminRoleId = _context.Roles.Where(r => r.Name == "Admin").Select(r => r.Id).FirstOrDefault();
+
+            List<String> userIds = _context.UserRoles.Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToList();
+
+            foreach (var idAdmin in userIds)
+            {
+                var notificacion = new Notificacion
+                {
+                    IdUsuario = idAdmin,
+                    Mensaje = $"Se ha modificado el insumo: {insumo.Nombre}",
+                    Fecha = DateTime.Now,
+                    Tipo = 3,
+                    Visto = false
+                };
+                _context.Notificaciones.Add(notificacion);
+            }
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+
         }
 
         return Ok(new { message = "Insumo actualizado." });
@@ -134,6 +202,33 @@ public class InsumosController : ControllerBase
         insumo.Activo = true;
         await _context.SaveChangesAsync();
 
+        try
+        {
+
+            //encontrar la id del rol Admin
+            var adminRoleId = _context.Roles.Where(r => r.Name == "Admin").Select(r => r.Id).FirstOrDefault();
+
+            List<String> userIds = _context.UserRoles.Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToList();
+
+            foreach (var idAdmin in userIds)
+            {
+                var notificacion = new Notificacion
+                {
+                    IdUsuario = idAdmin,
+                    Mensaje = $"Se ha activado otra vez el insumo: {insumo.Nombre}",
+                    Fecha = DateTime.Now,
+                    Tipo = 3,
+                    Visto = false
+                };
+                _context.Notificaciones.Add(notificacion);
+            }
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+
+        }
+
         return Ok(new { message = "Insumo activado." });
     }
 
@@ -150,6 +245,31 @@ public class InsumosController : ControllerBase
 
         insumo.Activo = false;
         await _context.SaveChangesAsync();
+
+        try
+        {
+
+            //encontrar la id del rol Admin
+            var adminRoleId = _context.Roles.Where(r => r.Name == "Admin").Select(r => r.Id).FirstOrDefault();
+
+            List<String> userIds = _context.UserRoles.Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToList();
+
+            foreach (var idAdmin in userIds)
+            {
+                var notificacion = new Notificacion
+                {
+                    IdUsuario = idAdmin,
+                    Mensaje = $"Se ha desactivado el insumo: {insumo.Nombre}",
+                    Fecha = DateTime.Now,
+                    Tipo = 3,
+                    Visto = false
+                };
+                _context.Notificaciones.Add(notificacion);
+            }
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        { }
 
         return Ok(new { message = "Insumo desactivado." });
     }
@@ -168,6 +288,34 @@ public class InsumosController : ControllerBase
         {
             _context.Insumos.Remove(insumo);
             await _context.SaveChangesAsync();
+
+            try
+            {
+
+                //encontrar la id del rol Admin
+                var adminRoleId = _context.Roles.Where(r => r.Name == "Admin").Select(r => r.Id).FirstOrDefault();
+
+                List<String> userIds = _context.UserRoles.Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToList();
+
+                foreach (var idAdmin in userIds)
+                {
+                    var notificacion = new Notificacion
+                    {
+                        IdUsuario = idAdmin,
+                        Mensaje = $"Se ha borrado del sistema el insumo: {insumo.Nombre}",
+                        Fecha = DateTime.Now,
+                        Tipo = 3,
+                        Visto = false
+                    };
+                    _context.Notificaciones.Add(notificacion);
+                }
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+
+            }
+
             return Ok(new { message = "Insumo eliminado." });
         }
         catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlEx && sqlEx.Number == 547)

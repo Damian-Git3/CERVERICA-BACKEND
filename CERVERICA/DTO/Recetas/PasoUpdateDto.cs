@@ -5,6 +5,6 @@ namespace CERVERICA.Dtos
         public int Id { get; set; }
         public string Descripcion { get; set; }
         public int Orden { get; set; }
-        public int Tiempo { get; set; }
+        public double Tiempo { get; set; }
     }
 }
