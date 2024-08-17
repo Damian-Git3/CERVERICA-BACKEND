@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace CERVERICA.Controllers
 {
+    [Authorize(Roles = "Admin")]
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]

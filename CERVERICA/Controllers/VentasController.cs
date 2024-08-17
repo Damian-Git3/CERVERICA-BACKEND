@@ -1,4 +1,5 @@
 ﻿using CERVERICA.Data;
+using CERVERICA.DTO.Stock;
 using CERVERICA.DTO.Ventas;
 using CERVERICA.Dtos;
 using CERVERICA.Models;
@@ -24,6 +25,56 @@ namespace CERVERICA.Controllers
             _context = context;
         }
 
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public async Task<ActionResult<PedidoDTO>> ObtenerVentas()
+        {
+            var pedidos = await _context.Ventas
+    .Select(p => new PedidoDTO
+    {
+        Id = p.Id,
+        FechaVenta = p.FechaVenta,
+        TotalCervezas = p.Total,
+        MetodoEnvio = p.MetodoEnvio,
+        MetodoPago = p.MetodoPago,
+        NumeroTarjeta = p.NumeroTarjeta,
+        EstatusVenta = p.EstatusVenta,
+        MontoVenta = _context.DetallesVenta
+            .Where(d => d.IdVenta == p.Id)
+            .Sum(d => d.MontoVenta),
+        ProductosPedido = _context.DetallesVenta
+            .Where(d => d.IdVenta == p.Id)
+            .Select(d => new DetalleVentaInformacionDTO
+            {
+                Id = d.Id,
+                Cantidad = d.Cantidad,
+                Pack = d.Pack,
+                IdStock = d.IdStock,
+                MontoVenta = d.MontoVenta,
+                CostoUnitario = d.MontoVenta / d.Cantidad,
+                Stock = _context.Stocks
+                    .Where(s => s.Id == d.IdStock)
+                    .Select(s => new StockDTO
+                    {
+                        Id = s.Id,
+                        IdReceta = s.IdReceta,
+                        Receta = s.Receta
+                    })
+                    .FirstOrDefault()
+            })
+            .ToArray()
+    })
+    .ToListAsync();
+
+
+            if (pedidos == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(pedidos);
+        }
+
         [HttpGet("pedidos/{id}")]
         public async Task<ActionResult<PedidoDTO>> ObtenerPedido(int id)
         {
@@ -40,16 +91,17 @@ namespace CERVERICA.Controllers
         EstatusVenta = p.EstatusVenta,
         ProductosPedido = _context.DetallesVenta
             .Where(d => d.IdVenta == p.Id)
-            .Select(d => new DetalleVenta
+            .Select(d => new DetalleVentaInformacionDTO
             {
                 Id = d.Id,
                 Cantidad = d.Cantidad,
                 Pack = d.Pack,
                 IdStock = d.IdStock,
                 MontoVenta = d.MontoVenta,
+                CostoUnitario = d.MontoVenta / d.Cantidad,
                 Stock = _context.Stocks
                     .Where(s => s.Id == d.IdStock)
-                    .Select(s => new Stock
+                    .Select(s => new StockDTO
                     {
                         Id = s.Id,
                         IdReceta = s.IdReceta,
@@ -88,6 +140,9 @@ namespace CERVERICA.Controllers
                     TotalCervezas = p.Total,
                     MetodoPago = p.MetodoPago,
                     MetodoEnvio = p.MetodoEnvio,
+                    MontoVenta = _context.DetallesVenta
+                    .Where(d => d.IdVenta == p.Id)
+                    .Sum(d => d.MontoVenta),
                     EstatusVenta = p.EstatusVenta
                 }).ToListAsync();
         }
@@ -109,6 +164,85 @@ namespace CERVERICA.Controllers
         [HttpGet("siguiente-estatus/{idPedido}")]
         public async Task<IActionResult> SiguienteEstatus(int idPedido)
         {
+            // Busca el pedido en la base de datos
+            var pedido = await _context.Ventas.FindAsync(idPedido);
+
+            // Verifica si el pedido existe
+            if (pedido == null)
+            {
+                return NotFound("Pedido no encontrado");
+            }
+
+            // Verifica si el estatus ya es 3
+            if (pedido.EstatusVenta == EstatusVenta.Listo)
+            {
+                return BadRequest("El pedido ya se encuentra en el estatus máximo y no puede avanzar.");
+            }
+
+            // Cuenta el número de detalles de venta asociados al pedido
+            var detalleCount = await _context.DetallesVenta.CountAsync(d => d.IdVenta == idPedido);
+
+            // Actualiza el estatus del pedido
+            if (detalleCount == 1)
+            {
+                pedido.EstatusVenta = EstatusVenta.Listo; // Suponiendo que "Listo" es un valor específico
+            }
+            else
+            {
+                pedido.EstatusVenta += 1; // Avanza al siguiente estatus
+            }
+
+            if (pedido.EstatusVenta == EstatusVenta.Empaquetando)
+            {
+                var notificacion = new Notificacion
+                {
+                    IdUsuario = pedido.IdUsuario,
+                    Mensaje = $"¡Tu pedido con número #{pedido.Id} está en pleno proceso de empaquetado! Prepárate para disfrutar de una buena cerveza pronto. ¡Salud!",
+                    Fecha = DateTime.Now,
+                    Tipo = 8,
+                    Visto = false
+                };
+                _context.Notificaciones.Add(notificacion);
+            }
+
+            if (pedido.EstatusVenta == EstatusVenta.Listo)
+            {
+                if (pedido.MetodoEnvio == MetodoEnvio.EnvioDomicilio)
+                {
+                    var notificacion = new Notificacion
+                    {
+                        IdUsuario = pedido.IdUsuario,
+                        Mensaje = $"¡Tu pedido con número #{pedido.Id} está listo para ser entregado a domicilio! Prepárate para recibir tus cervezas y disfrutar de un excelente momento en casa",
+                        Fecha = DateTime.Now,
+                        Tipo = 8,
+                        Visto = false
+                    };
+                    _context.Notificaciones.Add(notificacion);
+                }
+                else
+                {
+                    var notificacion = new Notificacion
+                    {
+                        IdUsuario = pedido.IdUsuario,
+                        Mensaje = $"¡Tu pedido con número #{pedido.Id} está listo para recogerse! Prepárate para recoger tus cervezas y disfrutar de un excelente momento",
+                        Fecha = DateTime.Now,
+                        Tipo = 8,
+                        Visto = false
+                    };
+                    _context.Notificaciones.Add(notificacion);
+                }
+            }
+
+            // Guarda los cambios en la base de datos
+            _context.Ventas.Update(pedido);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        [HttpGet("siguiente-estatus-landing/{idPedido}")]
+        public async Task<IActionResult> SiguienteEstatusLanding(int idPedido)
+        {
             var pedido = await _context.Ventas.FindAsync(idPedido);
 
             if (pedido == null)
@@ -116,26 +250,87 @@ namespace CERVERICA.Controllers
                 return NotFound("Pedido no encontrado");
             }
 
-            // Count the number of DetalleVenta entries where idVenta is the same as idPedido
-            var detalleCount = await _context.DetallesVenta.CountAsync(d => d.IdVenta == idPedido);
-
-            // If the count is 1, set the status directly to 3
-            if (detalleCount == 1)
+            if (pedido.EstatusVenta == EstatusVenta.Listo)
             {
-                pedido.EstatusVenta = EstatusVenta.Listo;
-            }
-            else
-            {
-                // Otherwise, increase the EstatusVenta by 1
-                pedido.EstatusVenta += 1;
+                return BadRequest("El pedido ya se encuentra en el estatus máximo y no puede avanzar.");
             }
 
-            // Save the changes to the database
+            pedido.EstatusVenta += 1;
+
+            if (pedido.EstatusVenta == EstatusVenta.Empaquetando)
+            {
+                var notificacion = new Notificacion
+                {
+                    IdUsuario = pedido.IdUsuario,
+                    Mensaje = $"¡Tu pedido con número #{pedido.Id} está en pleno proceso de empaquetado! Prepárate para disfrutar de una buena cerveza pronto. ¡Salud!",
+                    Fecha = DateTime.Now,
+                    Tipo = 8,
+                    Visto = false
+                };
+                _context.Notificaciones.Add(notificacion);
+            }
+
+            if (pedido.EstatusVenta == EstatusVenta.Listo)
+            {
+                if (pedido.MetodoEnvio == MetodoEnvio.EnvioDomicilio)
+                {
+                    var notificacion = new Notificacion
+                    {
+                        IdUsuario = pedido.IdUsuario,
+                        Mensaje = $"¡Tu pedido con número #{pedido.Id} está listo para ser entregado a domicilio! Prepárate para recibir tus cervezas y disfrutar de un excelente momento en casa",
+                        Fecha = DateTime.Now,
+                        Tipo = 8,
+                        Visto = false
+                    };
+                    _context.Notificaciones.Add(notificacion);
+                }
+                else
+                {
+                    var notificacion = new Notificacion
+                    {
+                        IdUsuario = pedido.IdUsuario,
+                        Mensaje = $"¡Tu pedido con número #{pedido.Id} está listo para recogerse! Prepárate para recoger tus cervezas y disfrutar de un excelente momento",
+                        Fecha = DateTime.Now,
+                        Tipo = 8,
+                        Visto = false
+                    };
+                    _context.Notificaciones.Add(notificacion);
+                }
+            }
+
             _context.Ventas.Update(pedido);
             await _context.SaveChangesAsync();
 
-            return Ok("Estatus actualizado al siguiente nivel");
+            return NoContent();
         }
+
+        [HttpGet("anterior-estatus/{idPedido}")]
+        public async Task<IActionResult> AnteriorEstatus(int idPedido)
+        {
+            // Busca el pedido en la base de datos
+            var pedido = await _context.Ventas.FindAsync(idPedido);
+
+            // Verifica si el pedido existe
+            if (pedido == null)
+            {
+                return NotFound("Pedido no encontrado");
+            }
+
+            // Verifica si el estatus ya es 1
+            if (pedido.EstatusVenta == EstatusVenta.Recibido)
+            {
+                return BadRequest("El pedido ya se encuentra en el estatus mínimo y no puede retroceder.");
+            }
+
+            pedido.EstatusVenta -= 1; // Retrocede al estatus anterior
+
+            // Guarda los cambios en la base de datos
+            _context.Ventas.Update(pedido);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
 
 
         [HttpGet("cliente")]
@@ -329,7 +524,7 @@ namespace CERVERICA.Controllers
                         Debug.WriteLine("reduccion maxima " + reduccionMaximaPacks);
                         if (reduccionMaximaPacks == 0)
                         {
-                            break; 
+                            break;
                         }
 
                         var cantidadADescontar = Math.Min(reduccionMaximaPacks, (detalle.Cantidad));
