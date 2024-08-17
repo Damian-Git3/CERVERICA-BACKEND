@@ -32,25 +32,33 @@ namespace CERVERICA.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<LoteInsumoDto>>> GetLotesInsumos()
         {
-            var lotesInsumos = await _context.LotesInsumos.Where(l => l.Cantidad > 0 && System.DateTime.Now < l.FechaCaducidad)
+            var lotesInsumos = await _context.LotesInsumos
+                .Include(l => l.Proveedor)
+                .Include(l => l.Insumo)
+                .Include(l => l.Usuario)
+                .Where(l => l.Cantidad > 0 && DateTime.Now < l.FechaCaducidad)
                 .Select(l => new LoteInsumoDto
                 {
                     Id = l.Id,
-                    IdProveedor = l.IdProveedor,
-                    IdInsumo = l.IdInsumo,
-                    IdUsuario = l.IdUsuario,
+                    Proveedor = l.Proveedor,
+                    Insumo = l.Insumo,
+                    Usuario = l.Usuario,
                     FechaCaducidad = l.FechaCaducidad,
                     Cantidad = l.Cantidad,
                     Caducado = l.Caducado,
                     FechaCompra = l.FechaCompra,
                     PrecioUnidad = l.PrecioUnidad,
                     MontoCompra = l.MontoCompra,
-                    Merma = l.Merma
+                    Merma = l.Merma,
+                    NumeroProducciones = _context.ProduccionLoteInsumos
+                        .Count(p => p.IdLoteInsumo == l.Id)
                 })
                 .ToListAsync();
 
             return Ok(lotesInsumos);
         }
+
+
 
         [HttpGet("todos")]
         public async Task<ActionResult<IEnumerable<LoteInsumoDto>>> GetLotesInsumosTodos()
@@ -150,7 +158,7 @@ namespace CERVERICA.Controllers
             }
             if (loteInsumo.Cantidad == 0)
             {
-                return Ok(new { message = "Lote de Insumo vacío.", loteInsumo});
+                return Ok(new { message = "Lote de Insumo vacío.", loteInsumo });
             }
             if (System.DateTime.Now > loteInsumo.FechaCaducidad)
             {
@@ -165,7 +173,7 @@ namespace CERVERICA.Controllers
         public async Task<ActionResult<LoteInsumoDto>> GetLoteInsumoPorInsumo(int IdInsumo)
         {
             var loteInsumo = await _context.LotesInsumos
-                .Where(l => l.IdInsumo == IdInsumo && l.Cantidad> 0 && System.DateTime.Now < l.FechaCaducidad)
+                .Where(l => l.IdInsumo == IdInsumo && l.Cantidad > 0 && System.DateTime.Now < l.FechaCaducidad)
                 .Select(l => new LoteInsumo
                 {
                     Id = l.Id,
@@ -197,7 +205,7 @@ namespace CERVERICA.Controllers
 
             //consulta para obtener los lotes de insumos que se compraron entre las fechas indicadas
             var lotesInsumos = await _context.LotesInsumos
-                .Where(l => l.FechaCompra >= fecha1 && l.FechaCompra <= fecha2 && l.Cantidad>0)
+                .Where(l => l.FechaCompra >= fecha1 && l.FechaCompra <= fecha2 && l.Cantidad > 0)
                 .Select(l => new LoteInsumoDto
                 {
                     Id = l.Id,
@@ -338,7 +346,7 @@ namespace CERVERICA.Controllers
             if (nuevaCantidad == 0)
             {
                 var otroLote = await _context.LotesInsumos
-                    .Where(l => l.IdInsumo == loteInsumo.IdInsumo && l.Id != id && l.Cantidad>0)
+                    .Where(l => l.IdInsumo == loteInsumo.IdInsumo && l.Id != id && l.Cantidad > 0)
                     .FirstOrDefaultAsync();
 
                 if (otroLote == null)
@@ -349,7 +357,8 @@ namespace CERVERICA.Controllers
                     loteInsumo.Merma += merma;
 
                     _context.Entry(loteInsumo).State = EntityState.Modified;
-                } else
+                }
+                else
                 {
                     float nuevoPrecioUnidad = (otroLote.PrecioUnidad * otroLote.Cantidad + loteInsumo.PrecioUnidad * loteInsumo.Cantidad) / otroLote.Cantidad;
 
@@ -388,7 +397,7 @@ namespace CERVERICA.Controllers
             return Ok(new { message = "Cantidad del Lote de Insumo y Precio Unidad actualizados." });
         }
 
-        
+
         private bool LoteInsumoExists(int id)
         {
             return _context.LotesInsumos.Any(e => e.Id == id);
@@ -473,5 +482,47 @@ namespace CERVERICA.Controllers
                 await _context.SaveChangesAsync();
             }
         }
+
+        // DELETE: api/LotesInsumos/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteLoteInsumo(int id)
+        {
+            var loteInsumo = await _context.LotesInsumos.FindAsync(id);
+
+            if (loteInsumo == null)
+            {
+                return NotFound(new { message = "Lote de Insumo no existe" });
+            }
+
+            // Verificar si hay registros relacionados en ProduccionLoteInsumos
+            bool hasRelatedRecords = await _context.ProduccionLoteInsumos
+                .AnyAsync(p => p.IdLoteInsumo == id);
+
+            if (hasRelatedRecords)
+            {
+                return BadRequest(new { message = "Este lote de insumo ya se empezo a utilizar en las producciones, no es posible eliminarlo" });
+            }
+
+            _context.LotesInsumos.Remove(loteInsumo);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!LoteInsumoExists(id))
+                {
+                    return NotFound(new { message = "Lote de Insumo no existe" });
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return Ok(new { message = "Lote de Insumo eliminado correctamente." });
+        }
+
     }
 }
