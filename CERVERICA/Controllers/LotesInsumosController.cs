@@ -58,25 +58,28 @@ namespace CERVERICA.Controllers
             return Ok(lotesInsumos);
         }
 
-
-
         [HttpGet("todos")]
         public async Task<ActionResult<IEnumerable<LoteInsumoDto>>> GetLotesInsumosTodos()
         {
             var lotesInsumos = await _context.LotesInsumos
+                .Include(l => l.Proveedor)
+                .Include(l => l.Insumo)
+                .Include(l => l.Usuario)
                 .Select(l => new LoteInsumoDto
                 {
                     Id = l.Id,
-                    IdProveedor = l.IdProveedor,
-                    IdInsumo = l.IdInsumo,
-                    IdUsuario = l.IdUsuario,
+                    Proveedor = l.Proveedor,
+                    Insumo = l.Insumo,
+                    Usuario = l.Usuario,
                     FechaCaducidad = l.FechaCaducidad,
                     Cantidad = l.Cantidad,
                     Caducado = l.Caducado,
                     FechaCompra = l.FechaCompra,
                     PrecioUnidad = l.PrecioUnidad,
                     MontoCompra = l.MontoCompra,
-                    Merma = l.Merma
+                    Merma = l.Merma,
+                    NumeroProducciones = _context.ProduccionLoteInsumos
+                        .Count(p => p.IdLoteInsumo == l.Id)
                 })
                 .ToListAsync();
 
@@ -233,26 +236,27 @@ namespace CERVERICA.Controllers
 
         // POST: api/LotesInsumos
         [HttpPost]
-        public async Task<ActionResult<LoteInsumoDto>> PostLoteInsumo(LoteInsumoInsertDto loteInsumoDto)
+        public async Task<ActionResult<LoteInsumoDto>> crearLoteInsumo(LoteInsumoInsertDto loteInsumoDto)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return BadRequest(new[] { new { code = "InvalidModelState", description = "Los datos del modelo no son válidos." } });
             }
+
             var precioUnidad = loteInsumoDto.MontoCompra / loteInsumoDto.Cantidad;
 
-            //verificar que el insumo exista
+            // Verificar que el insumo exista
             var insumo = await _context.Insumos.FindAsync(loteInsumoDto.IdInsumo);
             if (insumo == null)
             {
-                return NotFound(new { message = "Insumo no existe." });
+                return NotFound(new[] { new { code = "InsumoNotFound", description = "El insumo no existe." } });
             }
 
-            //verificar que el proveedor exista
+            // Verificar que el proveedor exista
             var proveedor = await _context.Proveedores.FindAsync(loteInsumoDto.IdProveedor);
             if (proveedor == null)
             {
-                return NotFound(new { message = "Proveedor no existe." });
+                return NotFound(new[] { new { code = "ProveedorNotFound", description = "El proveedor no existe." } });
             }
 
             var loteInsumo = new LoteInsumo
@@ -301,31 +305,49 @@ namespace CERVERICA.Controllers
             return Ok(new { message = "Lote de Insumo insertado.", id = loteInsumo.Id });
         }
 
+
         // PUT: api/lotesinsumos/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutLoteInsumo(int id, LoteInsumoEditarDto loteInsumoDto)
+        public async Task<IActionResult> editarLoteInsumo(int id, LoteInsumoEditarDto loteInsumoDto)
         {
-
             var loteInsumo = await _context.LotesInsumos.FindAsync(id);
 
             if (loteInsumo == null)
             {
-                return NotFound(new { message = "LoteInsumo no existe." });
+                return NotFound(new[] { new { code = "LoteInsumoNotFound", description = "El lote de insumo no existe." } });
             }
 
-            //verificar que no hayan pasado mas de 10 minutos desde la compra
+            // Verificar que no hayan pasado más de 10 minutos desde la compra
             if (System.DateTime.Now.Subtract(loteInsumo.FechaCompra).TotalMinutes > 10)
             {
-                return BadRequest(new { message = "No se puede modificar el lote de insumo porque han pasado mas de 10 minutos desde la compra." });
+                return BadRequest(new[] { new { code = "TimeLimitExceeded", description = "No se puede modificar el lote de insumo porque han pasado más de 10 minutos desde la compra." } });
             }
 
+            // Verificar que el nuevo insumo exista
+            var insumo = await _context.Insumos.FindAsync(loteInsumoDto.IdInsumo);
+            if (insumo == null)
+            {
+                return NotFound(new[] { new { code = "InsumoNotFound", description = "El insumo no existe." } });
+            }
+
+            // Verificar que el nuevo proveedor exista
+            var proveedor = await _context.Proveedores.FindAsync(loteInsumoDto.IdProveedor);
+            if (proveedor == null)
+            {
+                return NotFound(new[] { new { code = "ProveedorNotFound", description = "El proveedor no existe." } });
+            }
+
+            // Calcular el nuevo precio unidad
             var precioUnidad = loteInsumoDto.MontoCompra / loteInsumoDto.Cantidad;
 
+            // Actualizar los campos del lote de insumo
             loteInsumo.IdUsuario = GetCurrentUserId();
+            loteInsumo.IdInsumo = loteInsumoDto.IdInsumo;
+            loteInsumo.IdProveedor = loteInsumoDto.IdProveedor;
             loteInsumo.FechaCaducidad = loteInsumoDto.FechaCaducidad;
             loteInsumo.Cantidad = loteInsumoDto.Cantidad;
-            loteInsumo.PrecioUnidad = precioUnidad;
             loteInsumo.MontoCompra = loteInsumoDto.MontoCompra;
+            loteInsumo.PrecioUnidad = precioUnidad;
 
             _context.Entry(loteInsumo).State = EntityState.Modified;
 
@@ -338,7 +360,7 @@ namespace CERVERICA.Controllers
             {
                 if (!LoteInsumoExists(id))
                 {
-                    return NotFound(new { message = "Lote Insumo no existe." });
+                    return NotFound(new[] { new { code = "LoteInsumoNotFound", description = "El lote de insumo no existe." } });
                 }
                 else
                 {
@@ -376,6 +398,8 @@ namespace CERVERICA.Controllers
             return Ok(new { message = "Lote de Insumo actualizado." });
         }
 
+
+
         // POST: api/lotesinsumos/merma/5
         [HttpPost("merma/{id}")]
         public async Task<IActionResult> MermaLoteInsumo(int id, float merma)
@@ -384,49 +408,25 @@ namespace CERVERICA.Controllers
 
             if (loteInsumo == null)
             {
-                return NotFound(new { message = "LoteInsumo no existe." });
+                return NotFound(new[] { new { code = "LoteInsumoNotFound", description = "LoteInsumo no existe." } });
             }
 
+            // Permitir merma igual a la cantidad del lote
             if (merma > loteInsumo.Cantidad)
             {
-                return BadRequest(new { message = "La merma no puede ser mayor a la cantidad del lote." });
+                return BadRequest(new[] { new { code = "InvalidMerma", description = "La merma no puede ser mayor a la cantidad del lote." } });
             }
 
             float nuevaCantidad = loteInsumo.Cantidad - merma;
 
-            if (nuevaCantidad == 0)
-            {
-                var otroLote = await _context.LotesInsumos
-                    .Where(l => l.IdInsumo == loteInsumo.IdInsumo && l.Id != id && l.Cantidad > 0)
-                    .FirstOrDefaultAsync();
+            // Actualizar el lote insumo
+            loteInsumo.Cantidad = nuevaCantidad;
+            loteInsumo.Merma += merma;
 
-                if (otroLote == null)
-                {
-                    loteInsumo.PrecioUnidad = (loteInsumo.PrecioUnidad * loteInsumo.Cantidad) / 1;
+            Console.WriteLine("Merma: " + loteInsumo.Merma);
+            Console.WriteLine("Cantidad: " + loteInsumo.Cantidad);
 
-                    loteInsumo.Cantidad = nuevaCantidad;
-                    loteInsumo.Merma += merma;
-
-                    _context.Entry(loteInsumo).State = EntityState.Modified;
-                }
-                else
-                {
-                    float nuevoPrecioUnidad = (otroLote.PrecioUnidad * otroLote.Cantidad + loteInsumo.PrecioUnidad * loteInsumo.Cantidad) / otroLote.Cantidad;
-
-                    otroLote.PrecioUnidad = nuevoPrecioUnidad;
-
-                    _context.Entry(otroLote).State = EntityState.Modified;
-                }
-            }
-            else
-            {
-                loteInsumo.PrecioUnidad = (loteInsumo.PrecioUnidad * loteInsumo.Cantidad) / nuevaCantidad;
-
-                loteInsumo.Cantidad = nuevaCantidad;
-                loteInsumo.Merma += merma;
-
-                _context.Entry(loteInsumo).State = EntityState.Modified;
-            }
+            _context.Entry(loteInsumo).State = EntityState.Modified;
 
             try
             {
@@ -437,7 +437,7 @@ namespace CERVERICA.Controllers
             {
                 if (!LoteInsumoExists(id))
                 {
-                    return NotFound(new { message = "Lote Insumo no existe." });
+                    return NotFound(new[] { new { code = "LoteInsumoNotFound", description = "Lote Insumo no existe." } });
                 }
                 else
                 {
@@ -470,8 +470,37 @@ namespace CERVERICA.Controllers
             }
             catch (Exception ex) { }
 
-            return Ok(new { message = "Cantidad del Lote de Insumo y Precio Unidad actualizados." });
+            try
+            { //##########  Enviar notificación a los Admins ##########
+
+                //encontrar la id del rol Admin
+                var adminRoleId = _context.Roles.Where(r => r.Name == "Admin").Select(r => r.Id).FirstOrDefault();
+
+                List<String> userIds = _context.UserRoles.Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToList();
+                //encontrar el insumo
+                var insumo = await _context.Insumos.FindAsync(loteInsumo.IdInsumo);
+                foreach (var idAdmin in userIds)
+                {
+                    var notificacion = new Notificacion
+                    {
+                        IdUsuario = idAdmin,
+                        Mensaje = $"Se ha registrado merma de un lote del insumo: {insumo.Nombre}",
+                        Fecha = DateTime.Now,
+                        Tipo = 4,
+                        Visto = false
+                    };
+                    _context.Notificaciones.Add(notificacion);
+                }
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex) { }
+
+            return Ok(new[] { new { code = "Success", description = "Cantidad del Lote de Insumo y Precio Unidad actualizados." } });
         }
+
+
+
+
 
 
         private bool LoteInsumoExists(int id)
