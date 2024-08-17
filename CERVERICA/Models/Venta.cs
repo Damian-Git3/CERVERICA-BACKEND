@@ -47,8 +47,6 @@ namespace CERVERICA.Models
 
         [JsonIgnore]
         public ApplicationUser? Usuario { get; set; }
-        [JsonIgnore]
-        public DetalleVenta[]? DetallesVenta { get; set; }
     }
 
     public enum MetodoPago
