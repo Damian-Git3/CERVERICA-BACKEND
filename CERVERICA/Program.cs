@@ -12,10 +12,10 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.ConfigureKestrel(serverOptions =>
-{
-    serverOptions.Listen(IPAddress.Parse("127.0.0.1"), 5000);
-});
+//builder.WebHost.ConfigureKestrel(serverOptions =>
+//{
+//    serverOptions.Listen(IPAddress.Parse("127.0.0.1"), 5000);
+//});
 
 // Obtenemos la configuraci�n del JWTSettings de appsettings
 var JWTSettings = builder.Configuration.GetSection("JWTSetting");
