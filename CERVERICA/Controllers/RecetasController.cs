@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CERVERICA.Controllers
 {
-    /*[Authorize]*/
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class RecetaController : ControllerBase
@@ -538,48 +538,63 @@ namespace CERVERICA.Controllers
             return Ok(new { message = "Receta desactivada." });
         }
 
-        // DELETE: api/recetas/5
-        //[HttpDelete("{id}")]
-        //public async Task<IActionResult> DeleteReceta(int id)
-        //{
-        //    var receta = await _context.Recetas.FindAsync(id);
+        //DELETE: api/recetas/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteReceta(int id)
+        {
+            var receta = await _context.Recetas
+        .Include(r => r.IngredientesReceta)
+        .Include(r => r.PasosReceta) // Incluir los pasos de la receta
+        .FirstOrDefaultAsync(r => r.Id == id);
 
-        //    if (receta == null)
-        //    {
-        //        return NotFound(new { message = "Receta no existe." });
-        //    }
+            if (receta == null)
+            {
+                return NotFound(new { message = "Receta no existe." });
+            }
 
-        //    _context.Recetas.Remove(receta);
-        //    await _context.SaveChangesAsync();
+            /* ELIMINAMOS PRIMERO LOS INGREDIENTES */
+            if (receta.IngredientesReceta != null && receta.IngredientesReceta.Any())
+            {
+                _context.IngredientesReceta.RemoveRange(receta.IngredientesReceta);
+            }
 
-        //    try
-        //    {
+            /* ELIMINAMOS LOS PASOS */
+            if (receta.PasosReceta != null && receta.PasosReceta.Any())
+            {
+                _context.PasosRecetas.RemoveRange(receta.PasosReceta);
+            }
 
-        //        //encontrar la id del rol Admin
-        //        var adminRoleId = _context.Roles.Where(r => r.Name == "Admin").Select(r => r.Id).FirstOrDefault();
+            _context.Recetas.Remove(receta);
+            await _context.SaveChangesAsync();
 
-        //        List<String> userIds = _context.UserRoles.Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToList();
+            try
+            {
 
-        //        foreach (var idAdmin in userIds)
-        //        {
-        //            var notificacion = new Notificacion
-        //            {
-        //                IdUsuario = idAdmin,
-        //                Mensaje = $"Se eliminó la receta: {receta.Nombre}",
-        //                Fecha = DateTime.Now,
-        //                Tipo = 7,
-        //                Visto = false
-        //            };
-        //            _context.Notificaciones.Add(notificacion);
-        //        }
-        //        await _context.SaveChangesAsync();
-        //    }
-        //    catch (Exception ex)
-        //    {
+                //encontrar la id del rol Admin
+                var adminRoleId = _context.Roles.Where(r => r.Name == "Admin").Select(r => r.Id).FirstOrDefault();
 
-        //    }
-        //    return Ok(new { message = "Receta eliminada." });
-        //}
+                List<String> userIds = _context.UserRoles.Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToList();
+
+                foreach (var idAdmin in userIds)
+                {
+                    var notificacion = new Notificacion
+                    {
+                        IdUsuario = idAdmin,
+                        Mensaje = $"Se eliminó la receta: {receta.Nombre}",
+                        Fecha = DateTime.Now,
+                        Tipo = 7,
+                        Visto = false
+                    };
+                    _context.Notificaciones.Add(notificacion);
+                }
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+
+            }
+            return Ok(new { message = "Receta eliminada." });
+        }
 
         private bool RecetaExists(int id)
         {

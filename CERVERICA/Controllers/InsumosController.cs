@@ -1,12 +1,12 @@
 ﻿using CERVERICA.Data;
 using CERVERICA.Dtos;
 using CERVERICA.Models;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
-//[Authorize(Roles = "Admin")]
+[Authorize(Roles = "Admin")]
 [Route("api/[controller]")]
 [ApiController]
 public class InsumosController : ControllerBase
@@ -114,7 +114,7 @@ public class InsumosController : ControllerBase
         }
         catch (Exception ex)
         {
-           
+
         }
 
         return Ok(new { message = "Insumo insertado.", id = insumo.Id });
@@ -140,7 +140,7 @@ public class InsumosController : ControllerBase
         insumo.UnidadMedida = insumoDto.UnidadMedida;
         insumo.CantidadMaxima = insumoDto.CantidadMaxima ?? 0;
         insumo.CantidadMinima = insumoDto.CantidadMinima ?? 0;
-        insumo.Merma = insumoDto.Merma??0;
+        insumo.Merma = insumoDto.Merma ?? 0;
 
         try
         {
@@ -182,7 +182,7 @@ public class InsumosController : ControllerBase
         }
         catch (Exception ex)
         {
-            
+
         }
 
         return Ok(new { message = "Insumo actualizado." });
@@ -226,7 +226,7 @@ public class InsumosController : ControllerBase
         }
         catch (Exception ex)
         {
-            
+
         }
 
         return Ok(new { message = "Insumo activado." });
@@ -269,7 +269,7 @@ public class InsumosController : ControllerBase
             await _context.SaveChangesAsync();
         }
         catch (Exception ex)
-        {}
+        { }
 
         return Ok(new { message = "Insumo desactivado." });
     }
@@ -313,7 +313,7 @@ public class InsumosController : ControllerBase
             }
             catch (Exception ex)
             {
-                
+
             }
 
             return Ok(new { message = "Insumo eliminado." });

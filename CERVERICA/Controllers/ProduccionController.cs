@@ -4,8 +4,6 @@ using CERVERICA.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using System.Diagnostics;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 
 
 namespace CERVERICA.Controllers
@@ -16,10 +14,12 @@ namespace CERVERICA.Controllers
     public class ProduccionController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<ProduccionController> _logger;
 
-        public ProduccionController(ApplicationDbContext context)
+        public ProduccionController(ApplicationDbContext context, ILogger<ProduccionController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: api/Produccion
@@ -145,156 +145,159 @@ namespace CERVERICA.Controllers
         [HttpPost]
         public async Task<IActionResult> SolicitarProduccion([FromBody] SolicitarProduccionDto solicitudDto)
         {
+            _logger.LogInformation("Iniciando solicitud de producción para {IdReceta}", solicitudDto.IdReceta);
+
             //si el numero de tandas es menor a 1
             if (solicitudDto.NumeroTandas < 1)
             {
                 return BadRequest(new { message = "El número de tandas debe ser mayor a 0." });
             }
 
-            using (var transaction = await _context.Database.BeginTransactionAsync())
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
+                var receta = await _context.Recetas
+                    .Include(r => r.IngredientesReceta)
+                        .ThenInclude(ir => ir.Insumo)
+                    .Where(r => r.Id == solicitudDto.IdReceta)
+                    .Select(r => new RecetaDetallesDto
+                    {
+                        Id = r.Id,
+                        LitrosEstimados = r.LitrosEstimados,
+                        PrecioLitro = r.PrecioLitro,
+                        Descripcion = r.Descripcion,
+                        Nombre = r.Nombre,
+                        CostoProduccion = r.CostoProduccion,
+                        Imagen = r.Imagen,
+                        Activo = r.Activo,
+                        IngredientesReceta = r.IngredientesReceta.Select(ir => new IngredienteRecetaDto
+                        {
+                            Id = ir.IdInsumo,
+                            Cantidad = ir.Cantidad,
+                            Nombre = ir.Insumo.Nombre,
+                            UnidadMedida = ir.Insumo.UnidadMedida
+                        }).ToList()
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (receta == null)
+                {
+                    return NotFound("Receta no encontrada.");
+                }
+
+                var usuarioProduccion = await _context.Users.FindAsync(solicitudDto.IdUsuario);
+                if (usuarioProduccion == null)
+                {
+                    return NotFound(new { message = "Usuario no existe. Escoja otro usuario de Producción." });
+                }
+
+                var produccion = new Produccion
+                {
+                    FechaProduccion = DateTime.Now,
+                    FechaProximoPaso = DateTime.Now,
+                    Mensaje = "",
+                    Estatus = 1, //solicitud
+                    NumeroTandas = solicitudDto.NumeroTandas,
+                    IdReceta = solicitudDto.IdReceta,
+                    FechaSolicitud = DateTime.Now,
+                    IdUsuarioSolicitud = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "a0a0aaa0-0000-0aa0-0000-00aaa0aa0a00",
+                    IdUsuarioProduccion = solicitudDto.IdUsuario,
+                    Paso = 0
+                };
+
+                _context.Producciones.Add(produccion);
+                await _context.SaveChangesAsync();
+
+                bool recetaSePuedeProcesar = true;
+                string mensajeInsumosCantidadesFaltantes = "";
+
+                foreach (var ingrediente in receta.IngredientesReceta)
+                {
+                    var cantidadNecesaria = ingrediente.Cantidad * produccion.NumeroTandas;
+                    var lotesInsumo = await _context.LotesInsumos
+                        .Where(li => li.IdInsumo == ingrediente.Id && li.FechaCaducidad > DateTime.Today)
+                        .OrderBy(li => li.FechaCaducidad)
+                        .ToListAsync();
+
+                    foreach (var lote in lotesInsumo)
+                    {
+                        if (cantidadNecesaria <= 0)
+                            break;
+
+                        var cantidadUtilizada = Math.Min(lote.Cantidad, cantidadNecesaria);
+                        lote.Cantidad -= cantidadUtilizada;
+                        cantidadNecesaria -= cantidadUtilizada;
+
+                        var produccionLoteInsumo = new ProduccionLoteInsumo
+                        {
+                            IdProduccion = produccion.Id,
+                            IdLoteInsumo = lote.Id,
+                            Cantidad = cantidadUtilizada
+                        };
+                        _context.ProduccionLoteInsumos.Add(produccionLoteInsumo);
+                        _context.LotesInsumos.Update(lote);
+                    }
+
+                    if (cantidadNecesaria > 0)
+                    {
+                        recetaSePuedeProcesar = false;
+                        mensajeInsumosCantidadesFaltantes += $"Faltan {cantidadNecesaria} {ingrediente.UnidadMedida} del insumo {ingrediente.Nombre}\n";
+                    }
+                }
+
+                if (!recetaSePuedeProcesar)
+                {
+                    //cancelar los cambios
+                    transaction.Rollback();
+
+                    return BadRequest(mensajeInsumosCantidadesFaltantes);
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
                 try
                 {
-                    var receta = await _context.Recetas
-                        .Include(r => r.IngredientesReceta)
-                            .ThenInclude(ir => ir.Insumo)
-                        .Where(r => r.Id == solicitudDto.IdReceta)
-                        .Select(r => new RecetaDetallesDto
-                        {
-                            Id = r.Id,
-                            LitrosEstimados = r.LitrosEstimados,
-                            PrecioLitro = r.PrecioLitro,
-                            Descripcion = r.Descripcion,
-                            Nombre = r.Nombre,
-                            CostoProduccion = r.CostoProduccion,
-                            Imagen = r.Imagen,
-                            Activo = r.Activo,
-                            IngredientesReceta = r.IngredientesReceta.Select(ir => new IngredienteRecetaDto
-                            {
-                                Id = ir.IdInsumo,
-                                Cantidad = ir.Cantidad,
-                                Nombre = ir.Insumo.Nombre,
-                                UnidadMedida = ir.Insumo.UnidadMedida
-                            }).ToList()
-                        })
-                        .FirstOrDefaultAsync();
 
-                    if (receta == null)
+                    var s = "";
+                    if (produccion.NumeroTandas > 1)
                     {
-                        return NotFound("Receta no encontrada.");
+                        s = "s";
                     }
-
-                    var usuarioProduccion = await _context.Users.FindAsync(solicitudDto.IdUsuario);
-                    if (usuarioProduccion == null)
+                    Notificacion notificacion = new Notificacion
                     {
-                        return NotFound(new { message = "Usuario no existe. Escoja otro usuario de Producción." });
-                    }
+                        IdUsuario = produccion.IdUsuarioSolicitud,
+                        Fecha = DateTime.Now,
+                        Tipo = 5,
+                        Mensaje = "Se ha hecho una solicitud de producción de " + produccion.NumeroTandas + $" tanda{s} de " + receta.Nombre,
+                        Visto = false
+                    };
 
-                    var produccion = new Produccion();
+                    _context.Notificaciones.Add(notificacion);
 
-                    produccion.FechaProduccion = DateTime.Now;
-                    produccion.FechaProximoPaso = DateTime.Now;
-                    produccion.Mensaje = "";
-                    produccion.Estatus = 1; //solicitud
-                    produccion.NumeroTandas = solicitudDto.NumeroTandas;
-                    produccion.IdReceta = solicitudDto.IdReceta;
-                    produccion.FechaSolicitud = DateTime.Now;
-                    produccion.IdUsuarioSolicitud = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "a0a0aaa0-0000-0aa0-0000-00aaa0aa0a00";
-                    produccion.IdUsuarioProduccion = solicitudDto.IdUsuario;
-                    produccion.Paso = 0;
+                    Notificacion notificacion2 = new Notificacion
+                    {
+                        IdUsuario = produccion.IdUsuarioProduccion,
+                        Fecha = DateTime.Now,
+                        Tipo = 5,
+                        Mensaje = "Se ha hecho una solicitud de producción de " + produccion.NumeroTandas + $" tanda{s} de " + receta.Nombre,
+                        Visto = false
+                    };
 
-                    _context.Producciones.Add(produccion);
+                    _context.Notificaciones.Add(notificacion2);
                     await _context.SaveChangesAsync();
-
-                    bool recetaSePuedeProcesar = true;
-                    string mensajeInsumosCantidadesFaltantes = "";
-
-                    foreach (var ingrediente in receta.IngredientesReceta)
-                    {
-                        var cantidadNecesaria = ingrediente.Cantidad * produccion.NumeroTandas;
-                        var lotesInsumo = await _context.LotesInsumos
-                            .Where(li => li.IdInsumo == ingrediente.Id && li.FechaCaducidad > DateTime.Today)
-                            .OrderBy(li => li.FechaCaducidad)
-                            .ToListAsync();
-
-                        foreach (var lote in lotesInsumo)
-                        {
-                            if (cantidadNecesaria <= 0)
-                                break;
-
-                            var cantidadUtilizada = Math.Min(lote.Cantidad, cantidadNecesaria);
-                            lote.Cantidad -= cantidadUtilizada;
-                            cantidadNecesaria -= cantidadUtilizada;
-
-                            var produccionLoteInsumo = new ProduccionLoteInsumo
-                            {
-                                IdProduccion = produccion.Id,
-                                IdLoteInsumo = lote.Id,
-                                Cantidad = cantidadUtilizada
-                            };
-                            _context.ProduccionLoteInsumos.Add(produccionLoteInsumo);
-                            _context.LotesInsumos.Update(lote);
-                        }
-
-                        if (cantidadNecesaria > 0)
-                        {
-                            recetaSePuedeProcesar = false;
-                            mensajeInsumosCantidadesFaltantes += $"Faltan {cantidadNecesaria} {ingrediente.UnidadMedida} del insumo {ingrediente.Nombre}\n";
-                        }
-                    }
-
-                    if (!recetaSePuedeProcesar)
-                    {
-                        //cancelar los cambios
-                        transaction.Rollback();
-
-                        return BadRequest(mensajeInsumosCantidadesFaltantes);
-                    }
-
-                    await _context.SaveChangesAsync();
-                    await transaction.CommitAsync();
-
-                    
-
-                    try
-                    {
-
-                        var s = "";
-                        if (produccion.NumeroTandas > 1)
-                        {
-                            s = "s";
-                        }
-                        Notificacion notificacion = new Notificacion
-                        {
-                            IdUsuario = produccion.IdUsuarioSolicitud,
-                            Fecha = DateTime.Now,
-                            Tipo = 5,
-                            Mensaje = "Se ha hecho una solicitud de producción de " + produccion.NumeroTandas + $" tanda{s} de " + receta.Nombre,
-                            Visto = false
-                        };
-
-                        _context.Notificaciones.Add(notificacion);
-
-                        Notificacion notificacion2 = new Notificacion
-                        {
-                            IdUsuario = produccion.IdUsuarioProduccion,
-                            Fecha = DateTime.Now,
-                            Tipo = 5,
-                            Mensaje = "Se ha hecho una solicitud de producción de " + produccion.NumeroTandas + $" tanda{s} de " + receta.Nombre,
-                            Visto = false
-                        };
-
-                        _context.Notificaciones.Add(notificacion2);
-                        await _context.SaveChangesAsync();
-                    }catch(Exception ex){}
-
-                    return Ok(new { id = produccion.Id, message = "Solicitud de produccion de receta realizada. Verifique la reduccion de insumos." });
                 }
                 catch (Exception ex)
                 {
-                    await transaction.RollbackAsync();
-                    return StatusCode(StatusCodes.Status500InternalServerError, "Error al procesar la solicitud de producción: " + ex.Message);
+
                 }
+
+                return Ok(new { id = produccion.Id, message = "Solicitud de produccion de receta realizada. Verifique la reduccion de insumos." });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error al procesar la solicitud de producción: " + ex.Message);
             }
         }
 
@@ -786,7 +789,7 @@ namespace CERVERICA.Controllers
 
                 try
                 {
-                    
+
                     var s = "";
                     if (produccion.NumeroTandas > 1)
                     {
@@ -875,7 +878,7 @@ namespace CERVERICA.Controllers
                 }
                 catch (Exception ex) { }
 
-                return Ok(new { message =  "Solicitud rechazada correctamente"});
+                return Ok(new { message = "Solicitud rechazada correctamente" });
             }
             else
             {
@@ -1011,7 +1014,7 @@ namespace CERVERICA.Controllers
                     s = "s";
                 }
 
-                if(produccion.Estatus == 3)
+                if (produccion.Estatus == 3)
                 {
                     Notificacion notificacion = new Notificacion
                     {
