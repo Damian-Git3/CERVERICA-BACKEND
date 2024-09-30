@@ -2,6 +2,7 @@ using CERVERICA.Controllers;
 using CERVERICA.Data;
 using CERVERICA.Models;
 using CERVERICA.Routines;
+using CERVERICA.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,9 @@ using System.Net;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Agregar servicios al contenedor
+builder.Services.AddScoped<FirebaseNotificationService>();
 
 //builder.WebHost.ConfigureKestrel(serverOptions =>
 //{
