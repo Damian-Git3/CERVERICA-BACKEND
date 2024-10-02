@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace CERVERICA.Models
 {
-    public class FavoritoUsuario
+    public class FavoritosComprador
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

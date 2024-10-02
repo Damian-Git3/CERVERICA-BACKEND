@@ -25,7 +25,6 @@ namespace CERVERICA.Controllers
             _context = context;
         }
 
-        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<ActionResult<PedidoDTO>> ObtenerVentas()
         {
