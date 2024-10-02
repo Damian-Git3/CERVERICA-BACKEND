@@ -47,14 +47,13 @@ namespace CERVERICA.Models
 
         [JsonIgnore]
         public ApplicationUser? Usuario { get; set; }
-        [JsonIgnore]
-        public DetalleVenta[]? DetallesVenta { get; set; }
     }
 
     public enum MetodoPago
     {
         ContraEntrega = 1,
-        TarjetaCredito = 2
+        TarjetaCredito = 2,
+        Stripe = 3
     }
 
     public enum MetodoEnvio
@@ -64,6 +63,7 @@ namespace CERVERICA.Models
     }
     public enum EstatusVenta
     {
+        Esperando = 0,
         Recibido = 1,
         Empaquetando = 2,
         Listo = 3,

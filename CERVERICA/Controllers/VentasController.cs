@@ -440,7 +440,6 @@ namespace CERVERICA.Controllers
                 });
             }
 
-            // Si no hubo problemas de stock, guardar los cambios
             await _context.SaveChangesAsync();
 
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -485,7 +484,6 @@ namespace CERVERICA.Controllers
 
                 //considerar que el stock de una receta contiene productos de diferentes tamañanos y tipo de envase y la cantidad del stock 
                 //no es una cantidad en litros sino del total de botellas que se tienen en stock
-                Debug.WriteLine("####################################################################################3");
                 foreach (var detalle in dto.Detalles)
                 {
                     var recetaId = detalle.IdReceta;
@@ -504,7 +502,7 @@ namespace CERVERICA.Controllers
                         return StatusCode(410, (new { message = $"No hay suficiente stock para {nombreReceta}. Cervezas Requeridas: {cantidadTotalRequerida:f2}, Disponibles: {cantidadTotalDisponible}" }));
 
                     }
-                    Debug.WriteLine("####################################################################################3");
+
                     while (detalle.Cantidad > 0)
                     {
                         var stock = stocks.FirstOrDefault();

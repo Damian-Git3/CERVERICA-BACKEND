@@ -56,29 +56,7 @@ namespace CERVERICA.Controllers
                 .ToListAsync();
 
             return Ok(result);
-        }
-
-        [HttpGet("ingresos-por-mes")]
-        public async Task<ActionResult> ObtenerIngresosPorMes()
-        {
-            var ingresosPorMes = await _db.Ventas
-       .SelectMany(v => v.DetallesVenta, (venta, detalle) => new { venta.FechaVenta.Year, venta.FechaVenta.Month, detalle.MontoVenta })
-       .GroupBy(x => new { x.Year, x.Month })
-       .Select(g => new 
-       {
-           Ano = g.Key.Year,
-           Mes = g.Key.Month,
-           IngresosTotales = g.Sum(x => x.MontoVenta)
-       })
-       .ToListAsync();
-
-            if (!ingresosPorMes.Any())
-            {
-                return NotFound();
-            }
-
-            return Ok(ingresosPorMes);
-        }
+        }   
 
 
 
