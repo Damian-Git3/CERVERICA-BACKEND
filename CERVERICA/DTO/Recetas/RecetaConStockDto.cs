@@ -11,6 +11,9 @@
         public float? PrecioPaquete6 { get; set; }
         public float? PrecioPaquete12 { get; set; }
         public float? PrecioPaquete24 { get; set; }
+        public int? LotesMinimos { get; set; }
+        public int? LotesMaximos { get; set; }
+
         public float CostoProduccion { get; set; }
         public float CantidadEnStock { get; set; }
     }
