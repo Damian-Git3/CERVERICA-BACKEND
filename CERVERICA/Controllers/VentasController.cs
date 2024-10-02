@@ -441,7 +441,6 @@ namespace CERVERICA.Controllers
                 });
             }
 
-            // Si no hubo problemas de stock, guardar los cambios
             await _context.SaveChangesAsync();
 
             using var transaction = await _context.Database.BeginTransactionAsync();

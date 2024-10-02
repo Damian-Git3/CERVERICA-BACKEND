@@ -6,6 +6,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using Stripe;
+using Stripe.Checkout;
+using System.Net;
+using System.Text.Json;
 
 namespace CERVERICA.Controllers
 {
@@ -149,6 +153,81 @@ namespace CERVERICA.Controllers
             .ToListAsync();
 
             return Ok(productosCarrito);
+        }
+
+        [HttpGet("session-status")]
+        public ActionResult SessionStatus([FromQuery] string session_id)
+        {
+            var sessionService = new SessionService();
+            Session session = sessionService.Get(session_id);
+
+            return Ok(new { status = session.Status, customer_email = session.CustomerDetails.Email });
+        }
+
+        [HttpPost("checkout")]
+        public async Task<ActionResult> Checkout([FromBody] CrearVentaDto dto)
+        {
+            var idUsuarioPeticion = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var productosCarrito = await _db.ProductosCarrito
+            .Where(f => f.IdUsuario == idUsuarioPeticion)
+            .Include(f => f.Receta)
+            .ToListAsync();
+
+            var lineItems = productosCarrito.Select(productoCarrito =>
+            {
+                long precioPaquete = 0;
+
+                switch (productoCarrito.CantidadLote)
+                {
+                    case 1:
+                        precioPaquete = (long)(productoCarrito.Receta.PrecioPaquete1 * 100);
+                        break;
+                    case 6:
+                        precioPaquete = (long)(productoCarrito.Receta.PrecioPaquete6 * 100);
+                        break;
+                    case 12:
+                        precioPaquete = (long)(productoCarrito.Receta.PrecioPaquete12 * 100);
+                        break;
+                    case 24:
+                        precioPaquete = (long)(productoCarrito.Receta.PrecioPaquete24 * 100);
+                        break;
+                }
+
+                Console.WriteLine("Precio paquete" + precioPaquete);
+
+                return new SessionLineItemOptions
+                {
+                    Quantity = productoCarrito.Cantidad,
+                    PriceData = new SessionLineItemPriceDataOptions
+                    {
+                        Currency = "mxn",
+                        UnitAmount = precioPaquete,
+                        ProductData = new SessionLineItemPriceDataProductDataOptions
+                        {
+                            Name = productoCarrito.Receta.Nombre + " - Paquete de " + productoCarrito.CantidadLote,
+                            Images = new List<string> { productoCarrito.Receta.Imagen }
+                        }
+                    }
+                };
+            }).ToList();
+
+            var dtoJson = JsonSerializer.Serialize(dto);
+
+            var encodedDto = WebUtility.UrlEncode(dtoJson);
+
+            var domain = "http://localhost:4200";
+            var options = new SessionCreateOptions
+            {
+                LineItems = lineItems,
+                Mode = "payment",
+                UiMode = "embedded",
+                ReturnUrl = $"{domain}/cerverica/carrito?venta={encodedDto}",
+            };
+            var service = new SessionService();
+            Session session = service.Create(options);
+
+            return Ok(new { clientSecret = session.ClientSecret });
         }
     }
 }
