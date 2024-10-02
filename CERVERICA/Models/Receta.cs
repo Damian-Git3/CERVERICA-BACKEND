@@ -18,6 +18,8 @@ namespace CERVERICA.Models
         public float? PrecioPaquete12 { get; set; }
         public float? PrecioPaquete24 { get; set; }
 
+        public float? Puntuacion { get; set; }
+
         public string Especificaciones { get; set; }
         public string Descripcion { get; set; }
 

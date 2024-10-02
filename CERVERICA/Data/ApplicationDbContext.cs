@@ -25,6 +25,7 @@ namespace CERVERICA.Data
         public DbSet<FavoritoUsuario> FavoritosUsuarios { get; set; }
         public DbSet<ProductoCarrito> ProductosCarrito { get; set; }
         public DbSet<Notificacion> Notificaciones { get; set; }
+        public DbSet<Comentario> Comentarios { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Definición de tablas intermedias de muchos a muchos

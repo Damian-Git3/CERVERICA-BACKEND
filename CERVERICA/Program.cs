@@ -118,6 +118,8 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+Stripe.StripeConfiguration.ApiKey = "sk_test_51Q594yAtwLA1tBRcFFVO8alE9UI5I8NB2IlO3VtxoD44NceCxIti98zqaz2irsAJtrvLI9jhu2gTx8ifSJnV5Ak700CjRYcZb7";
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
