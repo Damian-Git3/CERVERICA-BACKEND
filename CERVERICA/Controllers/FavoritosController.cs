@@ -25,7 +25,7 @@ namespace CERVERICA.Controllers
         }
 
         [HttpPost("agregar-favorito")]
-        public async Task<ActionResult<FavoritoUsuario>> agregarFavorito(AgregarFavoritoUsuarioDTO favoritoUsuarioAgregar)
+        public async Task<ActionResult<FavoritoComprador>> agregarFavorito(AgregarFavoritoUsuarioDTO favoritoUsuarioAgregar)
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var user = await _userManager.FindByIdAsync(currentUserId!);
@@ -46,7 +46,7 @@ namespace CERVERICA.Controllers
                 return BadRequest("La cerveza seleccionada ya es un favorito.");
             }
 
-            var nuevoFavoritoUsuario = new FavoritoUsuario();
+            var nuevoFavoritoUsuario = new FavoritoComprador();
             nuevoFavoritoUsuario.IdUsuario = user.Id;
             nuevoFavoritoUsuario.IdReceta = favoritoUsuarioAgregar.IdReceta;
 
@@ -147,7 +147,7 @@ namespace CERVERICA.Controllers
         }
 
         [HttpGet("obtener-favoritos")]
-        public async Task<ActionResult<FavoritoUsuario>> obtenerFavoritos()
+        public async Task<ActionResult<FavoritoComprador>> obtenerFavoritos()
 
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
