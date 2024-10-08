@@ -29,7 +29,10 @@ namespace CERVERICA.Dtos
 
         [Range(0, float.MaxValue, ErrorMessage = "El precio del paquete de 24 debe ser un valor positivo.")]
         public float? PrecioPaquete24 { get; set; }
-
+      
+        public int? LotesMinimos { get; set; }
+        public int? LotesMaximos { get; set; }
+      
         [Range(0, float.MaxValue, ErrorMessage = "El costo de producción debe ser un valor positivo.")]
         public float CostoProduccion { get; set; }
 

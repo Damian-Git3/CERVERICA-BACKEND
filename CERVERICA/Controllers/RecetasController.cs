@@ -685,6 +685,8 @@ namespace CERVERICA.Controllers
                 precioPaquete6 = receta.PrecioPaquete6,
                 precioPaquete12 = receta.PrecioPaquete12,
                 precioPaquete24 = receta.PrecioPaquete24,
+                lotesMinimos = receta.LotesMinimos,
+                lotesMaximos = receta.LotesMaximos,
                 fechaRegistrado = receta.FechaRegistrado,
                 imagen = receta.Imagen,
                 rutaFondo = receta.RutaFondo,

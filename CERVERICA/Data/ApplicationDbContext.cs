@@ -25,13 +25,16 @@ namespace CERVERICA.Data
         public DbSet<FavoritosComprador> FavoritosComprador { get; set; }
         public DbSet<ProductoCarrito> ProductosCarrito { get; set; }
         public DbSet<Notificacion> Notificaciones { get; set; }
+        public DbSet<PuntosFidelidad> PuntosFidelidad { get; set; }
+        public DbSet<TransaccionPuntos> TransaccionesPuntos { get; set; }
+        public DbSet<ReglaPuntos> ReglasPuntos { get; set; }
         public DbSet<Comprador> Compradores { get; set; }
         public DbSet<InteraccionComprador> InteraccionesCompradores { get; set; }
         public DbSet<PreferenciasComprador> PreferenciasCompradores { get; set; }
         public DbSet<Comentario> Comentarios { get; set; }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
             // Definición de tablas intermedias de muchos a muchos
             modelBuilder.Entity<IngredienteReceta>()
                 .HasKey(ir => new { ir.IdReceta, ir.IdInsumo });
