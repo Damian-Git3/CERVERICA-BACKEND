@@ -22,12 +22,16 @@ namespace CERVERICA.Data
         public DbSet<Log> Logs { get; set; }
         public DbSet<PasosReceta> PasosRecetas { get; set; }
         public DbSet<ProduccionLoteInsumo> ProduccionLoteInsumos { get; set; }
-        public DbSet<FavoritoUsuario> FavoritosUsuarios { get; set; }
+        public DbSet<FavoritosComprador> FavoritosComprador { get; set; }
         public DbSet<ProductoCarrito> ProductosCarrito { get; set; }
         public DbSet<Notificacion> Notificaciones { get; set; }
         public DbSet<PuntosFidelidad> PuntosFidelidad { get; set; }
         public DbSet<TransaccionPuntos> TransaccionesPuntos { get; set; }
         public DbSet<ReglaPuntos> ReglasPuntos { get; set; }
+        public DbSet<Comprador> Compradores { get; set; }
+        public DbSet<InteraccionComprador> InteraccionesCompradores { get; set; }
+        public DbSet<PreferenciasComprador> PreferenciasCompradores { get; set; }
+        public DbSet<Comentario> Comentarios { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
@@ -88,6 +92,19 @@ namespace CERVERICA.Data
             .WithMany(i => i.IngredientesReceta)
             .HasForeignKey(o => o.IdInsumo)
             .OnDelete(DeleteBehavior.Restrict);
+
+
+            modelBuilder.Entity<InteraccionComprador>()
+                .HasOne(i => i.Usuario)
+                .WithMany()
+                .HasForeignKey(i => i.IdUsuario)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PreferenciasComprador>()
+                .HasOne(p => p.Usuario)
+                .WithMany()
+                .HasForeignKey(p => p.IdUsuario)
+                .OnDelete(DeleteBehavior.Cascade);
 
             base.OnModelCreating(modelBuilder);
         }

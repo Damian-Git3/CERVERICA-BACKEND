@@ -25,7 +25,7 @@ namespace CERVERICA.Controllers
         }
 
         [HttpPost("agregar-favorito")]
-        public async Task<ActionResult<FavoritoUsuario>> agregarFavorito(AgregarFavoritoUsuarioDTO favoritoUsuarioAgregar)
+        public async Task<ActionResult<FavoritosComprador>> agregarFavorito(AgregarFavoritoUsuarioDTO favoritoUsuarioAgregar)
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var user = await _userManager.FindByIdAsync(currentUserId!);
@@ -39,18 +39,18 @@ namespace CERVERICA.Controllers
                 });
             }
 
-            var favoritoUsuarioExistente = await _db.FavoritosUsuarios
+            var favoritoUsuarioExistente = await _db.FavoritosComprador
                 .FirstOrDefaultAsync(f => f.IdUsuario == user.Id && f.IdReceta == favoritoUsuarioAgregar.IdReceta);
             if(favoritoUsuarioExistente != null)
             {
                 return BadRequest("La cerveza seleccionada ya es un favorito.");
             }
 
-            var nuevoFavoritoUsuario = new FavoritoUsuario();
+            var nuevoFavoritoUsuario = new FavoritosComprador();
             nuevoFavoritoUsuario.IdUsuario = user.Id;
             nuevoFavoritoUsuario.IdReceta = favoritoUsuarioAgregar.IdReceta;
 
-            _db.FavoritosUsuarios.Add(nuevoFavoritoUsuario);
+            _db.FavoritosComprador.Add(nuevoFavoritoUsuario);
             await _db.SaveChangesAsync();
 
             //obtener el nombre de la cerveza 
@@ -87,14 +87,14 @@ namespace CERVERICA.Controllers
                 });
             }
 
-            var favoritoUsuarioEliminar = await _db.FavoritosUsuarios.FirstOrDefaultAsync(f => f.IdUsuario == user.Id && f.IdReceta == favoritoUsuario.IdReceta);
+            var favoritoUsuarioEliminar = await _db.FavoritosComprador.FirstOrDefaultAsync(f => f.IdUsuario == user.Id && f.IdReceta == favoritoUsuario.IdReceta);
 
             if (favoritoUsuarioEliminar == null)
             {
                 return NotFound("Favorito no encontrado.");
             }
 
-            _db.FavoritosUsuarios.Remove(favoritoUsuarioEliminar);
+            _db.FavoritosComprador.Remove(favoritoUsuarioEliminar);
 
             await _db.SaveChangesAsync();
 
@@ -131,7 +131,7 @@ namespace CERVERICA.Controllers
                 });
             }
 
-            var favoritos = await _db.FavoritosUsuarios.Where(f => f.IdUsuario == idUsuario)
+            var favoritos = await _db.FavoritosComprador.Where(f => f.IdUsuario == idUsuario)
                 .Include(f => f.Receta).Select(f => new FavoritoDto
                 {
                     Id = f.Id,
@@ -147,7 +147,7 @@ namespace CERVERICA.Controllers
         }
 
         [HttpGet("obtener-favoritos")]
-        public async Task<ActionResult<FavoritoUsuario>> obtenerFavoritos()
+        public async Task<ActionResult<FavoritosComprador>> obtenerFavoritos()
 
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -162,7 +162,7 @@ namespace CERVERICA.Controllers
                 });
             }
 
-            var favoritos = await _db.FavoritosUsuarios
+            var favoritos = await _db.FavoritosComprador
             .Where(f => f.IdUsuario == user.Id)
             .ToListAsync();
 

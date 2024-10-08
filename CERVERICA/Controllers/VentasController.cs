@@ -25,7 +25,6 @@ namespace CERVERICA.Controllers
             _context = context;
         }
 
-        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<ActionResult<PedidoDTO>> ObtenerVentas()
         {
@@ -441,7 +440,6 @@ namespace CERVERICA.Controllers
                 });
             }
 
-            // Si no hubo problemas de stock, guardar los cambios
             await _context.SaveChangesAsync();
 
             using var transaction = await _context.Database.BeginTransactionAsync();

@@ -4,20 +4,20 @@ namespace CERVERICA.Dtos
 {
     public class LoteInsumoInsertDto
     {
-        [Required]
+        [Required(ErrorMessage = "El ID del proveedor es obligatorio.")]
         public int IdProveedor { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "El ID del insumo es obligatorio.")]
         public int IdInsumo { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "La fecha de caducidad es obligatoria.")]
         [DataType(DataType.Date)]
         public DateTime FechaCaducidad { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "La cantidad es obligatoria.")]
         public float Cantidad { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "El monto de compra es obligatorio.")]
         public float MontoCompra { get; set; }
     }
 }

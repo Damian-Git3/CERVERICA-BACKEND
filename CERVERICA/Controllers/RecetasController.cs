@@ -42,6 +42,7 @@ namespace CERVERICA.Controllers
         }
 
         // GET: api/recetas/5
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<ActionResult<RecetaDetallesDto>> GetReceta(int id)
         {
@@ -61,6 +62,7 @@ namespace CERVERICA.Controllers
                     PrecioPaquete12 = r.PrecioPaquete12,
                     PrecioPaquete24 = r.PrecioPaquete24,
                     Especificaciones = r.Especificaciones,
+                    Puntuacion = r.Puntuacion,
                     RutaFondo = r.RutaFondo,
                     Descripcion = r.Descripcion,
                     Nombre = r.Nombre,

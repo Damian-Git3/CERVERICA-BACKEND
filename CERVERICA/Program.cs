@@ -2,6 +2,7 @@ using CERVERICA.Controllers;
 using CERVERICA.Data;
 using CERVERICA.Models;
 using CERVERICA.Routines;
+using CERVERICA.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,9 @@ using System.Net;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Agregar servicios al contenedor
+builder.Services.AddScoped<FirebaseNotificationService>();
 
 //builder.WebHost.ConfigureKestrel(serverOptions =>
 //{
@@ -117,6 +121,8 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+Stripe.StripeConfiguration.ApiKey = "sk_test_51Q594yAtwLA1tBRcFFVO8alE9UI5I8NB2IlO3VtxoD44NceCxIti98zqaz2irsAJtrvLI9jhu2gTx8ifSJnV5Ak700CjRYcZb7";
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

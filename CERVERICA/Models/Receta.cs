@@ -20,6 +20,8 @@ namespace CERVERICA.Models
         public int? LotesMinimos { get; set; }
         public int? LotesMaximos { get; set; }
 
+        public float? Puntuacion { get; set; }
+
         public string Especificaciones { get; set; }
         public string Descripcion { get; set; }
 

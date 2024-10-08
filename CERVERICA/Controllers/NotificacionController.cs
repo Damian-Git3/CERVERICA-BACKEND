@@ -1,5 +1,6 @@
 ﻿using CERVERICA.Data;
 using CERVERICA.Models;
+using CERVERICA.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -15,11 +16,13 @@ namespace CERVERICA.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly FirebaseNotificationService _firebaseNotificationService;
 
-        public NotificacionController(UserManager<ApplicationUser> userManager, ApplicationDbContext context)
+        public NotificacionController(UserManager<ApplicationUser> userManager, ApplicationDbContext context, FirebaseNotificationService firebaseNotificationService)
         {
             _userManager = userManager;
             _context = context;
+            _firebaseNotificationService = firebaseNotificationService;
         }
 
         [HttpGet]
@@ -95,6 +98,13 @@ namespace CERVERICA.Controllers
                     message = "No se pudo marcar la notificacion como vista"
                 });
             }
+        }
+
+        [HttpPost("send-notification")]
+        public async Task<IActionResult> SendNotification(string registrationToken, string title, string body)
+        {
+            var result = await _firebaseNotificationService.SendNotificationAsync(registrationToken, title, body);
+            return Ok(result);
         }
     }
 }
