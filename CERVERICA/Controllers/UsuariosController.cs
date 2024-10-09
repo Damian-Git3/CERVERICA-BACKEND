@@ -1,4 +1,5 @@
 ﻿using CERVERICA.Data;
+using CERVERICA.DTO.Clientes;
 using CERVERICA.DTO.Usuarios;
 using CERVERICA.Dtos;
 using CERVERICA.Models;
@@ -31,7 +32,39 @@ namespace CERVERICA.Controllers
 
         }
 
+        // OBTENER A LOS USUARIOS CON ROL CLIENTE
+        [HttpGet("clientes")]
+        [AllowAnonymous]
+        public async Task<ActionResult<List<ClienteDTO>>> obtenerClientes()
+        {
+            var users = await _userManager.Users.ToListAsync();
+            var clientesDto = new List<ClienteDTO>();
+
+            foreach (var user in users)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+
+                // Solo agrega usuarios que tengan el rol "Cliente"
+                if (roles.Contains("Admin"))
+                {
+                    clientesDto.Add(new ClienteDTO
+                    {
+                        Id = user.Id,
+                        Nombre = user.FullName,
+                        Correo = user.Email,
+                        Rol = roles.FirstOrDefault(), 
+                        Activo = user.Activo,
+                        FechaRegistro = user.FechaRegistro
+                    });
+                }
+            }
+
+            return Ok(clientesDto);
+        }
+
+
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<UsuarioDTO>> obtenerUsuarios()
         {
             var users = await _userManager.Users.ToListAsync();
