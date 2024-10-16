@@ -32,8 +32,17 @@ namespace CERVERICA.Data
         public DbSet<InteraccionComprador> InteraccionesCompradores { get; set; }
         public DbSet<PreferenciasComprador> PreferenciasCompradores { get; set; }
         public DbSet<Comentario> Comentarios { get; set; }
+        public DbSet<ClienteMayorista> ClientesMayoristas { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
+            // Relación uno a muchos entre ApplicationUser (AgenteVenta) y ClienteMayorista
+            modelBuilder.Entity<ClienteMayorista>()
+                .HasOne(c => c.AgenteVenta)
+                .WithMany(a => a.ClientesMayoristas)
+                .HasForeignKey(c => c.AgenteVentaId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Definición de tablas intermedias de muchos a muchos
             modelBuilder.Entity<IngredienteReceta>()
