@@ -33,6 +33,7 @@ namespace CERVERICA.Controllers
                     Nombre = r.Nombre,
                     CostoProduccion = r.CostoProduccion,
                     Imagen = r.Imagen,
+                    TiempoVida = r.TiempoVida,
                     FechaRegistrado = r.FechaRegistrado,
                     Activo = r.Activo
                 })
@@ -68,6 +69,7 @@ namespace CERVERICA.Controllers
                     Nombre = r.Nombre,
                     CostoProduccion = r.CostoProduccion,
                     Imagen = r.Imagen,
+                    TiempoVida = r.TiempoVida,
                     Activo = r.Activo,
                     IngredientesReceta = r.IngredientesReceta.Select(ir => new IngredienteRecetaDto
                     {
@@ -116,6 +118,7 @@ namespace CERVERICA.Controllers
                 PrecioPaquete24 = recetaDto.PrecioPaquete24,
                 CostoProduccion = 0,
                 Imagen = recetaDto.Imagen,
+                TiempoVida = recetaDto.TiempoVida,
                 RutaFondo = recetaDto.RutaFondo,
                 FechaRegistrado = System.DateTime.Now,
                 Activo = true,
@@ -203,6 +206,7 @@ namespace CERVERICA.Controllers
             receta.Especificaciones = recetaDto.Especificaciones;
             receta.Nombre = recetaDto.Nombre;
             receta.Imagen = recetaDto.Imagen;
+            receta.TiempoVida = recetaDto.TiempoVida;
             receta.RutaFondo = recetaDto.RutaFondo;
 
             // Actualizar ingredientes
