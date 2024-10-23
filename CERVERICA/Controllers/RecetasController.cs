@@ -692,6 +692,7 @@ namespace CERVERICA.Controllers
                 lotesMinimos = receta.LotesMinimos,
                 lotesMaximos = receta.LotesMaximos,
                 fechaRegistrado = receta.FechaRegistrado,
+                tiempoVida = receta.TiempoVida,
                 imagen = receta.Imagen,
                 rutaFondo = receta.RutaFondo,
                 cantidadEnStock = _context.Stocks
