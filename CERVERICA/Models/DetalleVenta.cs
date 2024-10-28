@@ -8,13 +8,20 @@ namespace CERVERICA.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
+
         [ForeignKey(nameof(Venta))]
         public int IdVenta { get; set; }
         public Venta Venta { get; set; }
 
+
         [ForeignKey(nameof(Stock))]
         public int IdStock { get; set; }
         public Stock Stock { get; set; }
+
+        [ForeignKey(nameof(Receta))]
+        public int IdReceta { get; set; }
+        public virtual Receta? Receta { get; set; }
+
 
         [Required]
         public float MontoVenta { get; set; }
@@ -22,5 +29,8 @@ namespace CERVERICA.Models
         public int? Cantidad { get; set; }
 
         public int? Pack { get; set; }
+
+        public virtual Comentario? Comentario  { get; set; }
+
     }
 }

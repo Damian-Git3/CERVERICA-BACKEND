@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace CERVERICA.Models
@@ -11,7 +10,7 @@ namespace CERVERICA.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        [ForeignKey("Usuario")]
+        [ForeignKey(nameof(Usuario))]
         public string IdUsuario { get; set; }
 
         [Required]
@@ -19,6 +18,12 @@ namespace CERVERICA.Models
 
         [Required]
         public float Total { get; set; }
+
+        [Required]
+        public bool Mayoreo { get; set; } = false;
+
+        [Required]
+        public bool Recordatorio { get; set; } = false;
 
         [Required]
         public MetodoPago MetodoPago { get; set; }

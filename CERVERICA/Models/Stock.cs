@@ -11,6 +11,8 @@ namespace CERVERICA.Models
 
         public DateTime? FechaEntrada { get; set; }
 
+        public DateTime? FechaCaducidad { get; set; }
+
         [Required]
         public DateTime FechaCaducidad { get; set; }
 
@@ -31,8 +33,8 @@ namespace CERVERICA.Models
         public int IdReceta { get; set; }
         public Receta Receta { get; set; }
 
-        [ForeignKey(nameof(IdUsuario))]
+        [ForeignKey(nameof(Usuario))]
         public string IdUsuario { get; set; }
-        public ApplicationUser Usuario { get; set; }
+        public virtual ApplicationUser? Usuario { get; set; }
     }
 }
