@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CERVERICA.Models
 {
@@ -43,6 +43,9 @@ namespace CERVERICA.Models
         public string RutaFondo { get; set; }
 
         [Required]
+        public float TiempoVida { get; set; }
+
+        [Required]
         public bool Activo { get; set; }
         [Column(TypeName = "Date")]
         public DateTime FechaRegistrado { get; set; }
@@ -62,5 +65,7 @@ namespace CERVERICA.Models
         public ICollection<RecetaCategoriaCerveza> RecetaCategoriaCerveza { get; set; }
 
         public ICollection<Cupones> Cupones { get; set; }
+      
+        public ICollection<HistorialPrecios> HistorialPrecios { get; set; }
     }
 }

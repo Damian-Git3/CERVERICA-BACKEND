@@ -21,6 +21,8 @@ namespace CERVERICA.Models
         [Required]
         public string EmailEmpresa { get; set; }
         [Required]
+        public string RFCEmpresa { get; set; }
+        [Required]
         public string NombreContacto { get; set; }
         [Required]
         public string CargoContacto { get; set; }
