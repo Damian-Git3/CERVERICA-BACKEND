@@ -1,17 +1,32 @@
 using CERVERICA.Controllers;
 using CERVERICA.Data;
 using CERVERICA.Models;
+using CERVERICA.Providers;
 using CERVERICA.Routines;
 using CERVERICA.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Net;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Services.AddHttpLogging(logging =>
+{
+    logging.LoggingFields = HttpLoggingFields.All;
+    logging.RequestHeaders.Add("sec-ch-ua");
+    logging.ResponseHeaders.Add("MyResponseHeader");
+    logging.MediaTypeOptions.AddText("application/javascript");
+    logging.RequestBodyLogLimit = 4096;
+    logging.ResponseBodyLogLimit = 4096;
+});
+builder.Services.AddLogging(op => op.Services.AddSingleton<ILoggerProvider, CoolConsoleLoggerProvider>());
 
 // Agregar servicios al contenedor
 builder.Services.AddScoped<FirebaseNotificationService>();
@@ -136,7 +151,9 @@ app.UseCors("NuevaPolitica");
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
+app.UseHttpLogging();
+//app.UseMiddleware<RequestLoggingMiddleware>();
 
 app.Run();
+
