@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CERVERICA.Models
 {
@@ -48,5 +48,7 @@ namespace CERVERICA.Models
         public ICollection<Produccion> Producciones { get; set; }
         public ICollection<Stock> Stocks { get; set; }
         public ICollection<PasosReceta> PasosReceta { get; set; }
+        public ICollection<HistorialPrecios> HistorialPrecios { get; set; }
+
     }
 }
