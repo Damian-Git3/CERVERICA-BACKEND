@@ -17,6 +17,8 @@ namespace CERVERICA.Models
         [Required]
         public string EmailEmpresa { get; set; }
         [Required]
+        public string RFCEmpresa { get; set; }
+        [Required]
         public string NombreContacto { get; set; }
         [Required]
         public string CargoContacto { get; set; }
@@ -32,7 +34,7 @@ namespace CERVERICA.Models
 
         // Nueva relación uno a uno con el usuario AgenteVenta (ApplicationUser)
         [ForeignKey("AgenteVenta")]
-        public string AgenteVentaId { get; set; }
-        public ApplicationUser AgenteVenta { get; set; }
+        public string? AgenteVentaId { get; set; }
+        public ApplicationUser? AgenteVenta { get; set; }
     }
 }

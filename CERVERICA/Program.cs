@@ -1,5 +1,6 @@
 using CERVERICA.Controllers;
 using CERVERICA.Data;
+using CERVERICA.Middleware;
 using CERVERICA.Models;
 using CERVERICA.Routines;
 using CERVERICA.Services;
@@ -136,6 +137,8 @@ app.UseCors("NuevaPolitica");
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseMiddleware<UserIdMiddleware>();
 
 app.MapControllers();
 
