@@ -12,5 +12,8 @@ namespace CERVERICA.Models
         [Required]
         public bool Activo { get; set; }
         public DateTime? FechaRegistro { get; set; } = DateTime.Now;
+
+        // Lista de clientes mayoristas para los que este usuario es agente de ventas
+        public ICollection<ClienteMayorista> ClientesMayoristas { get; set; }
     }
 }
