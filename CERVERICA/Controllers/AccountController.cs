@@ -133,6 +133,7 @@ namespace CERVERICA.Controllers
                     Email = registerDto.Email,
                     FullName = registerDto.FullName,
                     UserName = registerDto.Email,
+                    PhoneNumber = registerDto.Telefono,
                     Activo = true
                 };
 
@@ -218,7 +219,7 @@ namespace CERVERICA.Controllers
 
             if (user is null)
             {
-                return Unauthorized(new AuthResponseDto
+                return NotFound(new AuthResponseDto
                 {
                     IsSuccess = false,
                     Message = "Usuario no encontrado con este email",
@@ -227,7 +228,7 @@ namespace CERVERICA.Controllers
 
             if (!user.Activo)
             {
-                return Unauthorized(new AuthResponseDto
+                return BadRequest(new AuthResponseDto
                 {
                     IsSuccess = false,
                     Message = "Tu cuenta esta inactiva. Contacta a soporte al cliente"
@@ -238,7 +239,7 @@ namespace CERVERICA.Controllers
 
             if (!result)
             {
-                return Unauthorized(new AuthResponseDto
+                return BadRequest(new AuthResponseDto
                 {
                     IsSuccess = false,
                     Message = "Contraseña incorrecta"
@@ -269,8 +270,8 @@ namespace CERVERICA.Controllers
         [HttpPost("logout")]
         public async Task<ActionResult<AuthResponseDto>> Logout()
         {
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var user = await _userManager.FindByIdAsync(currentUserId!);
+            var idUsuario = HttpContext.Items["idUsuario"] as string;
+            var user = await _userManager.FindByIdAsync(idUsuario!);
 
             if (user is null)
             {
