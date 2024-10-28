@@ -35,6 +35,9 @@ namespace CERVERICA.Dtos
         [Required(ErrorMessage = "La imagen es obligatoria.")]
         public string Imagen { get; set; }
 
+        [Range(100, 400, ErrorMessage = "El tiempo de vida debe ser un valor de 100 a 400")]
+        public float TiempoVida { get; set; }
+
         [Required(ErrorMessage = "La ruta de fondo es obligatoria.")]
         public string RutaFondo { get; set; }
 

@@ -108,7 +108,7 @@ builder.Services.AddSwaggerGen(c =>
                 In = ParameterLocation.Header,
             },
             new List<string>()
-        }
+        }   
     });
 });
 

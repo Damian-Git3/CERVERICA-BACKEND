@@ -569,6 +569,8 @@ namespace CERVERICA.Controllers
 
             int cantidadStock = (int)proporcionLitrosStock;
 
+            DateTime fechaCaducidad = DateTime.Now.AddDays(production.Receta.TiempoVida);
+
             float sobranteMl = proporcionLitrosStock - cantidadStock;
 
             float sobrante = sobranteMl * medidaEnvase / 1000;
@@ -580,6 +582,7 @@ namespace CERVERICA.Controllers
             var stock = new Stock
             {
                 FechaEntrada = System.DateTime.Now,
+                FechaCaducidad = fechaCaducidad,
                 Cantidad = cantidadStock,
                 TipoEnvase = finalizeDto.TipoEnvase,
                 MedidaEnvase = medidaEnvase,
