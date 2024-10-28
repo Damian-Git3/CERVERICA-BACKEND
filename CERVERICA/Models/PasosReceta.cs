@@ -8,6 +8,8 @@ namespace CERVERICA.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
+
+        [ForeignKey(nameof(Receta))]
         public int IdReceta { get; set; }
         public Receta Receta { get; set; }
 

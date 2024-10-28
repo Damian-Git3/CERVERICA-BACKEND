@@ -94,9 +94,9 @@ namespace CERVERICA.Controllers
 
             // Contar cuántos clientes tiene cada agente de ventas
             var agenteConMenosClientes = _context.ClientesMayoristas
-                .GroupBy(cm => cm.AgenteVentaId)
+                .GroupBy(cm => cm.IdAgenteVenta)
                 .Where(g => agentesVentas.Contains(g.Key)) // Solo agentes con rol "agenteventas"
-                .Select(g => new { AgenteVentaId = g.Key, Count = g.Count() })
+                .Select(g => new { IdAgenteVenta = g.Key, Count = g.Count() })
                 .OrderBy(g => g.Count) // Ordenar por el que tiene menos clientes
                 .FirstOrDefault();
 
@@ -108,7 +108,7 @@ namespace CERVERICA.Controllers
             }
             else
             {
-                agenteAsignadoId = agenteConMenosClientes.AgenteVentaId;
+                agenteAsignadoId = agenteConMenosClientes.IdAgenteVenta;
             }
 
             if (agenteAsignadoId == null)
@@ -129,8 +129,8 @@ namespace CERVERICA.Controllers
                 EmailContacto = clienteDto.EmailContacto,
                 TelefonoContacto = clienteDto.TelefonoContacto,
 
-                UserId = user.Id, // Asignar el ID del usuario registrado
-                AgenteVentaId = agenteAsignadoId // Asignar el ID del agente de ventas con menos clientes
+                IdUsuario = user.Id, // Asignar el ID del usuario registrado
+                IdAgenteVenta = agenteAsignadoId // Asignar el ID del agente de ventas con menos clientes
             };
 
             _context.ClientesMayoristas.Add(clienteMayorista);
