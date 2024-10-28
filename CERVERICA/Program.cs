@@ -1,5 +1,6 @@
 using CERVERICA.Controllers;
 using CERVERICA.Data;
+using CERVERICA.Middleware;
 using CERVERICA.Models;
 using CERVERICA.Providers;
 using CERVERICA.Routines;
@@ -122,7 +123,7 @@ builder.Services.AddSwaggerGen(c =>
                 In = ParameterLocation.Header,
             },
             new List<string>()
-        }
+        }   
     });
 });
 
@@ -151,6 +152,7 @@ app.UseCors("NuevaPolitica");
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<UserIdMiddleware>();
 app.MapControllers();
 app.UseHttpLogging();
 //app.UseMiddleware<RequestLoggingMiddleware>();

@@ -37,6 +37,9 @@ namespace CERVERICA.Models
         public string RutaFondo { get; set; }
 
         [Required]
+        public float TiempoVida { get; set; }
+
+        [Required]
         public bool Activo { get; set; }
         [Column(TypeName = "Date")]
         public DateTime FechaRegistrado { get; set; }
