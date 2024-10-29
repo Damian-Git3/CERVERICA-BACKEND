@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace CERVERICA.Models
 {
@@ -30,7 +31,8 @@ namespace CERVERICA.Models
 
         public int? Pack { get; set; }
 
-        public virtual Comentario? Comentario  { get; set; }
+        [JsonIgnore]
+        public virtual ICollection<Comentario>? Comentarios { get; set; }
 
     }
 }

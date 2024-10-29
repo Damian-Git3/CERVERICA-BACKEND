@@ -14,9 +14,6 @@ namespace CERVERICA.Models
         public DateTime? FechaCaducidad { get; set; }
 
         [Required]
-        public DateTime FechaCaducidad { get; set; }
-
-        [Required]
         public int Cantidad { get; set; }
  
         public string TipoEnvase { get; set; }

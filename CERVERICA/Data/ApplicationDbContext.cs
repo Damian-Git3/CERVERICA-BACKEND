@@ -45,11 +45,63 @@ namespace CERVERICA.Data
         public DbSet<PreferenciasUsuario> PreferenciasUsuarios { get; set; }
         public DbSet<EstadisticaComprador> EstadisticasCompradores { get; set; }
         public DbSet<SolicitudesCambioAgente> SolicitudesCambioAgente { get; set; }
-        public DbSet<SolicitudesPedidoMayoreo> SolicitudesPedidoMayoreos { get; set; }
         public DbSet<HistorialPrecios> HistorialPrecios { get; set; }
+        public DbSet<PedidoMayoreo> PedidosMayoreo { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
+            modelBuilder.Entity<Comentario>()
+                .HasOne(c => c.DetalleVenta)
+                .WithMany(dv => dv.Comentarios)
+                .HasForeignKey(c => c.IdDetalleVenta)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<DetalleVenta>()
+                .HasOne(d => d.Venta)
+                .WithMany(v => v.DetallesVentas)
+                .HasForeignKey(d => d.IdVenta)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<PedidoMayoreo>()
+                .HasOne(p => p.Venta)
+                .WithOne(v => v.PedidoMayoreo)
+                .HasForeignKey<PedidoMayoreo>(p => p.IdVenta)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<PedidoMayoreo>()
+                .HasOne(p => p.ClienteMayorista)
+                .WithMany(v => v.PedidosMayoreo)
+                .HasForeignKey(p => p.IdMayorista)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configuración para la relación con IdUsuarioSolicitud en Producciones
+            modelBuilder.Entity<Produccion>()
+                .HasOne(p => p.UsuarioSolicitud)
+                .WithMany(u => u.ProduccionesSolicitadas)
+                .HasForeignKey(p => p.IdUsuarioSolicitud)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configuración para otras relaciones de Producciones que tengan claves foráneas con ApplicationUser
+            modelBuilder.Entity<Produccion>()
+                .HasOne(p => p.UsuarioProduccion)
+                .WithMany(u => u.ProduccionesAprobadas)
+                .HasForeignKey(p => p.IdUsuarioProduccion)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configuración de la relación para SolicitudesCambioAgenteActual
+            modelBuilder.Entity<SolicitudesCambioAgente>()
+                .HasOne(s => s.AgenteVentaActual)
+                .WithMany(a => a.SolicitudesCambioAgenteActual)
+                .HasForeignKey(s => s.IdAgenteVentaActual)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configuración de la relación para SolicitudesCambioAgenteNuevo
+            modelBuilder.Entity<SolicitudesCambioAgente>()
+                .HasOne(s => s.AgenteVentaNuevo)
+                .WithMany(a => a.SolicitudesCambioAgenteNuevo)
+                .HasForeignKey(s => s.IdAgenteVentaNuevo)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Relación uno a muchos entre ApplicationUser (AgenteVenta) y ClienteMayorista
             modelBuilder.Entity<ClienteMayorista>()
