@@ -10,16 +10,12 @@ namespace CERVERICA.Models
         public int Id { get; set; }
 
         [ForeignKey(nameof(Venta))]
-        public int IdVenta { get; set; }
-        public virtual Venta Venta { get; set; }
+        public int? IdVenta { get; set; }
+        public virtual Venta? Venta { get; set; }
 
         [ForeignKey(nameof(ClienteMayorista))]
         public int IdMayorista { get; set; }
         public virtual ClienteMayorista ClienteMayorista { get; set; }
-
-        [ForeignKey(nameof(SolicitudPedidoMayoreo))]
-        public int IdSolicitudPedidoMayoreo { get; set; }
-        public virtual SolicitudesPedidoMayoreo SolicitudPedidoMayoreo { get; set; }
 
         [ForeignKey(nameof(AgenteVenta))]
         public string IdAgenteVenta { get; set; }
@@ -36,5 +32,15 @@ namespace CERVERICA.Models
         public float MontoPorPago { get; set; }
 
         public string Observaciones { get; set; }
+
+        public EstatusSolicitud Estatus { get; set; }
+        public enum EstatusSolicitud
+        {
+            Prospecto = 1,
+            NuevoPedido = 2,
+            Contactado = 3,
+            Cerrado = 4,
+            Cancelado = 5,
+        }
     }
 }

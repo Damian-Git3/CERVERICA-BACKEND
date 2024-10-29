@@ -13,6 +13,9 @@ namespace CERVERICA.Models
         [ForeignKey(nameof(Receta))]
         public int IdReceta { get; set; }
 
+        [ForeignKey(nameof(Usuario))]
+        public string IdUsuario { get; set; }
+
         [Required]
         public int CantidadPaquete { get; set; }
 
@@ -23,5 +26,7 @@ namespace CERVERICA.Models
         public DateTime FechaModificacion { get; set; }
 
         public virtual Receta? Receta { get; set; }
+
+        public virtual ApplicationUser? Usuario { get; set; }
     }
 }
