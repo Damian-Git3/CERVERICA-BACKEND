@@ -670,7 +670,7 @@ namespace CERVERICA.Controllers
             try
             {
                 var ventas = new List<Venta>();
-                var resultado = new { fecha = DateTime.Now, data = new List<object>() };
+                var resultado = new { fecha = DateTime.Now, data = new List<object>(), total = 0.0 };
 
                 switch (param)
                 {
@@ -684,7 +684,8 @@ namespace CERVERICA.Controllers
                             {
                                 date = startOfWeek.AddDays(i).ToString("dddd"),
                                 monto = ventas.Where(v => v.FechaVenta.Date == startOfWeek.AddDays(i).Date).Sum(v => v.Total)
-                            }).Cast<object>().ToList()
+                            }).Cast<object>().ToList(),
+                            total = ventas.Sum(v => (double)v.Total)
                         };
                         break;
 
@@ -698,7 +699,8 @@ namespace CERVERICA.Controllers
                             {
                                 date = startOfMonth.AddDays(i).ToString("dd MMM"),
                                 monto = ventas.Where(v => v.FechaVenta.Date == startOfMonth.AddDays(i).Date).Sum(v => v.Total)
-                            }).Cast<object>().ToList()
+                            }).Cast<object>().ToList(),
+                            total = ventas.Sum(v => (double)v.Total)
                         };
                         break;
 
@@ -712,7 +714,8 @@ namespace CERVERICA.Controllers
                             {
                                 date = startOfYear.AddMonths(i).ToString("MMMM"),
                                 monto = ventas.Where(v => v.FechaVenta.Month == startOfYear.AddMonths(i).Month).Sum(v => v.Total)
-                            }).Cast<object>().ToList()
+                            }).Cast<object>().ToList(),
+                            total = ventas.Sum(v => (double)v.Total)
                         };
                         break;
 
@@ -736,6 +739,8 @@ namespace CERVERICA.Controllers
             }
         }
 
+
+
         [AllowAnonymous]
         [HttpGet("resumen-ventas")]
         public async Task<IActionResult> GetResumenVentas()
@@ -743,10 +748,24 @@ namespace CERVERICA.Controllers
             try
             {
                 var ventas = await _context.Ventas.ToListAsync();
-                var totalVentas = ventas.Count;
-                var totalDinero = ventas.Sum(v => v.Total);
 
-                return Ok(new { totalVentas, totalDinero });
+                var hoy = DateTime.Today;
+                var inicioSemana = hoy.AddDays(-(int)hoy.DayOfWeek);
+                var inicioMes = new DateTime(hoy.Year, hoy.Month, 1);
+                var inicioAnio = new DateTime(hoy.Year, 1, 1);
+
+                var totalVentasSemana = ventas.Where(v => v.FechaVenta >= inicioSemana).Sum(v => v.Total);
+                var totalVentasMes = ventas.Where(v => v.FechaVenta >= inicioMes).Sum(v => v.Total);
+                var totalVentasAnio = ventas.Where(v => v.FechaVenta >= inicioAnio).Sum(v => v.Total);
+
+                var resultado = new
+                {
+                    semana = totalVentasSemana,
+                    mes = totalVentasMes,
+                    anio = totalVentasAnio
+                };
+
+                return Ok(resultado);
             }
             catch (Exception ex)
             {
@@ -764,5 +783,6 @@ namespace CERVERICA.Controllers
 
 
 
-        }
+
+    }
 }
