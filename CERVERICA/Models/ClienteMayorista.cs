@@ -21,8 +21,6 @@ namespace CERVERICA.Models
         [Required]
         public string EmailEmpresa { get; set; }
         [Required]
-        public string RFCEmpresa { get; set; }
-        [Required]
         public string NombreContacto { get; set; }
         [Required]
         public string CargoContacto { get; set; }
@@ -45,7 +43,9 @@ namespace CERVERICA.Models
         // Relación uno a muchos con la tabla SolicitudesCambioAgente
         public ICollection<SolicitudesCambioAgente> SolicitudesCambioAgente { get; set; }
 
-        // Relación uno a muchos con la tabla SolicitudesPedidoMayoreo
-        public ICollection<SolicitudesPedidoMayoreo> SolicitudesPedidoMayoreo { get; set; }
+        // Relación uno a muchos con la tabla PedidoMayoreo
+        public ICollection<PedidoMayoreo> PedidosMayoreo { get; set; }
+
+        public ICollection<Pago> Pagos { get; set; }
     }
 }

@@ -178,7 +178,7 @@ namespace CERVERICA.Controllers
             {
                 long precioPaquete = 0;
 
-                switch (productoCarrito.CantidadLote)
+                switch (productoCarrito.CantidadPaquete)
                 {
                     case 1:
                         precioPaquete = (long)(productoCarrito.Receta.PrecioPaquete1 * 100);
@@ -205,7 +205,7 @@ namespace CERVERICA.Controllers
                         UnitAmount = precioPaquete,
                         ProductData = new SessionLineItemPriceDataProductDataOptions
                         {
-                            Name = productoCarrito.Receta.Nombre + " - Paquete de " + productoCarrito.CantidadLote,
+                            Name = productoCarrito.Receta.Nombre + " - Paquete de " + productoCarrito.CantidadPaquete,
                             Images = new List<string> { productoCarrito.Receta.Imagen }
                         }
                     }

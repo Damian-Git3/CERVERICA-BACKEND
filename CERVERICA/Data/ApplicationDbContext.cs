@@ -45,11 +45,104 @@ namespace CERVERICA.Data
         public DbSet<PreferenciasUsuario> PreferenciasUsuarios { get; set; }
         public DbSet<EstadisticaComprador> EstadisticasCompradores { get; set; }
         public DbSet<SolicitudesCambioAgente> SolicitudesCambioAgente { get; set; }
-        public DbSet<SolicitudesPedidoMayoreo> SolicitudesPedidoMayoreos { get; set; }
         public DbSet<HistorialPrecios> HistorialPrecios { get; set; }
+        public DbSet<PedidoMayoreo> PedidosMayoreo { get; set; }
+        public DbSet<Pago> Pagos { get; set; }
+        public DbSet<EstadisticaAgenteVenta> EstadisticasAgentesVenta { get; set; }
+        public DbSet<SolicitudAsistencia> SolicitudesAsistencia { get; set; }
+        public DbSet<SeguimientoSolicitudAsistencia> SeguimientosSolicitudesAsistencia { get; set; }
+        public DbSet<CategoriaAsistencia> CategoriasAsistencia { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
+            modelBuilder.Entity<SolicitudAsistencia>()
+               .HasOne(p => p.CategoriaAsistencia)
+               .WithMany(pe => pe.SolicitudesAsistencia)
+               .HasForeignKey(p => p.IdCategoriaAsistencia)
+               .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<SeguimientoSolicitudAsistencia>()
+               .HasOne(p => p.SolicitudAsistencia)
+               .WithMany(pe => pe.SeguimientosSolicitudAsistencia)
+               .HasForeignKey(p => p.IdSolicitudAsistencia)
+               .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<SolicitudAsistencia>()
+               .HasOne(p => p.Cliente)
+               .WithMany(pe => pe.SolicitudesAsistencia)
+               .HasForeignKey(p => p.IdCliente)
+               .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ApplicationUser>()
+                .HasOne(a => a.EstadisticaAgenteVenta)
+                .WithOne(e => e.AgenteVenta)
+                .HasForeignKey<EstadisticaAgenteVenta>(e => e.IdAgenteVenta)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Pago>()
+               .HasOne(p => p.Mayorista)
+               .WithMany(pe => pe.Pagos)
+               .HasForeignKey(p => p.IdMayorista)
+               .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Pago>()
+               .HasOne(p => p.PedidoMayoreo)
+               .WithMany(pe => pe.Pagos) 
+               .HasForeignKey(p => p.IdPedidoMayoreo)
+               .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Comentario>()
+                .HasOne(c => c.DetalleVenta)
+                .WithMany(dv => dv.Comentarios)
+                .HasForeignKey(c => c.IdDetalleVenta)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<DetalleVenta>()
+                .HasOne(d => d.Venta)
+                .WithMany(v => v.DetallesVentas)
+                .HasForeignKey(d => d.IdVenta)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<PedidoMayoreo>()
+                .HasOne(p => p.Venta)
+                .WithOne(v => v.PedidoMayoreo)
+                .HasForeignKey<PedidoMayoreo>(p => p.IdVenta)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<PedidoMayoreo>()
+                .HasOne(p => p.ClienteMayorista)
+                .WithMany(v => v.PedidosMayoreo)
+                .HasForeignKey(p => p.IdMayorista)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configuración para la relación con IdUsuarioSolicitud en Producciones
+            modelBuilder.Entity<Produccion>()
+                .HasOne(p => p.UsuarioSolicitud)
+                .WithMany(u => u.ProduccionesSolicitadas)
+                .HasForeignKey(p => p.IdUsuarioSolicitud)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configuración para otras relaciones de Producciones que tengan claves foráneas con ApplicationUser
+            modelBuilder.Entity<Produccion>()
+                .HasOne(p => p.UsuarioProduccion)
+                .WithMany(u => u.ProduccionesAprobadas)
+                .HasForeignKey(p => p.IdUsuarioProduccion)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configuración de la relación para SolicitudesCambioAgenteActual
+            modelBuilder.Entity<SolicitudesCambioAgente>()
+                .HasOne(s => s.AgenteVentaActual)
+                .WithMany(a => a.SolicitudesCambioAgenteActual)
+                .HasForeignKey(s => s.IdAgenteVentaActual)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configuración de la relación para SolicitudesCambioAgenteNuevo
+            modelBuilder.Entity<SolicitudesCambioAgente>()
+                .HasOne(s => s.AgenteVentaNuevo)
+                .WithMany(a => a.SolicitudesCambioAgenteNuevo)
+                .HasForeignKey(s => s.IdAgenteVentaNuevo)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Relación uno a muchos entre ApplicationUser (AgenteVenta) y ClienteMayorista
             modelBuilder.Entity<ClienteMayorista>()

@@ -52,6 +52,12 @@ namespace CERVERICA.Models
 
         [JsonIgnore]
         public ApplicationUser? Usuario { get; set; }
+
+        [JsonIgnore]
+        public virtual PedidoMayoreo? PedidoMayoreo { get; set; }
+
+        public virtual ICollection<DetalleVenta> DetallesVentas { get; set; }
+        public ICollection<SolicitudAsistencia> SolicitudesAsistencia { get; set; }
     }
 
     public enum MetodoPago

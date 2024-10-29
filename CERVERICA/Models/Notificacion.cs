@@ -18,7 +18,7 @@ namespace CERVERICA.Models
         public DateTime Fecha { get; set; }
 
         [Required]
-        public Tipo Tipo { get; set; }
+        public int Tipo { get; set; }
 
         [Required]
         public string Mensaje { get; set; }
@@ -28,13 +28,6 @@ namespace CERVERICA.Models
 
         [Required]
         public Categoria Categoria { get; set; }
-    }
-
-    public enum Tipo
-    {
-        Info = 1,
-        Warning = 2,
-        Danger = 3
     }
 
     public enum Categoria

@@ -27,7 +27,7 @@ namespace CERVERICA.Models
         public int Solicitante { get; set; } // 1 cliente 2 agente 3 admin
 
         [ForeignKey(nameof(Mayorista))]
-        public string? IdMayorista { get; set; }
+        public int? IdMayorista { get; set; }
         public virtual ClienteMayorista? Mayorista { get; set; }
 
     }

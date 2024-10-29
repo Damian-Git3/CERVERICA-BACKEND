@@ -24,7 +24,7 @@ namespace CERVERICA.Models
         public int? Paquete { get; set; }
 
         [ForeignKey(nameof(DetalleVenta))]
-        public string IdDetalleVenta { get; set; }
+        public int IdDetalleVenta { get; set; }
         public virtual DetalleVenta? DetalleVenta { get; set; }
 
         public bool? Oculto { get; set; }
