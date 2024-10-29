@@ -8,6 +8,10 @@ namespace CERVERICA.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
+
+
+        [Required]
+        public string RFCEmpresa { get; set; }
         [Required]
         public string NombreEmpresa { get; set; }
         [Required]
@@ -27,14 +31,21 @@ namespace CERVERICA.Models
         [Required]
         public string EmailContacto { get; set; }
 
+
         // Relación uno a uno con el usuario ClienteMayorista (ApplicationUser)
-        [ForeignKey("User")]
-        public string UserId { get; set; }
-        public ApplicationUser User { get; set; }
+        [ForeignKey("Usuario")]
+        public string IdUsuario { get; set; }
+        public ApplicationUser Usuario { get; set; }
 
         // Nueva relación uno a uno con el usuario AgenteVenta (ApplicationUser)
         [ForeignKey("AgenteVenta")]
-        public string? AgenteVentaId { get; set; }
-        public ApplicationUser? AgenteVenta { get; set; }
+        public string IdAgenteVenta { get; set; }
+        public ApplicationUser AgenteVenta { get; set; }
+
+        // Relación uno a muchos con la tabla SolicitudesCambioAgente
+        public ICollection<SolicitudesCambioAgente> SolicitudesCambioAgente { get; set; }
+
+        // Relación uno a muchos con la tabla SolicitudesPedidoMayoreo
+        public ICollection<SolicitudesPedidoMayoreo> SolicitudesPedidoMayoreo { get; set; }
     }
 }

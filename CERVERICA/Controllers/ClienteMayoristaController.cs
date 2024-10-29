@@ -1,4 +1,4 @@
-﻿using CERVERICA.Models;
+using CERVERICA.Models;
 using CERVERICA.Dtos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -76,6 +76,7 @@ namespace CERVERICA.Controllers
                     Activo = true
                 };
 
+
                 var result = await _userManager.CreateAsync(user, clienteDto.Password);
 
                 if (!result.Succeeded)
@@ -105,9 +106,9 @@ namespace CERVERICA.Controllers
 
                 // Contar cuántos clientes tiene cada agente de ventas
                 var agenteConMenosClientes = _context.ClientesMayoristas
-                    .GroupBy(cm => cm.AgenteVentaId)
+                    .GroupBy(cm => cm.IdAgenteVenta)
                     .Where(g => agentesVentas.Contains(g.Key)) // Solo agentes con rol "agenteventas"
-                    .Select(g => new { AgenteVentaId = g.Key, Count = g.Count() })
+                    .Select(g => new { IdAgenteVenta = g.Key, Count = g.Count() })
                     .OrderBy(g => g.Count) // Ordenar por el que tiene menos clientes
                     .FirstOrDefault();
 
@@ -119,8 +120,9 @@ namespace CERVERICA.Controllers
                 }
                 else
                 {
-                    agenteAsignadoId = agenteConMenosClientes.AgenteVentaId;
+                    agenteAsignadoId = agenteConMenosClientes.IdAgenteVenta;
                 }
+
 
                 // Paso 3: Registrar el cliente mayorista
                 var clienteMayorista = new ClienteMayorista
@@ -136,8 +138,8 @@ namespace CERVERICA.Controllers
                     EmailContacto = clienteDto.EmailContacto,
                     TelefonoContacto = clienteDto.TelefonoContacto,
 
-                    UserId = user.Id,
-                    AgenteVentaId = agenteAsignadoId
+                    IdUsuario = user.Id,
+                    IdAgenteVenta = agenteAsignadoId
                 };
 
                 _context.ClientesMayoristas.Add(clienteMayorista);

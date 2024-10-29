@@ -1,14 +1,20 @@
 ﻿using CERVERICA.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace CERVERICA.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+    public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options)
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
-
+        // DbSet representa una colección de entidades en una base de datos
+        // Proporciona métodos para consultar, agregar, modificar y eliminar entidades en la base de datos
+        // Cada DbSet se mapea a una tabla en la base de datos y cada entidad se mapea a una fila en esa tabla
+        // Los DbSet se utilizan para interactuar con las entidades en el contexto de la base de datos
+        // En este caso, cada DbSet representa una tabla en la base de datos ApplicationDbContext
+        // Los DbSet se utilizan para realizar operaciones CRUD (Crear, Leer, Actualizar, Eliminar) en las entidades correspondientes
+        // Por ejemplo, el DbSet<Proveedor> representa la tabla "Proveedores" en la base de datos y se utiliza para realizar operaciones en la entidad Proveedor
+        // Los DbSet se definen como propiedades en la clase ApplicationDbContext y se configuran en el método OnModelCreating
+        // Estos DbSet se utilizan en otras partes del código para interactuar con la base de datos y realizar consultas y modificaciones en las entidades correspondientes
         public DbSet<Proveedor> Proveedores { get; set; }
         public DbSet<Insumo> Insumos { get; set; }
         public DbSet<LoteInsumo> LotesInsumos { get; set; }
@@ -28,11 +34,19 @@ namespace CERVERICA.Data
         public DbSet<PuntosFidelidad> PuntosFidelidad { get; set; }
         public DbSet<TransaccionPuntos> TransaccionesPuntos { get; set; }
         public DbSet<ReglaPuntos> ReglasPuntos { get; set; }
-        public DbSet<Comprador> Compradores { get; set; }
-        public DbSet<InteraccionComprador> InteraccionesCompradores { get; set; }
-        public DbSet<PreferenciasComprador> PreferenciasCompradores { get; set; }
         public DbSet<Comentario> Comentarios { get; set; }
         public DbSet<ClienteMayorista> ClientesMayoristas { get; set; }
+        public DbSet<Carrito> Carritos { get; set; }
+        public DbSet<CategoriaCerveza> CategoriasCerveza { get; set; }
+        public DbSet<RecetaCategoriaCerveza> RecetasCategoriasCerveza { get; set; }
+        public DbSet<Cupones> Cupones { get; set; }
+        public DbSet<ConfiguracionesGenerales> ConfiguracionesGenerales { get; set; }
+        public DbSet<ConfiguracionVentasMayoreo> ConfiguracionesVentasMayoreo { get; set; }
+        public DbSet<PreferenciasUsuario> PreferenciasUsuarios { get; set; }
+        public DbSet<EstadisticaComprador> EstadisticasCompradores { get; set; }
+        public DbSet<SolicitudesCambioAgente> SolicitudesCambioAgente { get; set; }
+        public DbSet<SolicitudesPedidoMayoreo> SolicitudesPedidoMayoreos { get; set; }
+        public DbSet<HistorialPrecios> HistorialPrecios { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -41,7 +55,7 @@ namespace CERVERICA.Data
             modelBuilder.Entity<ClienteMayorista>()
                 .HasOne(c => c.AgenteVenta)
                 .WithMany(a => a.ClientesMayoristas)
-                .HasForeignKey(c => c.AgenteVentaId)
+                .HasForeignKey(c => c.IdAgenteVenta)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Definición de tablas intermedias de muchos a muchos
@@ -101,19 +115,6 @@ namespace CERVERICA.Data
             .WithMany(i => i.IngredientesReceta)
             .HasForeignKey(o => o.IdInsumo)
             .OnDelete(DeleteBehavior.Restrict);
-
-
-            modelBuilder.Entity<InteraccionComprador>()
-                .HasOne(i => i.Usuario)
-                .WithMany()
-                .HasForeignKey(i => i.IdUsuario)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<PreferenciasComprador>()
-                .HasOne(p => p.Usuario)
-                .WithMany()
-                .HasForeignKey(p => p.IdUsuario)
-                .OnDelete(DeleteBehavior.Cascade);
 
             base.OnModelCreating(modelBuilder);
         }

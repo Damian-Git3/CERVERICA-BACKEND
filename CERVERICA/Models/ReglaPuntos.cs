@@ -9,10 +9,14 @@ namespace CERVERICA.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
+        public float? ValorMXNPunto { get; set; }
+
         // Monto mínimo necesario para empezar a otorgar puntos
         public decimal MontoMinimo { get; set; }
 
         // Número de puntos otorgados por cada unidad monetaria (por ejemplo, 1 punto por cada $10)
-        public int PuntosPorMonto { get; set; }
+        public int PorcentajeConversion { get; set; }
+
+        public DateTime FechaModificacion { get; set; }
     }
 }
