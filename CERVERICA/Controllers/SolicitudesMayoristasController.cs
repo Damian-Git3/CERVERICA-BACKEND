@@ -1,4 +1,5 @@
 ﻿using CERVERICA.Data;
+using CERVERICA.DTO.SolicitudesMayoristas;
 using CERVERICA.Dtos;
 using CERVERICA.Models;
 using Microsoft.AspNetCore.Http;
@@ -32,6 +33,32 @@ namespace CERVERICA.Controllers
             .ToListAsync();
 
             return Ok(solicitudesMayoristas);
+        }
+
+
+        [HttpPost("avanzar-siguiente-estatus")]
+        public async Task<ActionResult> AvanzarSiguienteEstatus([FromBody] AvanzarSiguienteEstatusSolicitudMayorista avanzarSiguienteEstatusDTO)
+        {
+            Console.WriteLine(avanzarSiguienteEstatusDTO);
+
+            if (avanzarSiguienteEstatusDTO == null)
+            {
+                return BadRequest("Solicitud o estatus inválido.");
+            }
+
+            Console.WriteLine("ID SOLICITUUUUUUUUUUUUUD");
+            Console.WriteLine(avanzarSiguienteEstatusDTO.IdSolicitud);
+
+            var solicitud = await _db.SolicitudesMayorista.FindAsync(avanzarSiguienteEstatusDTO.IdSolicitud);
+            if (solicitud == null)
+            {
+                return NotFound("Solicitud no encontrada.");
+            }
+
+            solicitud.Estatus = (EstatusSolicitudMayorista)avanzarSiguienteEstatusDTO.NuevoEstatus;
+            await _db.SaveChangesAsync();
+
+            return Ok("Estatus actualizado exitosamente.");
         }
     }
 }

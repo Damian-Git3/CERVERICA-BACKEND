@@ -168,7 +168,8 @@ namespace CERVERICA.Controllers
                     FechaInicio = DateTime.Now,
                     Estatus = EstatusSolicitudMayorista.Prospecto,
                     IdMayorista = clienteMayorista.Id,
-                    IdAgente = agenteAsignadoId
+                    IdAgente = agenteAsignadoId,
+                    Tipo = TipoSolicitudMayorista.Prospecto
                 };
 
                 _context.SolicitudesMayorista.Add(nuevaSolicitudMayorista);
