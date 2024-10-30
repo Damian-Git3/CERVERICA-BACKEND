@@ -3,21 +3,19 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CERVERICA.Models
 {
-    public class Log
+    public class CategoriaAsistencia
     {
+
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        [ForeignKey(nameof(Usuario))]
-        public string IdUsuario { get; set; }
-        public virtual ApplicationUser? Usuario { get; set; }
+        [Required]
+        public string Nombre { get; set; }
 
         [Required]
-        public DateTime Fecha { get; set; }
+        public bool Estatus { get; set; }
 
-        [Required]
-        [StringLength(255)]
-        public string Descripcion { get; set; }
+        public ICollection<SolicitudAsistencia> SolicitudesAsistencia { get; set; }
     }
 }

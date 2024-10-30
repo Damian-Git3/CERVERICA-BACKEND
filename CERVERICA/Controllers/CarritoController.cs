@@ -45,7 +45,7 @@ namespace CERVERICA.Controllers
             var nuevoProductoCarrito = new ProductoCarrito();
             nuevoProductoCarrito.IdUsuario = user.Id;
             nuevoProductoCarrito.IdReceta = productoCarritoAgregar.IdReceta;
-            nuevoProductoCarrito.CantidadLote = productoCarritoAgregar.CantidadLote;
+            nuevoProductoCarrito.CantidadPaquete = productoCarritoAgregar.CantidadLote;
             nuevoProductoCarrito.Cantidad = productoCarritoAgregar.Cantidad;
 
             _db.ProductosCarrito.Add(nuevoProductoCarrito);
@@ -78,7 +78,7 @@ namespace CERVERICA.Controllers
             var productoEnCarrito = await _db.ProductosCarrito.FirstOrDefaultAsync(p =>
                 p.IdUsuario == user.Id &&
                 p.IdReceta == productoCarritoActualizar.IdReceta &&
-                p.CantidadLote == productoCarritoActualizar.CantidadLote);
+                p.CantidadPaquete == productoCarritoActualizar.CantidadLote);
 
             if (productoEnCarrito is null)
             {
@@ -118,7 +118,7 @@ namespace CERVERICA.Controllers
                 });
             }
 
-            var productoCarritoEliminar = await _db.ProductosCarrito.FirstOrDefaultAsync(f => f.IdUsuario == user.Id && f.IdReceta == productoCarritoEliminarDTO.IdReceta && f.CantidadLote == productoCarritoEliminarDTO.CantidadLote);
+            var productoCarritoEliminar = await _db.ProductosCarrito.FirstOrDefaultAsync(f => f.IdUsuario == user.Id && f.IdReceta == productoCarritoEliminarDTO.IdReceta && f.CantidadPaquete == productoCarritoEliminarDTO.CantidadLote);
 
             if (productoCarritoEliminar == null)
             {
@@ -178,7 +178,7 @@ namespace CERVERICA.Controllers
             {
                 long precioPaquete = 0;
 
-                switch (productoCarrito.CantidadLote)
+                switch (productoCarrito.CantidadPaquete)
                 {
                     case 1:
                         precioPaquete = (long)(productoCarrito.Receta.PrecioPaquete1 * 100);
@@ -205,7 +205,7 @@ namespace CERVERICA.Controllers
                         UnitAmount = precioPaquete,
                         ProductData = new SessionLineItemPriceDataProductDataOptions
                         {
-                            Name = productoCarrito.Receta.Nombre + " - Paquete de " + productoCarrito.CantidadLote,
+                            Name = productoCarrito.Receta.Nombre + " - Paquete de " + productoCarrito.CantidadPaquete,
                             Images = new List<string> { productoCarrito.Receta.Imagen }
                         }
                     }

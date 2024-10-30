@@ -413,17 +413,17 @@ namespace CERVERICA.Controllers
                     // Encuentra todos los productos del carrito que coinciden con la receta y el usuario
                     var productosCarritoEliminar = await _context.ProductosCarrito
                         .Where(productoCarrito => productoCarrito.IdUsuario == currentUserId && productoCarrito.IdReceta == recetaAgrupada.IdReceta)
-                        .OrderBy(productoCarrito => productoCarrito.CantidadLote) // Ordena por tamaño de paquete
+                        .OrderBy(productoCarrito => productoCarrito.CantidadPaquete) // Ordena por tamaño de paquete
                         .ToListAsync();
 
                     foreach (var productoCarrito in productosCarritoEliminar)
                     {
                         var receta = await _context.Recetas.Where(r => r.Id == recetaAgrupada.IdReceta).FirstOrDefaultAsync();
-                        productosEliminados.Add(receta.Nombre + " - " + productoCarrito.CantidadLote + " Pack");
+                        productosEliminados.Add(receta.Nombre + " - " + productoCarrito.CantidadPaquete + " Pack");
                         _context.ProductosCarrito.Remove(productoCarrito);
 
                         // Ajusta la cantidad total requerida en el diccionario
-                        cantidadesRestantes[recetaAgrupada.IdReceta] -= productoCarrito.CantidadLote * productoCarrito.Cantidad;
+                        cantidadesRestantes[recetaAgrupada.IdReceta] -= productoCarrito.CantidadPaquete * productoCarrito.Cantidad;
 
                         if (cantidadesRestantes[recetaAgrupada.IdReceta] <= 0)
                         {

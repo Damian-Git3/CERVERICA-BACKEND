@@ -133,6 +133,7 @@ namespace CERVERICA.Controllers
                     Email = registerDto.Email,
                     FullName = registerDto.FullName,
                     UserName = registerDto.Email,
+                    PhoneNumber = registerDto.Telefono,
                     Activo = true
                 };
 
@@ -218,7 +219,7 @@ namespace CERVERICA.Controllers
 
             if (user is null)
             {
-                return Unauthorized(new AuthResponseDto
+                return NotFound(new AuthResponseDto
                 {
                     IsSuccess = false,
                     Message = "Usuario no encontrado con este email",
@@ -227,7 +228,7 @@ namespace CERVERICA.Controllers
 
             if (!user.Activo)
             {
-                return Unauthorized(new AuthResponseDto
+                return BadRequest(new AuthResponseDto
                 {
                     IsSuccess = false,
                     Message = "Tu cuenta esta inactiva. Contacta a soporte al cliente"
@@ -238,7 +239,7 @@ namespace CERVERICA.Controllers
 
             if (!result)
             {
-                return Unauthorized(new AuthResponseDto
+                return BadRequest(new AuthResponseDto
                 {
                     IsSuccess = false,
                     Message = "Contraseña incorrecta"
@@ -269,8 +270,8 @@ namespace CERVERICA.Controllers
         [HttpPost("logout")]
         public async Task<ActionResult<AuthResponseDto>> Logout()
         {
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var user = await _userManager.FindByIdAsync(currentUserId!);
+            var idUsuario = HttpContext.Items["idUsuario"] as string;
+            var user = await _userManager.FindByIdAsync(idUsuario!);
 
             if (user is null)
             {
@@ -663,6 +664,71 @@ namespace CERVERICA.Controllers
 
         }
 
+        [HttpGet("detail-mayorista")]
+        public async Task<ActionResult<UserMayoristaDetailDto>> GetUserMayoristaDetail()
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _userManager.FindByIdAsync(currentUserId!);
+
+            if (user is null)
+            {
+                return NotFound(new AuthResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "User not found"
+                });
+            }
+
+            // Obteniendo detalles del cliente mayorista relacionado, incluyendo el agente de ventas
+            var clienteMayorista = await _context.ClientesMayoristas
+                .Include(cm => cm.AgenteVenta)
+                .FirstOrDefaultAsync(cm => cm.IdUsuario == currentUserId);
+
+            if (clienteMayorista is null)
+            {
+                return NotFound(new AuthResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "Cliente mayorista not found"
+                });
+            }
+
+            // Construyendo el objeto de respuesta
+            var response = new UserMayoristaDetailDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                FullName = user.FullName,
+                Roles = [.. await _userManager.GetRolesAsync(user)],
+                PhoneNumber = user.PhoneNumber,
+                PhoneNumberConfirmed = user.PhoneNumberConfirmed,
+                AccessFailedCount = user.AccessFailedCount,
+                Activo = user.Activo,
+
+                // Datos del cliente mayorista
+                RFCEmpresa = clienteMayorista.RFCEmpresa,
+                NombreEmpresa = clienteMayorista.NombreEmpresa,
+                DireccionEmpresa = clienteMayorista.DireccionEmpresa,
+                TelefonoEmpresa = clienteMayorista.TelefonoEmpresa,
+                EmailEmpresa = clienteMayorista.EmailEmpresa,
+                NombreContacto = clienteMayorista.NombreContacto,
+                CargoContacto = clienteMayorista.CargoContacto,
+                TelefonoContacto = clienteMayorista.TelefonoContacto,
+                EmailContacto = clienteMayorista.EmailContacto,
+
+                // Datos completos del agente de ventas
+                AgenteVenta = clienteMayorista.AgenteVenta != null ? new AgenteVentaDto
+                {
+                    Id = clienteMayorista.AgenteVenta.Id,
+                    FullName = clienteMayorista.AgenteVenta.FullName,
+                    Email = clienteMayorista.AgenteVenta.Email,
+                    PhoneNumber = clienteMayorista.AgenteVenta.PhoneNumber
+                    // Otros datos relevantes del agente de ventas
+                } : null
+            };
+
+            return Ok(response);
+        }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<UserDetailDto>>> GetUsers()

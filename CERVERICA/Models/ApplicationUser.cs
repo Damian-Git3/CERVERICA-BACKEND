@@ -12,8 +12,27 @@ namespace CERVERICA.Models
         [Required]
         public bool Activo { get; set; }
         public DateTime? FechaRegistro { get; set; } = DateTime.Now;
+        public string? PhoneNumber { get; set; }
 
         // Lista de clientes mayoristas para los que este usuario es agente de ventas
         public ICollection<ClienteMayorista> ClientesMayoristas { get; set; }
+
+        public ICollection<FavoritosComprador> FavoritosComprador { get; set; }
+
+        public ICollection<Cupones> Cupones { get; set; }
+
+        public ICollection<SolicitudesCambioAgente> SolicitudesCambioAgenteActual { get; set; }
+        public ICollection<SolicitudesCambioAgente> SolicitudesCambioAgenteNuevo { get; set; }
+
+        public ICollection<Produccion> ProduccionesSolicitadas { get; set; }
+        public ICollection<Produccion> ProduccionesAprobadas { get; set; }
+
+        public ICollection<PedidoMayoreo> PedidoMayoreo { get; set; }
+
+        public virtual EstadisticaAgenteVenta? EstadisticaAgenteVenta { get; set; }
+
+        public ICollection<SolicitudAsistencia> SolicitudesAsistencia { get; set; }
+
+        public virtual Carrito? Carrito { get; set; }
     }
 }

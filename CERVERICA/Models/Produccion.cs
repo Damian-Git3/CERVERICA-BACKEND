@@ -28,17 +28,17 @@ namespace CERVERICA.Models
 
         [ForeignKey(nameof(Receta))]
         public int IdReceta { get; set; }
-        public Receta Receta { get; set; }
+        public Receta? Receta { get; set; }
 
         public DateTime FechaSolicitud { get; set; }
 
-        [ForeignKey(nameof(IdUsuarioSolicitud))]
+        [ForeignKey(nameof(UsuarioSolicitud))]
         public string IdUsuarioSolicitud { get; set; }
-        public ApplicationUser UsuarioSolicitud { get; set; }
+        public virtual ApplicationUser? UsuarioSolicitud { get; set; }
 
-        [ForeignKey(nameof(IdUsuarioProduccion))]
+        [ForeignKey(nameof(UsuarioProduccion))]
         public string IdUsuarioProduccion { get; set; }
-        public ApplicationUser UsuarioProduccion { get; set; }
+        public virtual ApplicationUser? UsuarioProduccion { get; set; }
 
         [Required]
         public int Paso { get; set; }
