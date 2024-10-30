@@ -57,9 +57,6 @@ namespace CERVERICA.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
-
-
-
             modelBuilder.Entity<SolicitudAsistencia>()
                .HasOne(p => p.CategoriaAsistencia)
                .WithMany(pe => pe.SolicitudesAsistencia)
@@ -215,12 +212,16 @@ namespace CERVERICA.Data
 
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<IdentityRole>().HasData(
-                new IdentityRole { Id = "1", Name = "Operador", NormalizedName = "OPERADOR" },
-                new IdentityRole { Id = "2", Name = "Admin", NormalizedName = "ADMIN" },
-                new IdentityRole { Id = "3", Name = "Mayorista", NormalizedName = "MAYORISTA" },
-                new IdentityRole { Id = "4", Name = "Cliente", NormalizedName = "CLIENTE" },
-                new IdentityRole { Id = "5", Name = "Agente", NormalizedName = "AGENTE" }
+            // Seed de datos
+            modelBuilder.Entity<IdentityRole>()
+            .HasData(
+                new IdentityRole { Name = "Mayorista", NormalizedName = "MAYORISTA" },
+                new IdentityRole { Name = "Cocinero", NormalizedName = "COCINERO" },
+                new IdentityRole { Name = "Admin", NormalizedName = "ADMIN" },
+                new IdentityRole { Name = "Cliente", NormalizedName = "CLIENTE" },
+                new IdentityRole { Name = "Operador", NormalizedName = "OPERADOR" },
+                new IdentityRole { Name = "Agente", NormalizedName = "Agente" }
+
             );
 
             // Hasher para las contraseñas
