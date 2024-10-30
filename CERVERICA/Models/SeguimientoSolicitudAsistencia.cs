@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace CERVERICA.Models
 {
@@ -11,6 +12,7 @@ namespace CERVERICA.Models
 
         [ForeignKey(nameof(SolicitudAsistencia))]
         public int IdSolicitudAsistencia { get; set; }
+        [JsonIgnore]
         public virtual SolicitudAsistencia SolicitudAsistencia { get; set; }
 
         [Required]
