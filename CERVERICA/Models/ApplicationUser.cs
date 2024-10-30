@@ -29,6 +29,10 @@ namespace CERVERICA.Models
 
         public ICollection<PedidoMayoreo> PedidoMayoreo { get; set; }
 
+        public virtual EstadisticaAgenteVenta? EstadisticaAgenteVenta { get; set; }
+
+        public ICollection<SolicitudAsistencia> SolicitudesAsistencia { get; set; }
+
         public virtual Carrito? Carrito { get; set; }
     }
 }
