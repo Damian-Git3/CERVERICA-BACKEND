@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace CERVERICA.Models
 {
@@ -15,7 +16,7 @@ namespace CERVERICA.Models
 
         [Required]
         public bool Estatus { get; set; }
-
+        [JsonIgnore]
         public ICollection<SolicitudAsistencia> SolicitudesAsistencia { get; set; }
     }
 }

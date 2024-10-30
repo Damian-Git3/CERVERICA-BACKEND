@@ -57,16 +57,6 @@ namespace CERVERICA.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
-            modelBuilder.Entity<IdentityRole>()
-            .HasData(
-                new IdentityRole { Name = "Mayorista", NormalizedName = "MAYORISTA" },
-                new IdentityRole { Name = "Cocinero", NormalizedName = "COCINERO" },
-                new IdentityRole { Name = "Admin", NormalizedName = "ADMIN" },
-                new IdentityRole { Name = "Cliente", NormalizedName = "CLIENTE" },
-                new IdentityRole { Name = "Operador", NormalizedName = "OPERADOR" },
-                new IdentityRole { Name = "Agente", NormalizedName = "Agente" }
-
-            );
             modelBuilder.Entity<SolicitudAsistencia>()
                .HasOne(p => p.CategoriaAsistencia)
                .WithMany(pe => pe.SolicitudesAsistencia)
@@ -221,6 +211,106 @@ namespace CERVERICA.Data
             .OnDelete(DeleteBehavior.Restrict);
 
             base.OnModelCreating(modelBuilder);
+
+            // Seed de datos
+            
+            modelBuilder.Entity<IdentityRole>().HasData(
+                new IdentityRole { Id = "1", Name = "Operador", NormalizedName = "OPERADOR" },
+                new IdentityRole { Id = "2", Name = "Admin", NormalizedName = "ADMIN" },
+                new IdentityRole { Id = "3", Name = "Mayorista", NormalizedName = "MAYORISTA" },
+                new IdentityRole { Id = "4", Name = "Cliente", NormalizedName = "CLIENTE" },
+                new IdentityRole { Id = "5", Name = "Agente", NormalizedName = "AGENTE" },
+                new IdentityRole { Id = "6", Name = "Cocinero", NormalizedName = "COCINERO" }
+            );
+
+            // Hasher para las contraseñas
+            var hasher = new PasswordHasher<ApplicationUser>();
+
+            // Usuarios de cada rol
+            modelBuilder.Entity<ApplicationUser>().HasData(
+                new ApplicationUser
+                {
+                    Id = "U1",
+                    UserName = "operador precargado",
+                    NormalizedUserName = "OPERADOR PRECARGADO",
+                    Email = "operador@example.com",
+                    NormalizedEmail = "OPERADOR@EXAMPLE.COM",
+                    EmailConfirmed = true,
+                    PasswordHash = hasher.HashPassword(null, "Contra1234?"),
+                    FullName = "Operador General",
+                    Activo = true
+                },
+                new ApplicationUser
+                {
+                    Id = "U2",
+                    UserName = "admin precargado",
+                    NormalizedUserName = "ADMIN PRECARGADO",
+                    Email = "admin@example.com",
+                    NormalizedEmail = "ADMIN@EXAMPLE.COM",
+                    EmailConfirmed = true,
+                    PasswordHash = hasher.HashPassword(null, "Contra1234?"),
+                    FullName = "Administrador Principal",
+                    Activo = true
+                },
+                new ApplicationUser
+                {
+                    Id = "U3",
+                    UserName = "mayorista precargado",
+                    NormalizedUserName = "MAYORISTA PRECARGADO",
+                    Email = "mayorista@example.com",
+                    NormalizedEmail = "MAYORISTA@EXAMPLE.COM",
+                    EmailConfirmed = true,
+                    PasswordHash = hasher.HashPassword(null, "Contra1234?"),
+                    FullName = "Mayorista Distribuidor",
+                    Activo = true
+                },
+                new ApplicationUser
+                {
+                    Id = "U4",
+                    UserName = "cliente precargado",
+                    NormalizedUserName = "CLIENTE PRECARGADO",
+                    Email = "cliente@example.com",
+                    NormalizedEmail = "CLIENTE@EXAMPLE.COM",
+                    EmailConfirmed = true,
+                    PasswordHash = hasher.HashPassword(null, "Contra1234?"),
+                    FullName = "Cliente Regular",
+                    Activo = true
+                },
+                new ApplicationUser
+                {
+                    Id = "U5",
+                    UserName = "agente precargado",
+                    NormalizedUserName = "AGENTE PRECARGADO",
+                    Email = "agente@example.com",
+                    NormalizedEmail = "AGENTE@EXAMPLE.COM",
+                    EmailConfirmed = true,
+                    PasswordHash = hasher.HashPassword(null, "Contra1234?"),
+                    FullName = "Agente de Ventas",
+                    Activo = true
+                },
+                new ApplicationUser
+                {
+                    Id = "U6",
+                    UserName = "cocinero precargado",
+                    NormalizedUserName = "COCINERO PRECARGADO",
+                    Email = "cocinero@example.com",
+                    NormalizedEmail = "COCINERO@EXAMPLE.COM",
+                    EmailConfirmed = true,
+                    PasswordHash = hasher.HashPassword(null, "Contra1234?"),
+                    FullName = "Cocinero Principal",
+                    Activo = true
+                }
+            );
+
+            // Asignación de roles a los usuarios
+            modelBuilder.Entity<IdentityUserRole<string>>().HasData(
+                new IdentityUserRole<string> { UserId = "U1", RoleId = "1" }, // Operador
+                new IdentityUserRole<string> { UserId = "U2", RoleId = "2" }, // Admin
+                new IdentityUserRole<string> { UserId = "U3", RoleId = "3" }, // Mayorista
+                new IdentityUserRole<string> { UserId = "U4", RoleId = "4" }, // Cliente
+                new IdentityUserRole<string> { UserId = "U5", RoleId = "5" }, // Agente
+                new IdentityUserRole<string> { UserId = "U6", RoleId = "6" }  // Cocinero
+            );
         }
     }
 }
