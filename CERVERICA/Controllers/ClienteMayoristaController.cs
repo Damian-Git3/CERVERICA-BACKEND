@@ -163,6 +163,17 @@ namespace CERVERICA.Controllers
                 }
                 await _context.SaveChangesAsync();
 
+                var nuevaSolicitudMayorista = new SolicitudMayorista
+                {
+                    FechaInicio = DateTime.Now,
+                    Estatus = EstatusSolicitudMayorista.Prospecto,
+                    IdMayorista = clienteMayorista.Id,
+                    IdAgente = agenteAsignadoId
+                };
+
+                _context.SolicitudesMayorista.Add(nuevaSolicitudMayorista);
+
+                await _context.SaveChangesAsync();
 
                 await _context.Database.CommitTransactionAsync();
 

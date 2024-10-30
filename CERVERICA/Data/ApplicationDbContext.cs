@@ -47,6 +47,7 @@ namespace CERVERICA.Data
         public DbSet<SolicitudesCambioAgente> SolicitudesCambioAgente { get; set; }
         public DbSet<HistorialPrecios> HistorialPrecios { get; set; }
         public DbSet<PedidoMayoreo> PedidosMayoreo { get; set; }
+        public DbSet<SolicitudMayorista> SolicitudesMayorista { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
