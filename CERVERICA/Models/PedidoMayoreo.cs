@@ -34,6 +34,11 @@ namespace CERVERICA.Models
         public string Observaciones { get; set; }
 
         public EstatusSolicitud Estatus { get; set; }
+
+        public ICollection<Pago> Pagos { get; set; }
+
+        public ICollection<SolicitudAsistencia> SolicitudesAsistencia { get; set; }
+
         public enum EstatusSolicitud
         {
             Prospecto = 1,

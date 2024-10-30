@@ -48,5 +48,7 @@ namespace CERVERICA.Models
 
         // Relación uno a muchos con la tabla PedidoMayoreo
         public ICollection<PedidoMayoreo> PedidosMayoreo { get; set; }
+
+        public ICollection<Pago> Pagos { get; set; }
     }
 }

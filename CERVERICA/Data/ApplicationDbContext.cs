@@ -1,4 +1,5 @@
 ﻿using CERVERICA.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -48,9 +49,60 @@ namespace CERVERICA.Data
         public DbSet<HistorialPrecios> HistorialPrecios { get; set; }
         public DbSet<PedidoMayoreo> PedidosMayoreo { get; set; }
         public DbSet<SolicitudMayorista> SolicitudesMayorista { get; set; }
+        public DbSet<Pago> Pagos { get; set; }
+        public DbSet<EstadisticaAgenteVenta> EstadisticasAgentesVenta { get; set; }
+        public DbSet<SolicitudAsistencia> SolicitudesAsistencia { get; set; }
+        public DbSet<SeguimientoSolicitudAsistencia> SeguimientosSolicitudesAsistencia { get; set; }
+        public DbSet<CategoriaAsistencia> CategoriasAsistencia { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
+            modelBuilder.Entity<IdentityRole>()
+            .HasData(
+                new IdentityRole { Name = "Mayorista", NormalizedName = "MAYORISTA" },
+                new IdentityRole { Name = "Cocinero", NormalizedName = "COCINERO" },
+                new IdentityRole { Name = "Admin", NormalizedName = "ADMIN" },
+                new IdentityRole { Name = "Cliente", NormalizedName = "CLIENTE" },
+                new IdentityRole { Name = "Operador", NormalizedName = "OPERADOR" },
+                new IdentityRole { Name = "Agente", NormalizedName = "Agente" }
+
+            );
+            modelBuilder.Entity<SolicitudAsistencia>()
+               .HasOne(p => p.CategoriaAsistencia)
+               .WithMany(pe => pe.SolicitudesAsistencia)
+               .HasForeignKey(p => p.IdCategoriaAsistencia)
+               .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<SeguimientoSolicitudAsistencia>()
+               .HasOne(p => p.SolicitudAsistencia)
+               .WithMany(pe => pe.SeguimientosSolicitudAsistencia)
+               .HasForeignKey(p => p.IdSolicitudAsistencia)
+               .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<SolicitudAsistencia>()
+               .HasOne(p => p.Cliente)
+               .WithMany(pe => pe.SolicitudesAsistencia)
+               .HasForeignKey(p => p.IdCliente)
+               .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ApplicationUser>()
+                .HasOne(a => a.EstadisticaAgenteVenta)
+                .WithOne(e => e.AgenteVenta)
+                .HasForeignKey<EstadisticaAgenteVenta>(e => e.IdAgenteVenta)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Pago>()
+               .HasOne(p => p.Mayorista)
+               .WithMany(pe => pe.Pagos)
+               .HasForeignKey(p => p.IdMayorista)
+               .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Pago>()
+               .HasOne(p => p.PedidoMayoreo)
+               .WithMany(pe => pe.Pagos) 
+               .HasForeignKey(p => p.IdPedidoMayoreo)
+               .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Comentario>()
                 .HasOne(c => c.DetalleVenta)
