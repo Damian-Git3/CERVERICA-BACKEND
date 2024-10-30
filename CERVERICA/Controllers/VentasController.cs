@@ -704,7 +704,7 @@ namespace CERVERICA.Controllers
                         };
                         break;
 
-                    case "año":
+                    case "anio":
                         var startOfYear = new DateTime(DateTime.Now.Year, 1, 1);
                         ventas = await _context.Ventas.Where(v => v.FechaVenta >= startOfYear).ToListAsync();
                         resultado = new
