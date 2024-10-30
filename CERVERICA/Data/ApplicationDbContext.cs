@@ -1,4 +1,5 @@
 ﻿using CERVERICA.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -50,6 +51,17 @@ namespace CERVERICA.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
+            modelBuilder.Entity<IdentityRole>()
+            .HasData(
+                new IdentityRole { Name = "Mayorista", NormalizedName = "MAYORISTA" },
+                new IdentityRole { Name = "Cocinero", NormalizedName = "COCINERO" },
+                new IdentityRole { Name = "Admin", NormalizedName = "ADMIN" },
+                new IdentityRole { Name = "Cliente", NormalizedName = "CLIENTE" },
+                new IdentityRole { Name = "Operador", NormalizedName = "OPERADOR" },
+                new IdentityRole { Name = "Agente", NormalizedName = "Agente" }
+
+            );
 
             modelBuilder.Entity<Comentario>()
                 .HasOne(c => c.DetalleVenta)
