@@ -1,7 +1,9 @@
 ﻿using CERVERICA.Data;
+using CERVERICA.DTO.Recetas;
 using CERVERICA.Dtos;
 using CERVERICA.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace CERVERICA.Controllers
 {
@@ -12,8 +14,7 @@ namespace CERVERICA.Controllers
         private readonly ApplicationDbContext _context;
         private readonly ILogger<HistorialPreciosController> _logger;
 
-
-
+        /* CONSTRUCTOR */
         public HistorialPreciosController(ApplicationDbContext context, ILogger<HistorialPreciosController> logger)
         {
             _context = context;
@@ -30,7 +31,6 @@ namespace CERVERICA.Controllers
 
             try
             {
-
 
                 var historial = new HistorialPrecios
                 {
@@ -83,6 +83,32 @@ namespace CERVERICA.Controllers
                 _logger.LogError(ex, "Error obteniendo el historial de precios");
 
                 return StatusCode(500, new { message = "Ocurrio un error al obtener el historial de precio" });
+            }
+        }
+
+        [HttpGet]
+        [Route("ListarRecetas")]
+        public async Task<ActionResult<List<RecetasViewDTO>>> ListarRecetas()
+        {
+            try
+            {
+                var recetas = await _context.Recetas
+                    .Select(r => new RecetasViewDTO
+                    {
+                        Id = r.Id,
+                        Nombre = r.Nombre,
+                        Imagen = r.Imagen,
+                        Activo = r.Activo
+                    })
+                    .ToListAsync();
+
+                return Ok(recetas);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error obteniendo la lista de recetas");
+
+                return StatusCode(500, new { message = "Ocurrió un error al obtener la lista de recetas" });
             }
         }
     }
