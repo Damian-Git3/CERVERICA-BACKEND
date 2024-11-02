@@ -18,11 +18,14 @@ namespace CERVERICA.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ILogger<VentasController> _logger;
 
-        public VentasController(UserManager<ApplicationUser> userManager, ApplicationDbContext context)
+        public VentasController(UserManager<ApplicationUser> userManager, ApplicationDbContext context, ILogger<VentasController> logger)
         {
             _userManager = userManager;
             _context = context;
+            _logger = logger;
+
         }
 
         [HttpGet]
@@ -656,5 +659,130 @@ namespace CERVERICA.Controllers
 
             return Ok(stock);
         }
+
+        /**
+         * Obtiene el total de ventas, y el dinero generado por el parametro proporcionado (semana, mes, año)
+         */
+        [AllowAnonymous]
+        [HttpGet("total-ventas/{param}")]
+        public async Task<IActionResult> GetTotalVentas(string param)
+        {
+            try
+            {
+                var ventas = new List<Venta>();
+                var resultado = new { fecha = DateTime.Now, data = new List<object>(), total = 0.0 };
+
+                switch (param)
+                {
+                    case "semana":
+                        var startOfWeek = DateTime.Now.AddDays(-(int)DateTime.Now.DayOfWeek);
+                        ventas = await _context.Ventas.Where(v => v.FechaVenta >= startOfWeek).ToListAsync();
+                        resultado = new
+                        {
+                            fecha = DateTime.Now,
+                            data = Enumerable.Range(0, 7).Select(i => new
+                            {
+                                date = startOfWeek.AddDays(i).ToString("dddd"),
+                                monto = ventas.Where(v => v.FechaVenta.Date == startOfWeek.AddDays(i).Date).Sum(v => v.Total)
+                            }).Cast<object>().ToList(),
+                            total = ventas.Sum(v => (double)v.Total)
+                        };
+                        break;
+
+                    case "mes":
+                        var startOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+                        ventas = await _context.Ventas.Where(v => v.FechaVenta >= startOfMonth).ToListAsync();
+                        resultado = new
+                        {
+                            fecha = DateTime.Now,
+                            data = Enumerable.Range(0, DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month)).Select(i => new
+                            {
+                                date = startOfMonth.AddDays(i).ToString("dd MMM"),
+                                monto = ventas.Where(v => v.FechaVenta.Date == startOfMonth.AddDays(i).Date).Sum(v => v.Total)
+                            }).Cast<object>().ToList(),
+                            total = ventas.Sum(v => (double)v.Total)
+                        };
+                        break;
+
+                    case "anio":
+                        var startOfYear = new DateTime(DateTime.Now.Year, 1, 1);
+                        ventas = await _context.Ventas.Where(v => v.FechaVenta >= startOfYear).ToListAsync();
+                        resultado = new
+                        {
+                            fecha = DateTime.Now,
+                            data = Enumerable.Range(0, 12).Select(i => new
+                            {
+                                date = startOfYear.AddMonths(i).ToString("MMMM"),
+                                monto = ventas.Where(v => v.FechaVenta.Month == startOfYear.AddMonths(i).Month).Sum(v => v.Total)
+                            }).Cast<object>().ToList(),
+                            total = ventas.Sum(v => (double)v.Total)
+                        };
+                        break;
+
+                    default:
+                        return BadRequest("Parámetro no válido, solo se acepta (semana, mes o año)");
+                }
+
+                return Ok(resultado);
+            }
+            catch (Exception ex)
+            {
+                // Imprime la excepción en la consola
+                Console.WriteLine($"Exception: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+
+                // También puedes registrar la excepción usando el logger
+                _logger.LogError(ex, "Error al obtener las ventas para el parámetro {Param}", param);
+
+                // Devuelve una respuesta de error genérica
+                return StatusCode(500, "Se produjo un error al procesar su solicitud.");
+            }
+        }
+
+
+
+        [AllowAnonymous]
+        [HttpGet("resumen-ventas")]
+        public async Task<IActionResult> GetResumenVentas()
+        {
+            try
+            {
+                var ventas = await _context.Ventas.ToListAsync();
+
+                var hoy = DateTime.Today;
+                var inicioSemana = hoy.AddDays(-(int)hoy.DayOfWeek);
+                var inicioMes = new DateTime(hoy.Year, hoy.Month, 1);
+                var inicioAnio = new DateTime(hoy.Year, 1, 1);
+
+                var totalVentasSemana = ventas.Where(v => v.FechaVenta >= inicioSemana).Sum(v => v.Total);
+                var totalVentasMes = ventas.Where(v => v.FechaVenta >= inicioMes).Sum(v => v.Total);
+                var totalVentasAnio = ventas.Where(v => v.FechaVenta >= inicioAnio).Sum(v => v.Total);
+
+                var resultado = new
+                {
+                    semana = totalVentasSemana,
+                    mes = totalVentasMes,
+                    anio = totalVentasAnio
+                };
+
+                return Ok(resultado);
+            }
+            catch (Exception ex)
+            {
+                // Imprime la excepción en la consola
+                Console.WriteLine($"Exception: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+
+                // También puedes registrar la excepción usando el logger
+                _logger.LogError(ex, "Error al obtener el resumen de ventas");
+
+                // Devuelve una respuesta de error genérica
+                return StatusCode(500, "Se produjo un error al procesar su solicitud.");
+            }
+        }
+
+
+
+
     }
 }
