@@ -11,6 +11,7 @@
     public bool Activo { get; set; }
 
     // Datos del cliente mayorista
+    public int IdMayorista { get; set; }
     public string RFCEmpresa { get; set; }
     public string NombreEmpresa { get; set; }
     public string DireccionEmpresa { get; set; }
