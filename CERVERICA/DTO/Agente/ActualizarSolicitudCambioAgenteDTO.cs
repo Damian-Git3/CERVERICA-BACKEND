@@ -15,7 +15,9 @@ namespace CERVERICA.DTO.Agente
         public string IdAdministrador { get; set; }
         [Required]
         public string IdAgenteActual { get; set; }
-        
+        [Required]
+        public DateTime FechaRespuesta { get; set; }
+
         public string? IdAgenteNuevo { get; set; }
 
         public string? MotivoRechazo { get; set; }

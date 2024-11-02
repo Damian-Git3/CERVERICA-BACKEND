@@ -56,7 +56,7 @@ namespace CERVERICA.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-
+            
             modelBuilder.Entity<IdentityRole>()
             .HasData(
                 new IdentityRole { Name = "Mayorista", NormalizedName = "MAYORISTA" },
@@ -67,6 +67,8 @@ namespace CERVERICA.Data
                 new IdentityRole { Name = "Agente", NormalizedName = "Agente" }
 
             );
+            
+
             modelBuilder.Entity<SolicitudAsistencia>()
                .HasOne(p => p.CategoriaAsistencia)
                .WithMany(pe => pe.SolicitudesAsistencia)

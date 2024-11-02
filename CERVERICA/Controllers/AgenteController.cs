@@ -79,7 +79,7 @@ namespace CERVERICA.Controllers
             var solicitud = new SolicitudesCambioAgente
             {
                 IdAgenteVentaActual = solicitudDto.IdAgenteVentaActual,
-                FechaSolicitud = DateTime.UtcNow,
+                FechaSolicitud = solicitudDto.FechaSolicitud,
                 Motivo = solicitudDto.Motivo,
                 Solicitante = solicitudDto.Solicitante,
                 IdMayorista = solicitudDto.IdMayorista,
@@ -173,10 +173,11 @@ namespace CERVERICA.Controllers
                 solicitudExistente.IdAgenteVentaNuevo = solicitudDto.IdAgenteNuevo;
             }
 
-            solicitudExistente.FechaRespuesta = DateTime.UtcNow;
+            solicitudExistente.FechaRespuesta = solicitudDto.FechaRespuesta;
             solicitudExistente.Estatus = solicitudDto.Estatus;
             solicitudExistente.IdAdministrador = solicitudDto.IdAdministrador;
             solicitudExistente.MotivoRechazo = solicitudDto.MotivoRechazo;
+
 
             try
             {
@@ -222,18 +223,26 @@ namespace CERVERICA.Controllers
         // GET: api/agente/solicitudes-cambio-agente
         [HttpGet("solicitudes-cambio-agente")]
         [AllowAnonymous]
-        public async Task<ActionResult<IEnumerable<SolicitudCambioAgenteResponseDTO>>> GetAllSolicitudesCambioAgente()
+        public async Task<ActionResult<IEnumerable<SolicitudCambioAgenteResponseDTO>>> GetAllSolicitudesCambioAgente(string? estatus = null)
         {
-            var solicitudes = await _context.SolicitudesCambioAgente
+            var solicitudesQuery = _context.SolicitudesCambioAgente
                 .Include(s => s.AgenteVentaActual)
                 .Include(s => s.AgenteVentaNuevo)
                 .Include(s => s.Mayorista)
                 .Include(s => s.Administrador)
-                .ToListAsync();
+                .AsQueryable(); // Hacer la consulta en forma de IQueryable
+
+            // Filtrar por estatus si se proporciona
+            if (!string.IsNullOrEmpty(estatus))
+            {
+                solicitudesQuery = solicitudesQuery.Where(s => s.Estatus == estatus);
+            }
+
+            var solicitudes = await solicitudesQuery.ToListAsync();
 
             if (solicitudes == null || !solicitudes.Any())
             {
-                return NotFound(new { message = "No se encontraron solicitudes de cambio de agente." });
+                return Ok(new List<SolicitudCambioAgenteResponseDTO>());
             }
 
             var response = solicitudes.Select(s => new SolicitudCambioAgenteResponseDTO
@@ -262,6 +271,7 @@ namespace CERVERICA.Controllers
 
             return Ok(response);
         }
+
 
         [HttpGet("solicitudes-cambio-agente/{mayoristaId}")]
         [AllowAnonymous]

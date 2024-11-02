@@ -15,5 +15,7 @@ namespace CERVERICA.DTO.Agente
 
         [Required]
         public int IdMayorista { get; set; }
+        [Required]
+        public DateTime FechaSolicitud { get; set; }
     }
 }
