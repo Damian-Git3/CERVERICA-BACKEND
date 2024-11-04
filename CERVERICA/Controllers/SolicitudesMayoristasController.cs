@@ -46,9 +46,6 @@ namespace CERVERICA.Controllers
                 return BadRequest("Solicitud o estatus inválido.");
             }
 
-            Console.WriteLine("ID SOLICITUUUUUUUUUUUUUD");
-            Console.WriteLine(avanzarSiguienteEstatusDTO.IdSolicitud);
-
             var solicitud = await _db.SolicitudesMayorista.FindAsync(avanzarSiguienteEstatusDTO.IdSolicitud);
             if (solicitud == null)
             {
@@ -60,5 +57,28 @@ namespace CERVERICA.Controllers
 
             return Ok("Estatus actualizado exitosamente.");
         }
+
+        [HttpPost("cancelar-solicitud")]
+        public async Task<ActionResult> CancelarSolicitudMayorista([FromBody] CancelarSolicitudMayoristaDTO cancelarSolicitudDTO)
+        {
+            if (cancelarSolicitudDTO == null)
+            {
+                return BadRequest("Datos de cancelación inválidos.");
+            }
+
+            var solicitud = await _db.SolicitudesMayorista.FindAsync(cancelarSolicitudDTO.IdSolicitud);
+            if (solicitud == null)
+            {
+                return NotFound("Solicitud no encontrada.");
+            }
+
+            solicitud.Estatus = EstatusSolicitudMayorista.Cancelado;
+            solicitud.mensajeRechazo = cancelarSolicitudDTO.MensajeRechazo;
+
+            await _db.SaveChangesAsync();
+
+            return Ok("Solicitud cancelada exitosamente.");
+        }
+
     }
 }
