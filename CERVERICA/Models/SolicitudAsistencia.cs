@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace CERVERICA.Models
 {
@@ -11,6 +12,7 @@ namespace CERVERICA.Models
 
         [ForeignKey(nameof(Cliente))]
         public string IdCliente { get; set; }
+        [JsonIgnore]
         public virtual ApplicationUser Cliente{ get; set; }
 
         [ForeignKey(nameof(AgenteVenta))]
@@ -38,17 +40,14 @@ namespace CERVERICA.Models
         [Required]
         public DateTime FechaSolicitud { get; set; }
 
-        [Required]
         public DateTime? FechaCierre { get; set; }
 
         [Required]
         public int Estatus { get; set; }
 
-        [Required]
-        public float Valoracion { get; set; }
+        public float? Valoracion { get; set; }
 
-        [Required]
-        public string MensajeValoracion { get; set; }
+        public string? MensajeValoracion { get; set; }
 
         [Required]
         public int Tipo { get; set; }

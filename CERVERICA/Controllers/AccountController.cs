@@ -706,6 +706,7 @@ namespace CERVERICA.Controllers
                 Activo = user.Activo,
 
                 // Datos del cliente mayorista
+                IdMayorista = clienteMayorista.Id,
                 RFCEmpresa = clienteMayorista.RFCEmpresa,
                 NombreEmpresa = clienteMayorista.NombreEmpresa,
                 DireccionEmpresa = clienteMayorista.DireccionEmpresa,
