@@ -4,6 +4,7 @@ using CERVERICA.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace CERVERICA.Controllers
 {
@@ -100,6 +101,15 @@ namespace CERVERICA.Controllers
         [HttpPost]
         public async Task<ActionResult<Receta>> PostReceta(RecetaInsertDto recetaDto)
         {
+            Debug.WriteLine("##########################################################################");
+            Debug.WriteLine("##########################################################################");
+            Debug.WriteLine("##########################################################################");
+            Debug.WriteLine("##########################################################################");
+            Debug.WriteLine("RecetaDto: " + recetaDto);
+            Debug.WriteLine("##########################################################################");
+            Debug.WriteLine("##########################################################################");
+            Debug.WriteLine("##########################################################################");
+            Debug.WriteLine("##########################################################################");
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);

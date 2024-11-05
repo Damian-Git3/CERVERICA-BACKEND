@@ -1,6 +1,5 @@
 ﻿using CERVERICA.Data;
 using CERVERICA.Models;
-using CERVERICA.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -16,13 +15,13 @@ namespace CERVERICA.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly FirebaseNotificationService _firebaseNotificationService;
+        //private readonly FirebaseNotificationService _firebaseNotificationService;
 
-        public NotificacionController(UserManager<ApplicationUser> userManager, ApplicationDbContext context, FirebaseNotificationService firebaseNotificationService)
+        public NotificacionController(UserManager<ApplicationUser> userManager, ApplicationDbContext context)
         {
             _userManager = userManager;
             _context = context;
-            _firebaseNotificationService = firebaseNotificationService;
+            //_firebaseNotificationService = firebaseNotificationService;
         }
 
         [HttpGet]
@@ -34,7 +33,7 @@ namespace CERVERICA.Controllers
 
                 //List<Notificacion> notificaciones = await _context.Notificaciones.Where(n => n.IdUsuario == currentUserId).ToListAsync();
                 //devolver solo las notificaciones con fecha y hora menor a la actual
-                List<Notificacion> notificaciones = await _context.Notificaciones.Where(n => n.IdUsuario == currentUserId && n.Fecha <= DateTime.Now && n.Visto==false).ToListAsync();
+                List<Notificacion> notificaciones = await _context.Notificaciones.Where(n => n.IdUsuario == currentUserId && n.Fecha <= DateTime.Now && n.Visto == false).ToListAsync();
                 //ordenar las notificaciones por fecha descendente
                 notificaciones = notificaciones.OrderByDescending(n => n.Fecha).ToList();
 
@@ -88,7 +87,7 @@ namespace CERVERICA.Controllers
                 _context.Entry(notificacion).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
 
-                return Ok(new {message="Notificación vista"});
+                return Ok(new { message = "Notificación vista" });
             }
             catch (Exception ex)
             {
@@ -100,12 +99,12 @@ namespace CERVERICA.Controllers
             }
         }
 
-        [HttpPost("send-notification")]
-        public async Task<IActionResult> SendNotification(string registrationToken, string title, string body)
-        {
-            var result = await _firebaseNotificationService.SendNotificationAsync(registrationToken, title, body);
-            return Ok(result);
-        }
+        //[HttpPost("send-notification")]
+        //public async Task<IActionResult> SendNotification(string registrationToken, string title, string body)
+        //{
+        //    var result = await _firebaseNotificationService.SendNotificationAsync(registrationToken, title, body);
+        //    return Ok(result);
+        //}
     }
 }
 
