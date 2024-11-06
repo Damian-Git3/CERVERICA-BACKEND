@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Diagnostics;
 using System.Security.Claims;
 
@@ -90,6 +91,9 @@ namespace CERVERICA.Controllers
         MetodoEnvio = p.MetodoEnvio,
         MetodoPago = p.MetodoPago,
         NumeroTarjeta = p.NumeroTarjeta,
+        MontoVenta = _context.DetallesVenta
+                    .Where(d => d.IdVenta == p.Id)
+                    .Sum(d => d.MontoVenta),
         EstatusVenta = p.EstatusVenta,
         ProductosPedido = _context.DetallesVenta
             .Where(d => d.IdVenta == p.Id)
@@ -781,6 +785,81 @@ namespace CERVERICA.Controllers
             }
         }
 
+        [AllowAnonymous]
+        [HttpGet("sugerencias-descuentos-crm")]
+        public async Task<IActionResult> GetSugerenciasDescuentosCRM()
+        {
+            try
+            {
+                var ventas = await _context.Ventas
+                    .Include(v => v.DetallesVentas)
+                    .ToListAsync();
+
+                var hoy = DateTime.Today;
+                var inicioSemana = hoy.AddDays(-(int)hoy.DayOfWeek);
+                var inicioMes = new DateTime(hoy.Year, hoy.Month, 1);
+                var inicioAnio = new DateTime(hoy.Year, 1, 1);
+
+                var sugerencias = new List<string>();
+
+                // Agrupar ventas por producto
+                var ventasPorProducto = ventas
+                    .SelectMany(v => v.DetallesVentas)
+                    .GroupBy(d => d.IdReceta)
+                    .ToList();
+
+                foreach (var grupo in ventasPorProducto)
+                {
+                    var productoId = grupo.Key;
+                    var totalVentasSemana = grupo.Where(d => d.Venta.FechaVenta >= inicioSemana).Sum(d => d.MontoVenta);
+                    var totalVentasMes = grupo.Where(d => d.Venta.FechaVenta >= inicioMes).Sum(d => d.MontoVenta);
+                    var totalVentasAnio = grupo.Where(d => d.Venta.FechaVenta >= inicioAnio).Sum(d => d.MontoVenta);
+
+                    if (totalVentasSemana == 0)
+                    {
+                        sugerencias.Add($"Ofrecer un descuento del 20% en el producto {productoId} debido a que no ha tenido ventas esta semana.");
+                    }
+                    else if (totalVentasSemana < 10)
+                    {
+                        sugerencias.Add($"Ofrecer una promoción de 2x1 en el producto {productoId} debido a las bajas ventas esta semana.");
+                    }
+
+                    if (totalVentasMes < 50)
+                    {
+                        sugerencias.Add($"Ofrecer un descuento del 15% en el producto {productoId} debido a las bajas ventas este mes.");
+                    }
+
+                    if (totalVentasAnio < 200)
+                    {
+                        sugerencias.Add($"Ofrecer un descuento del 10% en el producto {productoId} debido a las bajas ventas este año.");
+                    }
+                }
+
+                // Sugerencias basadas en la fecha de caducidad
+                var productosConStock = await _context.Stocks.ToListAsync();
+                foreach (var producto in productosConStock)
+                {
+                    if (producto.FechaCaducidad.HasValue && producto.FechaCaducidad.Value <= hoy.AddMonths(1))
+                    {
+                        sugerencias.Add($"Ofrecer un descuento del 30% en el producto con ID {producto.Id} debido a su próxima fecha de caducidad.");
+                    }
+                }
+
+                return Ok(sugerencias);
+            }
+            catch (Exception ex)
+            {
+                // Imprime la excepción en la consola
+                Console.WriteLine($"Exception: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+
+                // También puedes registrar la excepción usando el logger
+                _logger.LogError(ex, "Error al obtener las sugerencias de descuentos para el CRM");
+
+                // Devuelve una respuesta de error genérica
+                return StatusCode(500, "Se produjo un error al procesar su solicitud.");
+            }
+        }
 
 
 
