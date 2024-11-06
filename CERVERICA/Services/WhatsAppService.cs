@@ -2,12 +2,12 @@
 
 namespace CERVERICA.Services
 {
-    public class WhatsApp
+    public class WhatsAppService
     {
-        private static readonly ILogger<WhatsApp> _logger = LoggerFactory.Create(builder =>
+        private static readonly ILogger<WhatsAppService> _logger = LoggerFactory.Create(builder =>
         {
             builder.AddConsole();
-        }).CreateLogger<WhatsApp>();
+        }).CreateLogger<WhatsAppService>();
 
         public static async Task SendWhatsAppMessage(string message, string number)
         {

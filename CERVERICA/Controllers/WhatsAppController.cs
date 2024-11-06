@@ -13,7 +13,7 @@ namespace CERVERICA.Controllers
             try
             {
 
-                await WhatsApp.SendWhatsAppMessage(message, number);
+                await WhatsAppService.SendWhatsAppMessage(message, number);
                 return Ok(new { message = "Mensaje enviado correctamente" });
             }
             catch (Exception ex)
