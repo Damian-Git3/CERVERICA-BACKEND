@@ -1,4 +1,5 @@
 ﻿using CERVERICA.Data;
+using CERVERICA.DTO.HistorialPrecios;
 using CERVERICA.DTO.Recetas;
 using CERVERICA.Dtos;
 using CERVERICA.Models;
@@ -24,10 +25,6 @@ namespace CERVERICA.Controllers
         [HttpPost]
         public async Task<ActionResult<object>> CrearHistorial(HistorialPreciosInsert hp)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
 
             try
             {
@@ -39,9 +36,9 @@ namespace CERVERICA.Controllers
                     Paquete6 = hp.Paquete6,
                     Paquete12 = hp.Paquete12,
                     Paquete24 = hp.Paquete24,
-                    CostoProduccionUnidad = hp.CostoProduccionUnidad,
-                    PrecioUnitarioMinimoMayoreo = hp.PrecioUnitarioMinimoMayoreo,
-                    PrecioUnitarioBaseMayoreo = hp.PrecioUnitarioBaseMayoreo
+                    CostoProduccionUnidad = 0,
+                    PrecioUnitarioMinimoMayoreo = 0,
+                    PrecioUnitarioBaseMayoreo = 0
                 };
 
                 _context.HistorialPrecios.Add(historial);
@@ -92,11 +89,13 @@ namespace CERVERICA.Controllers
         {
             try
             {
+
                 var recetas = await _context.Recetas
-                    .Select(r => new RecetasViewDTO
+                    .Select(static r => new RecetasViewDTO
                     {
                         Id = r.Id,
                         Nombre = r.Nombre,
+                        Precio = (float)Math.Round(r.PrecioPaquete1.HasValue ? (float)r.PrecioPaquete1.Value : 0f, 2),
                         Imagen = r.Imagen,
                         Activo = r.Activo
                     })
@@ -109,6 +108,67 @@ namespace CERVERICA.Controllers
                 _logger.LogError(ex, "Error obteniendo la lista de recetas");
 
                 return StatusCode(500, new { message = "Ocurrió un error al obtener la lista de recetas" });
+            }
+        }
+
+        [HttpGet]
+        [Route("PreciosReceta")]
+        public async Task<ActionResult<PreciosRecetaDTO>> GetPreciosReceta(int Id)
+        {
+            try
+            {
+                var receta = await _context.Recetas
+                    .Where(r => r.Id == Id)
+                    .Select(r => new PreciosRecetaDTO
+                    {
+                        Id = r.Id,
+                        Nombre = r.Nombre,
+                        PrecioLitro = (float)Math.Round((float)r.PrecioLitro, 2),
+                        PrecioPaquet1 = (float)(r.PrecioPaquete1.HasValue ? Math.Round((float)r.PrecioPaquete1.Value, 2) : 0),
+                        PrecioPaquete6 = (float)Math.Round((float)r.PrecioPaquete6, 2),
+                        PrecioPaquete12 = (float)Math.Round((float)r.PrecioPaquete12, 2),
+                        PrecioPaquete24 = (float)Math.Round((float)r.PrecioPaquete24, 2),
+                        Imagen = r.Imagen,
+                        Estatus = r.Activo
+                    }).FirstOrDefaultAsync();
+
+
+                return Ok(receta);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error obteniendo la lista de recetas");
+
+                return StatusCode(500, new { message = "Ocurrió un error al obtener la lista de recetas" });
+            }
+        }
+
+        [HttpGet]
+        [Route("ListaHistorialPrecios")]
+        public async Task<ActionResult<List<PreciosReceta>>> GetListaHistorialPrecios(int IdReceta)
+        {
+            try
+            {
+                var historial = await _context.HistorialPrecios
+                    .Where(r => r.IdReceta == IdReceta)
+                    .OrderBy(r => r.Id) // Ordenar por el campo "Id"
+                    .Select(r => new PreciosReceta
+                    {
+                        Fecha = r.Fecha,
+                        PrecioPaquete1 = (float)Math.Round((float)r.Paquete1, 2),
+                        PrecioPaquete6 = (float)Math.Round((float)r.Paquete6, 2),
+                        PrecioPaquete12 = (float)Math.Round((float)r.Paquete12, 2),
+                        PrecioPaquete24 = (float)Math.Round((float)r.Paquete24, 2),
+                    }).ToListAsync();
+
+
+                return Ok(historial);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error obteniendo la lista de precios");
+
+                return StatusCode(500, new { message = "Ocurrió un error al obtener la lista de precios" });
             }
         }
     }
