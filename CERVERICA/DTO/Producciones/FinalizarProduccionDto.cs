@@ -9,7 +9,7 @@ namespace CERVERICA.Dtos
         public float? LitrosFinales { get; set; }
 
         [Range(0, float.MaxValue, ErrorMessage = "La merma en litros debe ser mayor o igual a 0.")]
-        public float? MermaLitros { get; set; } = 0;
+        public float? MermaLitros { get; set; }
 
         [Required(ErrorMessage = "El tipo de envase es obligatorio.")]
         [StringLength(100, ErrorMessage = "El tipo de envase no puede exceder los 100 caracteres.")]
