@@ -41,9 +41,26 @@ namespace CERVERICA.Controllers
             return Ok(categoria);
         }
 
-        // Ver todas las categorías de asistencia
+        // Ver todas las categorías de asistencia activas
         [HttpGet("categorias")]
         public async Task<IActionResult> ObtenerCategorias()
+        {
+            var categorias = _context.CategoriasAsistencia
+                .Select(c => new CategoriaAsistenciaDTO
+                {
+                    Id = c.Id,
+                    Nombre = c.Nombre,
+                    Estatus = c.Estatus
+                }).Where(c => c.Estatus == true).ToList();
+
+
+            return Ok(categorias);
+        }
+
+        // Ver todas las categorías de asistencia (solo Admin y Agente)
+        [HttpGet("categorias/all")]
+        [Authorize(Roles = "Admin,Agente")]
+        public async Task<IActionResult> ObtenerTodasCategorias()
         {
             var categorias = _context.CategoriasAsistencia
                 .Select(c => new CategoriaAsistenciaDTO
@@ -117,22 +134,78 @@ namespace CERVERICA.Controllers
         }
 
         // Ver historial de asistencias de un cliente (Cliente y Mayorista)
-        [HttpGet("agente")]
+        [HttpGet("agente/historial")]
         [Authorize(Roles = "Admin,Agente")]
         public async Task<IActionResult> ObtenerSolicitudesAsignadas()
         {
 
             var user = await _userManager.GetUserAsync(HttpContext.User);
 
-            var asignaciones = _context.SolicitudesAsistencia
-                .Where(s => s.IdAgenteVenta == user.Id && s.FechaCierre == null)
+            var historial = (from s in _context.SolicitudesAsistencia
+                             where s.IdAgenteVenta == user.Id && s.FechaCierre == null
+                             join c in _context.CategoriasAsistencia on s.IdCategoriaAsistencia equals c.Id
+                             join u in _context.Users on s.IdCliente equals u.Id
+                             select new
+                             {
+                                 s.Id,
+                                 s.IdCliente,
+                                 s.IdAgenteVenta,
+                                 s.IdCategoriaAsistencia,
+                                 s.Mayoreo,
+                                 s.Descripcion,
+                                 s.FechaSolicitud,
+                                 s.FechaCierre,
+                                 s.Estatus,
+                                 s.Valoracion,
+                                 s.MensajeValoracion,
+                                 s.Tipo,
+                                 nombreCategoria = c.Nombre,
+                                 nombreCliente = u.FullName,
+                                 numeroCliente = u.PhoneNumber,
+                                 emailCliente = u.Email
+                             }).OrderByDescending(s => s.FechaSolicitud)
                 .ToList();
 
-            return Ok(asignaciones);
+            return Ok(historial);
+        }
+
+        [HttpGet("agente/historialCerrado")]
+        [Authorize(Roles = "Admin,Agente")]
+        public async Task<IActionResult> ObtenerSolicitudesAsignadasCerradas()
+        {
+
+            var user = await _userManager.GetUserAsync(HttpContext.User);
+
+            var historial = (from s in _context.SolicitudesAsistencia
+                             where s.IdAgenteVenta == user.Id && s.FechaCierre != null
+                             join c in _context.CategoriasAsistencia on s.IdCategoriaAsistencia equals c.Id
+                             join u in _context.Users on s.IdCliente equals u.Id
+                             select new
+                             {
+                                 s.Id,
+                                 s.IdCliente,
+                                 s.IdAgenteVenta,
+                                 s.IdCategoriaAsistencia,
+                                 s.Mayoreo,
+                                 s.Descripcion,
+                                 s.FechaSolicitud,
+                                 s.FechaCierre,
+                                 s.Estatus,
+                                 s.Valoracion,
+                                 s.MensajeValoracion,
+                                 s.Tipo,
+                                 nombreCategoria = c.Nombre,
+                                 nombreCliente = u.FullName,
+                                 numeroCliente = u.PhoneNumber,
+                                 emailCliente = u.Email
+                             }).OrderByDescending(s => s.FechaSolicitud)
+                .ToList();
+
+            return Ok(historial);
         }
 
         // Ver historial de asistencias de un cliente (Cliente y Mayorista)
-        [HttpGet("cliente/historial/agente")]
+        [HttpGet("agente/historial/cliente")]
         [Authorize(Roles = "Admin,Agente")]
         public async Task<ActionResult> ObtenerHistorial(string id)
         {
@@ -151,13 +224,6 @@ namespace CERVERICA.Controllers
         {
             var user = await _userManager.GetUserAsync(HttpContext.User);
 
-
-
-            //var historial = _context.SolicitudesAsistencia
-            //    .Where(s => s.IdCliente == user.Id && s.FechaCierre == null)
-            //    .ToList();
-
-            //traer las solicitudes de asistencia con el nombre de la categoria incluido, el nombre del agente de venta, su numero y su email
             var historial = (from s in _context.SolicitudesAsistencia
                              where s.IdCliente == user.Id && s.FechaCierre == null
                              join c in _context.CategoriasAsistencia on s.IdCategoriaAsistencia equals c.Id
@@ -180,7 +246,7 @@ namespace CERVERICA.Controllers
                                  nombreAgente = u.FullName,
                                  numeroAgente = u.PhoneNumber,
                                  emailAgente = u.Email
-                             })
+                             }).OrderByDescending(s => s.FechaSolicitud)
                 .ToList();
 
             return Ok(historial);
@@ -201,10 +267,21 @@ namespace CERVERICA.Controllers
             //incluir los datos de la categoria de asistencia y los datos del agente de venta
             var categoria = _context.CategoriasAsistencia.Find(solicitud.IdCategoriaAsistencia);
             var agente = _context.Users.Find(solicitud.IdAgenteVenta);
+            var cliente = _context.Users.Find(solicitud.IdCliente);
 
             solicitud.SeguimientosSolicitudAsistencia = seguimientos;
 
-            return Ok(solicitud);
+            //crear un nuevo objeto con los datos de numero, nombre y telefono del cliente
+            var clienteData = new
+            {
+                cliente.FullName,
+                cliente.UserName,
+                cliente.PhoneNumber,
+                cliente.Email,
+                cliente.FechaRegistro,
+                cliente.Activo
+            };
+            return Ok(new { solicitud, clienteData });
         }   
 
         [HttpGet("cliente/historialCerrado/agente")]
@@ -226,9 +303,29 @@ namespace CERVERICA.Controllers
         {
             var user = await _userManager.GetUserAsync(HttpContext.User);
 
-
-            var historial = _context.SolicitudesAsistencia
-                .Where(s => s.IdCliente == user.Id && s.FechaCierre != null)
+            var historial = (from s in _context.SolicitudesAsistencia
+                             where s.IdCliente == user.Id && s.FechaCierre != null
+                             join c in _context.CategoriasAsistencia on s.IdCategoriaAsistencia equals c.Id
+                             join u in _context.Users on s.IdAgenteVenta equals u.Id
+                             select new
+                             {
+                                 s.Id,
+                                 s.IdCliente,
+                                 s.IdAgenteVenta,
+                                 s.IdCategoriaAsistencia,
+                                 s.Mayoreo,
+                                 s.Descripcion,
+                                 s.FechaSolicitud,
+                                 s.FechaCierre,
+                                 s.Estatus,
+                                 s.Valoracion,
+                                 s.MensajeValoracion,
+                                 s.Tipo,
+                                 nombreCategoria = c.Nombre,
+                                 nombreAgente = u.FullName,
+                                 numeroAgente = u.PhoneNumber,
+                                 emailAgente = u.Email
+                             }).OrderByDescending(s => s.FechaSolicitud)
                 .ToList();
 
             return Ok(historial);
@@ -246,10 +343,10 @@ namespace CERVERICA.Controllers
             //verificar que la asistencia pertenezca al usuario
             var user = await _userManager.GetUserAsync(HttpContext.User);
 
-            if (asistencia.IdCliente != user.Id) return Unauthorized();
+            if (asistencia.IdAgenteVenta != user.Id) return Unauthorized();
 
             asistencia.FechaCierre = DateTime.Now;
-            asistencia.Estatus = 2; // Cerrada
+            asistencia.Estatus = 3; // Cerrada
             asistencia.Descripcion = solicitudDTO.Descripcion;
 
             await _context.SaveChangesAsync();
@@ -301,6 +398,9 @@ namespace CERVERICA.Controllers
             var asistencia = await _context.SolicitudesAsistencia.FindAsync(seguimientoDTO.IdSolicitudAsistencia);
             if (asistencia == null) return NotFound();
 
+            //verificar que la asistencia no esté cerrada
+            if (asistencia.Estatus == 3) return BadRequest(new { message = "La asistencia ya está cerrada", error = true });
+
             var seguimiento = new SeguimientoSolicitudAsistencia
             {
                 IdSolicitudAsistencia = seguimientoDTO.IdSolicitudAsistencia,
@@ -310,6 +410,8 @@ namespace CERVERICA.Controllers
             };
 
             _context.SeguimientosSolicitudesAsistencia.Add(seguimiento);
+            //dar estatus 2 a la solicitud
+            asistencia.Estatus = 2; // En proceso
             await _context.SaveChangesAsync();
             return Ok(seguimiento);
         }
@@ -327,6 +429,93 @@ namespace CERVERICA.Controllers
 
             return Ok(seguimientos);
         }
+
+
+        //Metodo para reasignar agente de ventas a una solicitud
+        [HttpPut("solicitud/reasignar")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> ReasignarAgente(ReasignarAgenteDTO reasignarDTO)
+        {
+            var solicitud = await _context.SolicitudesAsistencia.FindAsync(reasignarDTO.IdSolicitudAsistencia);
+            if (solicitud == null) return NotFound();
+
+            var user = await _userManager.GetUserAsync(HttpContext.User);
+
+            if (solicitud.IdCliente != user.Id) return Unauthorized();
+
+            solicitud.IdAgenteVenta = reasignarDTO.IdAgenteVenta;
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
+        
+        //solicitar cambio de agente
+        [HttpPut("solicitud/cambiarAgente")]
+        [Authorize(Roles = "Cliente, Mayorista")]
+        public async Task<ActionResult> CambiarAgente(SolicitudValoracionDTO solicitudDTO)
+        {
+            var user = await _userManager.GetUserAsync(HttpContext.User);
+
+            //obtener a la id del agente actual de la solicitud
+            var solicitud = await _context.SolicitudesAsistencia.FindAsync(solicitudDTO.IdSolicitudAsistencia);
+
+            if (solicitud.IdCliente != user.Id) return Unauthorized();
+
+            if (solicitud == null) return NotFound();
+
+            var idAgenteNuevo = CambiarAgente(solicitud.IdAgenteVenta);
+
+            var agenteNuevo = _context.Users.Find(idAgenteNuevo);
+            var agenteAnterior = _context.Users.Find(solicitud.IdAgenteVenta);
+
+            var seguimiento = new SeguimientoSolicitudAsistencia
+            {
+                IdSolicitudAsistencia = solicitudDTO.IdSolicitudAsistencia,
+                Descripcion = "Solicitud de cambio de agente",
+                FechaSeguimiento = DateTime.Now,
+                Mensaje = "Nombre y id Agente nuevo: " + agenteNuevo.FullName + " - " + agenteNuevo.Id + ". Nombre y id Agente anterior: " + agenteAnterior.FullName + " - " + agenteAnterior.Id + "." + solicitudDTO.Mensaje
+            };
+
+            _context.SeguimientosSolicitudesAsistencia.Add(seguimiento);
+
+            //cerrar la solicitud
+            solicitud.FechaCierre = DateTime.Now;
+            solicitud.Estatus = 3; // Cerrada
+            solicitud.MensajeValoracion = solicitudDTO.Mensaje;
+            solicitud.Valoracion = solicitudDTO.Valoracion;
+
+            //clonar la solicitud con el nuevo agente
+            var nuevaSolicitud = new SolicitudAsistencia
+            {
+                IdCliente = solicitud.IdCliente,
+                IdAgenteVenta = idAgenteNuevo,
+                IdCategoriaAsistencia = solicitud.IdCategoriaAsistencia,
+                Mayoreo = solicitud.Mayoreo,
+                Descripcion = solicitud.Descripcion,
+                FechaSolicitud = DateTime.Now,
+                Estatus = 1, // Activa
+                Tipo = 0,
+                IdVenta = solicitud.IdVenta,
+                IdSolicitudMayorista = solicitud.IdSolicitudMayorista
+            };
+
+            _context.SolicitudesAsistencia.Add(nuevaSolicitud);
+            await _context.SaveChangesAsync(); // Guardar para obtener el Id generado
+
+            // Generar un seguimiento para la nueva solicitud utilizando el Id generado
+            var seguimientoNuevo = new SeguimientoSolicitudAsistencia
+            {
+                IdSolicitudAsistencia = nuevaSolicitud.Id, // Utilizar el Id generado
+                Descripcion = "Solicitud derivada de un cambio de agente",
+                FechaSeguimiento = DateTime.Now,
+                Mensaje = "Debido a: " + solicitudDTO.Mensaje
+            };
+
+            _context.SeguimientosSolicitudesAsistencia.Add(seguimientoNuevo);
+            await _context.SaveChangesAsync(); // Guardar el seguimiento
+            return Ok(solicitud);
+        }
+
 
         // Método para asignar agente de ventas con menos clientes
         private string AsignarAgente()
@@ -346,5 +535,27 @@ namespace CERVERICA.Controllers
 
             return agenteConMenosClientes == null ? agentesVentas.FirstOrDefault() : agenteConMenosClientes.IdAgenteVenta;
         }
+
+
+        private string CambiarAgente(string IdAgenteAnterior)
+        {
+            var agenteVentasRoleId = _context.Roles.Where(r => r.Name == "Agente").Select(r => r.Id).FirstOrDefault();
+
+            var agentesVentas = _context.UserRoles
+                .Where(ur => ur.RoleId == agenteVentasRoleId && ur.UserId != IdAgenteAnterior)
+                .Select(ur => ur.UserId)
+                .ToList();
+
+            var agenteConMenosClientes = _context.ClientesMayoristas
+                .GroupBy(cm => cm.IdAgenteVenta)
+                .Where(g => agentesVentas.Contains(g.Key))
+                .Select(g => new { IdAgenteVenta = g.Key, Count = g.Count() })
+                .OrderBy(g => g.Count)
+                .FirstOrDefault();
+
+            return agenteConMenosClientes == null ? agentesVentas.FirstOrDefault() : agenteConMenosClientes.IdAgenteVenta;
+        }
+
+
     }
 }

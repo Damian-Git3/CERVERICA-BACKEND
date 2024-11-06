@@ -14,10 +14,10 @@ namespace CERVERICA.Services
         public FirebaseNotificationService()
         {
             // Cargar el archivo de credenciales de servicio
-            _googleCredential = GoogleCredential.FromFile("./serviceAccountKey.json")
-                .CreateScoped("https://www.googleapis.com/auth/firebase.messaging");
+            //_googleCredential = GoogleCredential.FromFile("./serviceAccountKey.json")
+            //    .CreateScoped("https://www.googleapis.com/auth/firebase.messaging");
 
-            _httpClient = new HttpClient();
+            //_httpClient = new HttpClient();
         }
 
         public async Task<string> SendNotificationAsync(string registrationToken, string title, string body)
