@@ -367,10 +367,6 @@ namespace CERVERICA.Controllers
         [HttpPost("CrearVenta")]
         public async Task<IActionResult> CrearVenta([FromBody] CrearVentaDto dto)
         {
-            Console.WriteLine("---------------------------");
-            Console.WriteLine("3");
-            Console.WriteLine("---------------------------");
-
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -387,10 +383,6 @@ namespace CERVERICA.Controllers
                     Message = "User not found"
                 });
             }
-
-            Console.WriteLine("---------------------------");
-            Console.WriteLine("2");
-            Console.WriteLine("---------------------------");
 
             var productosEliminados = new List<string>();
 
@@ -417,11 +409,24 @@ namespace CERVERICA.Controllers
                 if (cantidadTotalDisponible < recetaAgrupada.CantidadTotalCervezas)
                 {
                     var carritoUsuario = await _context.Carritos
-                        .Where(c => c.IdUsuario == currentUserId)
-                        .FirstOrDefaultAsync();
+                        .FirstOrDefaultAsync(c => c.IdUsuario == currentUserId);
+
+                    if (carritoUsuario == null)
+                    {
+                        carritoUsuario = new Carrito
+                        {
+                            IdUsuario = currentUserId,
+                            FechaModificacion = DateTime.Now
+                        };
+
+                        _context.Carritos.Add(carritoUsuario);
+                        await _context.SaveChangesAsync();
+                    }
+
 
                     var productosCarritoEliminar = await _context.ProductosCarrito
-                        .Where(productoCarrito => productoCarrito.IdCarrito == carritoUsuario.Id && productoCarrito.IdReceta == recetaAgrupada.IdReceta)
+                        .Where(productoCarrito => productoCarrito.IdCarrito == carritoUsuario.Id)
+                        .Where(productoCarrito => productoCarrito.IdReceta == recetaAgrupada.IdReceta)
                         .OrderBy(productoCarrito => productoCarrito.CantidadPaquete)
                         .ToListAsync();
 
@@ -450,10 +455,6 @@ namespace CERVERICA.Controllers
                     productosCarritoEliminados = productosEliminados
                 });
             }
-
-            Console.WriteLine("---------------------------");
-            Console.WriteLine("1");
-            Console.WriteLine("---------------------------");
 
             using var transaction = await _context.Database.BeginTransactionAsync();
 
