@@ -94,6 +94,88 @@ namespace CERVERICA.Controllers
             return Ok(transacciones);
         }
 
+        [HttpPost("registrar-regla-puntos")]
+        public async Task<ActionResult<ReglaPuntos>> RegistrarReglaPuntos([FromBody] ReglaPuntos reglaPuntos)
+        {
+            if (reglaPuntos == null)
+            {
+                return BadRequest(new AuthResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "Datos inválidos"
+                });
+            }
+
+            // Buscar si ya existe un registro en la tabla
+            var reglaExistente = await _db.ReglasPuntos.FirstOrDefaultAsync();
+
+            if (reglaExistente == null)
+            {
+                // Si no existe, asignar la fecha de modificación y agregar el nuevo registro
+                await _db.ReglasPuntos.AddAsync(reglaPuntos);
+                await _db.SaveChangesAsync();
+
+                return Created("api/puntosfidelidad/registrar-regla-puntos", reglaPuntos);
+            }
+            else
+            {
+                // Si ya existe, redirigir a la actualización
+                return await ActualizarReglaPuntos(reglaPuntos);
+            }
+        }
+
+        [HttpPut("actualizar-regla-puntos")]
+        public async Task<ActionResult<ReglaPuntos>> ActualizarReglaPuntos([FromBody] ReglaPuntos reglaPuntos)
+        {
+            if (reglaPuntos == null)
+            {
+                return BadRequest(new AuthResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "Datos inválidos"
+                });
+            }
+
+            // Buscar el registro existente
+            var reglaExistente = await _db.ReglasPuntos.FirstOrDefaultAsync();
+
+            if (reglaExistente == null)
+            {
+                return NotFound(new AuthResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "No se encontró la regla de puntos para actualizar"
+                });
+            }
+
+            // Actualizar los campos necesarios
+            reglaExistente.ValorMXNPunto = reglaPuntos.ValorMXNPunto;
+            reglaExistente.MontoMinimo = reglaPuntos.MontoMinimo;
+            reglaExistente.PorcentajeConversion = reglaPuntos.PorcentajeConversion;
+            reglaExistente.FechaModificacion = reglaPuntos.FechaModificacion;
+
+            _db.ReglasPuntos.Update(reglaExistente);
+            await _db.SaveChangesAsync();
+
+            return Ok(reglaExistente);
+        }
+
+        [HttpGet("obtener-regla-puntos")]
+        public async Task<ActionResult<ReglaPuntos>> ObtenerReglaPuntos()
+        {
+            var reglaPuntos = await _db.ReglasPuntos.FirstOrDefaultAsync();
+
+            if (reglaPuntos == null)
+            {
+                return NotFound(new AuthResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "No se encontró la regla de puntos"
+                });
+            }
+
+            return Ok(reglaPuntos);
+        }
 
     }
 }
