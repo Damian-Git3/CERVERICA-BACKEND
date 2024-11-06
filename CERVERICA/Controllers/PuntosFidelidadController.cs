@@ -40,16 +40,15 @@ namespace CERVERICA.Controllers
             }
 
             var puntosFidelidad = await _db.PuntosFidelidad
-                .FirstOrDefaultAsync(p => p.IdUsuario == user.Id);
-
-            if (puntosFidelidad == null)
-            {
-                return NotFound(new AuthResponseDto
-                {
-                    IsSuccess = false,
-                    Message = "No se encontraron puntos de fidelidad para el usuario"
-                });
-            }
+        .FirstOrDefaultAsync(p => p.IdUsuario == user.Id)
+        ?? new PuntosFidelidad // Si no encuentra, crea uno con valores predeterminados de 0
+        {
+            IdUsuario = user.Id,
+            PuntosAcumulados = 0,
+            PuntosRedimidos = 0,
+            PuntosDisponibles = 0,
+            FechaUltimaActualizacion = DateTime.UtcNow
+        };
 
             var puntosFidelidadDto = new PuntosFidelidadDto
             {

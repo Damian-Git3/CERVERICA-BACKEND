@@ -21,6 +21,7 @@ namespace CERVERICA.Routines
             _logger = logger;
             _serviceProvider = serviceProvider;
         }
+        
         public Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Hosted Service running.");
@@ -55,6 +56,7 @@ namespace CERVERICA.Routines
         {
             _timer?.Dispose();
         }
+        
 }
     */
 

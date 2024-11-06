@@ -8,6 +8,8 @@ using CERVERICA.DTO.Usuarios;
 using Microsoft.AspNetCore.Identity;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using CERVERICA.DTO.Agente;
+using CERVERICA.Services;
+using FirebaseAdmin.Messaging;
 
 namespace CERVERICA.Controllers
 {
@@ -164,8 +166,29 @@ namespace CERVERICA.Controllers
                 }
                 await _context.SaveChangesAsync();
 
+                var nuevaSolicitudMayorista = new SolicitudMayorista
+                {
+                    FechaInicio = DateTime.Now,
+                    Estatus = EstatusSolicitudMayorista.Prospecto,
+                    IdMayorista = clienteMayorista.Id,
+                    IdAgente = agenteAsignadoId,
+                    Tipo = TipoSolicitudMayorista.Prospecto
+                };
 
+                _context.SolicitudesMayorista.Add(nuevaSolicitudMayorista);
+
+                await _context.SaveChangesAsync();
                 await _context.Database.CommitTransactionAsync();
+
+                if (agenteAsignadoId != null)
+                {
+                    var phoneNumber = _context.Users
+                            .Where(a => a.Id == agenteAsignadoId)
+                            .Select(a => a.PhoneNumber)
+                            .FirstOrDefault();
+
+                    await WhatsAppService.SendWhatsAppMessage("Tienes un nuevo cliente!", "+52" + phoneNumber);
+                }
 
                 return Ok(new
                 {
