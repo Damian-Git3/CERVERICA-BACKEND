@@ -15,7 +15,7 @@ namespace CERVERICA.Models
         public DateTime? FechaCierre { get; set; }
         public EstatusSolicitudMayorista Estatus { get; set; }
         public TipoSolicitudMayorista Tipo { get; set; }
-        public string mensajeRechazo { get; set; }
+        public string? mensajeRechazo { get; set; }
         [ForeignKey(nameof(Mayorista))]
         public int IdMayorista { get; set; }
         public virtual ClienteMayorista Mayorista { get; set; }

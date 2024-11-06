@@ -13,12 +13,13 @@ namespace CERVERICA.Services
         {
             try
             {
-                var url = "https://api.ultramsg.com/instance98771/messages/chat";
+                /*var url = "https://api.ultramsg.com/instance98771/messages/chat";*/
+                var url = "https://api.ultramsg.com/instance98773/messages/chat";
                 var client = new RestClient(url);
 
                 var request = new RestRequest(url, Method.Post);
                 request.AddHeader("content-type", "application/x-www-form-urlencoded");
-                request.AddParameter("token", "2rnn6igy5dld2pll");
+                request.AddParameter("token", "zzjqyxcyp3frf6us");
                 request.AddParameter("to", number);
                 request.AddParameter("body", message);
 
