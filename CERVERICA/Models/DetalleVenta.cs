@@ -12,19 +12,21 @@ namespace CERVERICA.Models
 
         [ForeignKey(nameof(Venta))]
         public int IdVenta { get; set; }
+        [JsonIgnore]
         public Venta Venta { get; set; }
 
 
         [ForeignKey(nameof(Stock))]
         public int IdStock { get; set; }
+        [JsonIgnore]
         public Stock Stock { get; set; }
 
         [ForeignKey(nameof(Receta))]
         public int IdReceta { get; set; }
+        [JsonIgnore]
         public virtual Receta? Receta { get; set; }
 
 
-        [Required]
         public float MontoVenta { get; set; }
 
         public int? Cantidad { get; set; }

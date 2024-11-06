@@ -15,8 +15,6 @@ namespace CERVERICA.Dtos
         [Range(1, int.MaxValue, ErrorMessage = "El paquete debe ser al menos 1.")]
         public int Pack { get; set; }
 
-        [Required(ErrorMessage = "El monto de venta es obligatorio.")]
-        [Range(0.01, double.MaxValue, ErrorMessage = "El monto de venta debe ser mayor que 0.")]
         public float MontoVenta { get; set; }
 
         [StringLength(50, ErrorMessage = "El tipo de envase no puede exceder los 50 caracteres.")]

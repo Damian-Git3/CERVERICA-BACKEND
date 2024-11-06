@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace CERVERICA.Models
 {
@@ -16,6 +17,7 @@ namespace CERVERICA.Models
         [Required]
         public DateTime FechaModificacion { get; set; }
 
+        [JsonIgnore]
         public virtual ApplicationUser? Usuario { get; set; }
 
     }

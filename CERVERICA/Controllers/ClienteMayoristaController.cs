@@ -187,7 +187,7 @@ namespace CERVERICA.Controllers
                             .Select(a => a.PhoneNumber)
                             .FirstOrDefault();
 
-                    await WhatsApp.SendWhatsAppMessage("Tienes un nuevo cliente!", "+52" + phoneNumber);
+                    await WhatsAppService.SendWhatsAppMessage("Tienes un nuevo cliente!", "+52" + phoneNumber);
                 }
 
                 return Ok(new
