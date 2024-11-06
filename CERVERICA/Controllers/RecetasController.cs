@@ -36,7 +36,9 @@ namespace CERVERICA.Controllers
                     Imagen = r.Imagen,
                     TiempoVida = r.TiempoVida,
                     FechaRegistrado = r.FechaRegistrado,
-                    Activo = r.Activo
+                    Activo = r.Activo,
+                    PrecioUnitarioBaseMayoreo = r.PrecioUnitarioBaseMayoreo,
+                    PrecioUnitarioMinimoMayoreo = r.PrecioUnitarioMinimoMayoreo
                 })
                 .ToArrayAsync();
 

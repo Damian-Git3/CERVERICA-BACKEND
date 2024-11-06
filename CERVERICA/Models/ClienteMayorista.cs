@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace CERVERICA.Models
 {
@@ -33,12 +34,14 @@ namespace CERVERICA.Models
         // Relación uno a uno con el usuario ClienteMayorista (ApplicationUser)
         [ForeignKey("Usuario")]
         public string IdUsuario { get; set; }
+        [JsonIgnore]
         public ApplicationUser Usuario { get; set; }
 
         // Nueva relación uno a uno con el usuario AgenteVenta (ApplicationUser)
         [ForeignKey("AgenteVenta")]
-        public string IdAgenteVenta { get; set; }
-        public ApplicationUser AgenteVenta { get; set; }
+        public string? IdAgenteVenta { get; set; }
+        [JsonIgnore]
+        public ApplicationUser? AgenteVenta { get; set; }
 
         // Relación uno a muchos con la tabla SolicitudesCambioAgente
         public ICollection<SolicitudesCambioAgente> SolicitudesCambioAgente { get; set; }
