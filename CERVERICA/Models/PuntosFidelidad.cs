@@ -11,7 +11,7 @@ namespace CERVERICA.Models
         public int Id { get; set; }
 
         // Foreign key hacia el usuario
-        [ForeignKey("Usuario")]
+        [ForeignKey(nameof(Usuario))]
         public string IdUsuario { get; set; }
         public virtual ApplicationUser? Usuario { get; set; }
 

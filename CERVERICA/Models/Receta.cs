@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CERVERICA.Models
 {
@@ -11,6 +11,12 @@ namespace CERVERICA.Models
 
         [Required]
         public float LitrosEstimados { get; set; }
+
+        public float? PrecioUnitarioMinimoMayoreo { get; set; }
+
+        public float? PrecioUnitarioBaseMayoreo { get; set; }
+
+        public float? PorcentajeDescuento { get; set; }
 
         public float? PrecioLitro { get; set; }
         public float? PrecioPaquete1 { get; set; }
@@ -44,9 +50,22 @@ namespace CERVERICA.Models
         [Column(TypeName = "Date")]
         public DateTime FechaRegistrado { get; set; }
 
+        public ICollection<Comentario> Comentarios { get; set; }
+
         public ICollection<IngredienteReceta> IngredientesReceta { get; set; }
+
         public ICollection<Produccion> Producciones { get; set; }
+
         public ICollection<Stock> Stocks { get; set; }
+
         public ICollection<PasosReceta> PasosReceta { get; set; }
+
+        public ICollection<FavoritosComprador> FavoritosComprador { get; set; }
+
+        public ICollection<RecetaCategoriaCerveza> RecetaCategoriaCerveza { get; set; }
+
+        public ICollection<Cupones> Cupones { get; set; }
+      
+        public ICollection<HistorialPrecios> HistorialPrecios { get; set; }
     }
 }

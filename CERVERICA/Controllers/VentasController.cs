@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
+using Newtonsoft.Json;
 using System.Diagnostics;
 using System.Security.Claims;
 
@@ -18,11 +20,14 @@ namespace CERVERICA.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ILogger<VentasController> _logger;
 
-        public VentasController(UserManager<ApplicationUser> userManager, ApplicationDbContext context)
+        public VentasController(UserManager<ApplicationUser> userManager, ApplicationDbContext context, ILogger<VentasController> logger)
         {
             _userManager = userManager;
             _context = context;
+            _logger = logger;
+
         }
 
         [HttpGet]
@@ -87,6 +92,9 @@ namespace CERVERICA.Controllers
         MetodoEnvio = p.MetodoEnvio,
         MetodoPago = p.MetodoPago,
         NumeroTarjeta = p.NumeroTarjeta,
+        MontoVenta = _context.DetallesVenta
+                    .Where(d => d.IdVenta == p.Id)
+                    .Sum(d => d.MontoVenta),
         EstatusVenta = p.EstatusVenta,
         ProductosPedido = _context.DetallesVenta
             .Where(d => d.IdVenta == p.Id)
@@ -125,8 +133,6 @@ namespace CERVERICA.Controllers
         public async Task<List<PedidoDTO>> obtenerPedidosUsuario()
         {
             var idUsuario = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            Console.WriteLine("idUsuario");
-            Console.WriteLine(idUsuario);
 
             return await _context.Ventas
                 .Where(venta => venta.IdUsuario == idUsuario)
@@ -391,9 +397,8 @@ namespace CERVERICA.Controllers
                 {
                     IdReceta = g.Key,
                     CantidadTotalCervezas = g.Sum(d => d.Pack * d.Cantidad)
-                }).ToList(); // Convierte a lista para manipular los datos
+                }).ToList();
 
-            // Crea un diccionario para almacenar la cantidad total requerida por receta
             var cantidadesRestantes = recetasAgrupadas.ToDictionary(r => r.IdReceta, r => r.CantidadTotalCervezas);
 
             foreach (var recetaAgrupada in recetasAgrupadas)
@@ -407,24 +412,39 @@ namespace CERVERICA.Controllers
 
                 if (cantidadTotalDisponible < recetaAgrupada.CantidadTotalCervezas)
                 {
-                    // Encuentra todos los productos del carrito que coinciden con la receta y el usuario
+                    var carritoUsuario = await _context.Carritos
+                        .FirstOrDefaultAsync(c => c.IdUsuario == currentUserId);
+
+                    if (carritoUsuario == null)
+                    {
+                        carritoUsuario = new Carrito
+                        {
+                            IdUsuario = currentUserId,
+                            FechaModificacion = DateTime.Now
+                        };
+
+                        _context.Carritos.Add(carritoUsuario);
+                        await _context.SaveChangesAsync();
+                    }
+
+
                     var productosCarritoEliminar = await _context.ProductosCarrito
-                        .Where(productoCarrito => productoCarrito.IdUsuario == currentUserId && productoCarrito.IdReceta == recetaAgrupada.IdReceta)
-                        .OrderBy(productoCarrito => productoCarrito.CantidadLote) // Ordena por tamaño de paquete
+                        .Where(productoCarrito => productoCarrito.IdCarrito == carritoUsuario.Id)
+                        .Where(productoCarrito => productoCarrito.IdReceta == recetaAgrupada.IdReceta)
+                        .OrderBy(productoCarrito => productoCarrito.CantidadPaquete)
                         .ToListAsync();
 
                     foreach (var productoCarrito in productosCarritoEliminar)
                     {
                         var receta = await _context.Recetas.Where(r => r.Id == recetaAgrupada.IdReceta).FirstOrDefaultAsync();
-                        productosEliminados.Add(receta.Nombre + " - " + productoCarrito.CantidadLote + " Pack");
+                        productosEliminados.Add(receta.Nombre + " - " + productoCarrito.CantidadPaquete + " Pack");
                         _context.ProductosCarrito.Remove(productoCarrito);
 
-                        // Ajusta la cantidad total requerida en el diccionario
-                        cantidadesRestantes[recetaAgrupada.IdReceta] -= productoCarrito.CantidadLote * productoCarrito.Cantidad;
+                        cantidadesRestantes[recetaAgrupada.IdReceta] -= productoCarrito.CantidadPaquete * productoCarrito.Cantidad;
 
                         if (cantidadesRestantes[recetaAgrupada.IdReceta] <= 0)
                         {
-                            break; // Detén la eliminación si ya no es necesario
+                            break;
                         }
                     }
                 }
@@ -440,19 +460,18 @@ namespace CERVERICA.Controllers
                 });
             }
 
-            await _context.SaveChangesAsync();
-
             using var transaction = await _context.Database.BeginTransactionAsync();
 
             try
             {
-                var venta = new Venta();
-
-                venta.IdUsuario = user.Id;
-                venta.FechaVenta = DateTime.Now;
-                venta.EstatusVenta = EstatusVenta.Recibido;
-                venta.MetodoEnvio = dto.MetodoEnvio;
-                venta.MetodoPago = dto.MetodoPago;
+                var venta = new Venta
+                {
+                    IdUsuario = user.Id,
+                    FechaVenta = DateTime.Now,
+                    EstatusVenta = EstatusVenta.Recibido,
+                    MetodoEnvio = dto.MetodoEnvio,
+                    MetodoPago = dto.MetodoPago
+                };
 
                 if (dto.MetodoEnvio == MetodoEnvio.EnvioDomicilio)
                 {
@@ -464,26 +483,12 @@ namespace CERVERICA.Controllers
                     venta.Estado = dto.Estado;
                 }
 
-                if (dto.MetodoPago == MetodoPago.TarjetaCredito)
-                {
-                    venta.NombrePersonaTarjeta = dto.NombrePersonaTarjeta;
-                    venta.NumeroTarjeta = dto.NumeroTarjeta;
-                    venta.MesExpiracion = dto.MesExpiracion;
-                    venta.AnioExpiracion = dto.AnioExpiracion;
-                    venta.CVV = dto.CVV;
-                }
-
                 _context.Ventas.Add(venta);
                 await _context.SaveChangesAsync();
 
                 float totalVenta = 0;
                 var detallesVentas = new List<DetalleVenta>();
 
-                //calculamos de que stock se van a restar los productos
-                //solo se puede descontar de un stock que tenga el mismo tipo de envase y de medida de envase
-
-                //considerar que el stock de una receta contiene productos de diferentes tamañanos y tipo de envase y la cantidad del stock 
-                //no es una cantidad en litros sino del total de botellas que se tienen en stock
                 foreach (var detalle in dto.Detalles)
                 {
                     var recetaId = detalle.IdReceta;
@@ -498,9 +503,7 @@ namespace CERVERICA.Controllers
                     if (cantidadTotalDisponible < cantidadTotalRequerida)
                     {
                         var nombreReceta = await _context.Recetas.Where(r => r.Id == recetaId).Select(r => r.Nombre).FirstOrDefaultAsync();
-
-                        return StatusCode(410, (new { message = $"No hay suficiente stock para {nombreReceta}. Cervezas Requeridas: {cantidadTotalRequerida:f2}, Disponibles: {cantidadTotalDisponible}" }));
-
+                        return StatusCode(410, new { message = $"No hay suficiente stock para {nombreReceta}. Cervezas Requeridas: {cantidadTotalRequerida:f2}, Disponibles: {cantidadTotalDisponible}" });
                     }
 
                     while (detalle.Cantidad > 0)
@@ -512,29 +515,24 @@ namespace CERVERICA.Controllers
                             return BadRequest(new { message = $"No hay suficiente stock de la cerveza {nombreReceta}" });
                         }
 
-                        // Asegurarse de que el stock puede cubrir al menos un pack
                         if (stock.Cantidad < detalle.Pack)
                         {
-                            // Remover este stock de la lista y continuar con el siguiente
                             stocks.Remove(stock);
                             continue;
                         }
 
-                        Debug.WriteLine("cantidad en stock" + stock.Cantidad);
-                        Debug.WriteLine("tamaño del pack " + detalle.Pack);
                         var reduccionMaximaPacks = (int)(stock.Cantidad / detalle.Pack);
-                        Debug.WriteLine("reduccion maxima " + reduccionMaximaPacks);
+
                         if (reduccionMaximaPacks == 0)
                         {
                             break;
                         }
 
-                        var cantidadADescontar = Math.Min(reduccionMaximaPacks, (detalle.Cantidad));
+                        var cantidadADescontar = Math.Min(reduccionMaximaPacks, detalle.Cantidad);
                         stock.Cantidad -= cantidadADescontar * detalle.Pack;
                         detalle.Cantidad -= cantidadADescontar;
 
                         var receta = await _context.Recetas.FirstOrDefaultAsync(r => r.Id == recetaId);
-
                         if (receta == null)
                         {
                             return NotFound(new { message = $"No se encontró la receta" });
@@ -552,12 +550,12 @@ namespace CERVERICA.Controllers
                         if (montoVenta == 0)
                         {
                             return BadRequest(new { message = $"Pack de {detalle.Pack} de {receta.Nombre} no se encuentra disponible para la venta." });
-
                         }
 
                         var detalleVenta = new DetalleVenta
                         {
                             IdVenta = venta.Id,
+                            IdReceta = recetaId,
                             IdStock = stock.Id,
                             MontoVenta = montoVenta * cantidadADescontar,
                             Cantidad = cantidadADescontar,
@@ -569,44 +567,39 @@ namespace CERVERICA.Controllers
                     }
                 }
 
-
                 venta.Total = totalVenta;
                 _context.Ventas.Update(venta);
                 _context.DetallesVenta.AddRange(detallesVentas);
 
-                // Venta creada correctamente se eliminan los productos del carrito
-                _context.ProductosCarrito.RemoveRange(_context.ProductosCarrito.Where(pc => pc.IdUsuario == currentUserId));
+                var carritoUsuario = await _context.Carritos
+                    .Where(c => c.IdUsuario == currentUserId)
+                    .FirstOrDefaultAsync();
+
+                _context.ProductosCarrito.RemoveRange(_context.ProductosCarrito.Where(pc => pc.IdCarrito == carritoUsuario.Id));
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                try
+                var notificacion = new Notificacion
                 {
-                    var notificacion = new Notificacion
-                    {
-                        IdUsuario = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? currentUserId,
-                        Mensaje = $"Se realizó una compra :) Disfruta tus cervezas bien frías",
-                        Fecha = DateTime.Now,
-                        Tipo = 8,
-                        Visto = false
-                    };
-                    _context.Notificaciones.Add(notificacion);
+                    IdUsuario = currentUserId,
+                    Mensaje = "Se realizó una compra :) Disfruta tus cervezas bien frías",
+                    Fecha = DateTime.Now,
+                    Tipo = 8,
+                    Visto = false
+                };
+                _context.Notificaciones.Add(notificacion);
 
-                    await _context.SaveChangesAsync();
-                }
-                catch (Exception ex)
-                {
-
-                }
-
+                await _context.SaveChangesAsync();
                 return Ok(venta);
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return StatusCode(500, new { message = $"Error al crear la venta " + ex.Message });
+                return StatusCode(500, new { message = $"Error al crear la venta: {ex.Message}" });
             }
         }
+
 
         [HttpPost("RegistrarMerma")]
         public async Task<IActionResult> RegistrarMerma(int stockId, int cantidadMerma)
@@ -656,5 +649,205 @@ namespace CERVERICA.Controllers
 
             return Ok(stock);
         }
+
+        /**
+         * Obtiene el total de ventas, y el dinero generado por el parametro proporcionado (semana, mes, año)
+         */
+        [AllowAnonymous]
+        [HttpGet("total-ventas/{param}")]
+        public async Task<IActionResult> GetTotalVentas(string param)
+        {
+            try
+            {
+                var ventas = new List<Venta>();
+                var resultado = new { fecha = DateTime.Now, data = new List<object>(), total = 0.0 };
+
+                switch (param)
+                {
+                    case "semana":
+                        var startOfWeek = DateTime.Now.AddDays(-(int)DateTime.Now.DayOfWeek);
+                        ventas = await _context.Ventas.Where(v => v.FechaVenta >= startOfWeek).ToListAsync();
+                        resultado = new
+                        {
+                            fecha = DateTime.Now,
+                            data = Enumerable.Range(0, 7).Select(i => new
+                            {
+                                date = startOfWeek.AddDays(i).ToString("dddd"),
+                                monto = ventas.Where(v => v.FechaVenta.Date == startOfWeek.AddDays(i).Date).Sum(v => v.Total)
+                            }).Cast<object>().ToList(),
+                            total = ventas.Sum(v => (double)v.Total)
+                        };
+                        break;
+
+                    case "mes":
+                        var startOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+                        ventas = await _context.Ventas.Where(v => v.FechaVenta >= startOfMonth).ToListAsync();
+                        resultado = new
+                        {
+                            fecha = DateTime.Now,
+                            data = Enumerable.Range(0, DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month)).Select(i => new
+                            {
+                                date = startOfMonth.AddDays(i).ToString("dd MMM"),
+                                monto = ventas.Where(v => v.FechaVenta.Date == startOfMonth.AddDays(i).Date).Sum(v => v.Total)
+                            }).Cast<object>().ToList(),
+                            total = ventas.Sum(v => (double)v.Total)
+                        };
+                        break;
+
+                    case "anio":
+                        var startOfYear = new DateTime(DateTime.Now.Year, 1, 1);
+                        ventas = await _context.Ventas.Where(v => v.FechaVenta >= startOfYear).ToListAsync();
+                        resultado = new
+                        {
+                            fecha = DateTime.Now,
+                            data = Enumerable.Range(0, 12).Select(i => new
+                            {
+                                date = startOfYear.AddMonths(i).ToString("MMMM"),
+                                monto = ventas.Where(v => v.FechaVenta.Month == startOfYear.AddMonths(i).Month).Sum(v => v.Total)
+                            }).Cast<object>().ToList(),
+                            total = ventas.Sum(v => (double)v.Total)
+                        };
+                        break;
+
+                    default:
+                        return BadRequest("Parámetro no válido, solo se acepta (semana, mes o año)");
+                }
+
+                return Ok(resultado);
+            }
+            catch (Exception ex)
+            {
+                // Imprime la excepción en la consola
+                Console.WriteLine($"Exception: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+
+                // También puedes registrar la excepción usando el logger
+                _logger.LogError(ex, "Error al obtener las ventas para el parámetro {Param}", param);
+
+                // Devuelve una respuesta de error genérica
+                return StatusCode(500, "Se produjo un error al procesar su solicitud.");
+            }
+        }
+
+
+
+        [AllowAnonymous]
+        [HttpGet("resumen-ventas")]
+        public async Task<IActionResult> GetResumenVentas()
+        {
+            try
+            {
+                var ventas = await _context.Ventas.ToListAsync();
+
+                var hoy = DateTime.Today;
+                var inicioSemana = hoy.AddDays(-(int)hoy.DayOfWeek);
+                var inicioMes = new DateTime(hoy.Year, hoy.Month, 1);
+                var inicioAnio = new DateTime(hoy.Year, 1, 1);
+
+                var totalVentasSemana = ventas.Where(v => v.FechaVenta >= inicioSemana).Sum(v => v.Total);
+                var totalVentasMes = ventas.Where(v => v.FechaVenta >= inicioMes).Sum(v => v.Total);
+                var totalVentasAnio = ventas.Where(v => v.FechaVenta >= inicioAnio).Sum(v => v.Total);
+
+                var resultado = new
+                {
+                    semana = totalVentasSemana,
+                    mes = totalVentasMes,
+                    anio = totalVentasAnio
+                };
+
+                return Ok(resultado);
+            }
+            catch (Exception ex)
+            {
+                // Imprime la excepción en la consola
+                Console.WriteLine($"Exception: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+
+                // También puedes registrar la excepción usando el logger
+                _logger.LogError(ex, "Error al obtener el resumen de ventas");
+
+                // Devuelve una respuesta de error genérica
+                return StatusCode(500, "Se produjo un error al procesar su solicitud.");
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpGet("sugerencias-descuentos-crm")]
+        public async Task<IActionResult> GetSugerenciasDescuentosCRM()
+        {
+            try
+            {
+                var ventas = await _context.Ventas
+                    .Include(v => v.DetallesVentas)
+                    .ToListAsync();
+
+                var hoy = DateTime.Today;
+                var inicioSemana = hoy.AddDays(-(int)hoy.DayOfWeek);
+                var inicioMes = new DateTime(hoy.Year, hoy.Month, 1);
+                var inicioAnio = new DateTime(hoy.Year, 1, 1);
+
+                var sugerencias = new List<string>();
+
+                // Agrupar ventas por producto
+                var ventasPorProducto = ventas
+                    .SelectMany(v => v.DetallesVentas)
+                    .GroupBy(d => d.IdReceta)
+                    .ToList();
+
+                foreach (var grupo in ventasPorProducto)
+                {
+                    var productoId = grupo.Key;
+                    var totalVentasSemana = grupo.Where(d => d.Venta.FechaVenta >= inicioSemana).Sum(d => d.MontoVenta);
+                    var totalVentasMes = grupo.Where(d => d.Venta.FechaVenta >= inicioMes).Sum(d => d.MontoVenta);
+                    var totalVentasAnio = grupo.Where(d => d.Venta.FechaVenta >= inicioAnio).Sum(d => d.MontoVenta);
+
+                    if (totalVentasSemana == 0)
+                    {
+                        sugerencias.Add($"Ofrecer un descuento del 20% en el producto {productoId} debido a que no ha tenido ventas esta semana.");
+                    }
+                    else if (totalVentasSemana < 10)
+                    {
+                        sugerencias.Add($"Ofrecer una promoción de 2x1 en el producto {productoId} debido a las bajas ventas esta semana.");
+                    }
+
+                    if (totalVentasMes < 50)
+                    {
+                        sugerencias.Add($"Ofrecer un descuento del 15% en el producto {productoId} debido a las bajas ventas este mes.");
+                    }
+
+                    if (totalVentasAnio < 200)
+                    {
+                        sugerencias.Add($"Ofrecer un descuento del 10% en el producto {productoId} debido a las bajas ventas este año.");
+                    }
+                }
+
+                // Sugerencias basadas en la fecha de caducidad
+                var productosConStock = await _context.Stocks.ToListAsync();
+                foreach (var producto in productosConStock)
+                {
+                    if (producto.FechaCaducidad.HasValue && producto.FechaCaducidad.Value <= hoy.AddMonths(1))
+                    {
+                        sugerencias.Add($"Ofrecer un descuento del 30% en el producto con ID {producto.Id} debido a su próxima fecha de caducidad.");
+                    }
+                }
+
+                return Ok(sugerencias);
+            }
+            catch (Exception ex)
+            {
+                // Imprime la excepción en la consola
+                Console.WriteLine($"Exception: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+
+                // También puedes registrar la excepción usando el logger
+                _logger.LogError(ex, "Error al obtener las sugerencias de descuentos para el CRM");
+
+                // Devuelve una respuesta de error genérica
+                return StatusCode(500, "Se produjo un error al procesar su solicitud.");
+            }
+        }
+
+
+
     }
 }

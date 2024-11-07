@@ -8,9 +8,10 @@ using Microsoft.Extensions.Logging;
 
 namespace CERVERICA.Routines
 {
-
+    /*
     public class HostedServiceRoutines : IHostedService, IDisposable
     {
+        
         private readonly ILogger<HostedServiceRoutines> _logger;
         private Timer _timer;
         private readonly IServiceProvider _serviceProvider;
@@ -20,7 +21,7 @@ namespace CERVERICA.Routines
             _logger = logger;
             _serviceProvider = serviceProvider;
         }
-
+        
         public Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Hosted Service running.");
@@ -55,6 +56,8 @@ namespace CERVERICA.Routines
         {
             _timer?.Dispose();
         }
-    }
+        
+}
+    */
 
 }

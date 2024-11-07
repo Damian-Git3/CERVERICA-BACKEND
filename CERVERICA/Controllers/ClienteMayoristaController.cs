@@ -1,4 +1,4 @@
-﻿using CERVERICA.Models;
+using CERVERICA.Models;
 using CERVERICA.Dtos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Authorization;
 using CERVERICA.DTO.Usuarios;
 using Microsoft.AspNetCore.Identity;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using CERVERICA.DTO.Agente;
+using CERVERICA.Services;
+using FirebaseAdmin.Messaging;
 
 namespace CERVERICA.Controllers
 {
@@ -76,6 +79,7 @@ namespace CERVERICA.Controllers
                     Activo = true
                 };
 
+
                 var result = await _userManager.CreateAsync(user, clienteDto.Password);
 
                 if (!result.Succeeded)
@@ -105,9 +109,9 @@ namespace CERVERICA.Controllers
 
                 // Contar cuántos clientes tiene cada agente de ventas
                 var agenteConMenosClientes = _context.ClientesMayoristas
-                    .GroupBy(cm => cm.AgenteVentaId)
+                    .GroupBy(cm => cm.IdAgenteVenta)
                     .Where(g => agentesVentas.Contains(g.Key)) // Solo agentes con rol "agenteventas"
-                    .Select(g => new { AgenteVentaId = g.Key, Count = g.Count() })
+                    .Select(g => new { IdAgenteVenta = g.Key, Count = g.Count() })
                     .OrderBy(g => g.Count) // Ordenar por el que tiene menos clientes
                     .FirstOrDefault();
 
@@ -119,8 +123,9 @@ namespace CERVERICA.Controllers
                 }
                 else
                 {
-                    agenteAsignadoId = agenteConMenosClientes.AgenteVentaId;
+                    agenteAsignadoId = agenteConMenosClientes.IdAgenteVenta;
                 }
+
 
                 // Paso 3: Registrar el cliente mayorista
                 var clienteMayorista = new ClienteMayorista
@@ -136,8 +141,8 @@ namespace CERVERICA.Controllers
                     EmailContacto = clienteDto.EmailContacto,
                     TelefonoContacto = clienteDto.TelefonoContacto,
 
-                    UserId = user.Id,
-                    AgenteVentaId = agenteAsignadoId
+                    IdUsuario = user.Id,
+                    IdAgenteVenta = agenteAsignadoId
                 };
 
                 _context.ClientesMayoristas.Add(clienteMayorista);
@@ -161,8 +166,29 @@ namespace CERVERICA.Controllers
                 }
                 await _context.SaveChangesAsync();
 
+                var nuevaSolicitudMayorista = new SolicitudMayorista
+                {
+                    FechaInicio = DateTime.Now,
+                    Estatus = EstatusSolicitudMayorista.Prospecto,
+                    IdMayorista = clienteMayorista.Id,
+                    IdAgente = agenteAsignadoId,
+                    Tipo = TipoSolicitudMayorista.Prospecto
+                };
 
+                _context.SolicitudesMayorista.Add(nuevaSolicitudMayorista);
+
+                await _context.SaveChangesAsync();
                 await _context.Database.CommitTransactionAsync();
+
+                if (agenteAsignadoId != null)
+                {
+                    var phoneNumber = _context.Users
+                            .Where(a => a.Id == agenteAsignadoId)
+                            .Select(a => a.PhoneNumber)
+                            .FirstOrDefault();
+
+                    await WhatsAppService.SendWhatsAppMessage("Tienes un nuevo cliente!", "+52" + phoneNumber);
+                }
 
                 return Ok(new
                 {
@@ -176,90 +202,6 @@ namespace CERVERICA.Controllers
 
             }
         }
-
-
-        /*
-        // POST: api/clientes-mayorista
-        [HttpPost]
-        [AllowAnonymous]
-        public async Task<ActionResult<ClienteMayoristaDTO>> PostClienteMayorista(CrearUsuarioMayoristaDto clienteDto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            // Paso 1: Registrar el usuario
-            var user = new ApplicationUser
-            {
-                UserName = clienteDto.EmailContacto,
-                Email = clienteDto.EmailContacto,
-                FullName = clienteDto.NombreContacto,
-                Activo = true
-            };
-
-            var result = await _userManager.CreateAsync(user, clienteDto.Password);
-
-            if (!result.Succeeded)
-            {
-                return BadRequest(result.Errors);
-            }
-
-            var roleResult = await _userManager.AddToRoleAsync(user, clienteDto.Rol);
-            if (!roleResult.Succeeded)
-            {
-                return BadRequest(roleResult.Errors);
-            }
-
-            // Paso 2: Registrar el cliente mayorista
-            var clienteMayorista = new ClienteMayorista
-            {
-                NombreEmpresa = clienteDto.NombreEmpresa,
-                DireccionEmpresa = clienteDto.DireccionEmpresa,
-                EmailEmpresa = clienteDto.EmailEmpresa,
-                TelefonoEmpresa = clienteDto.TelefonoEmpresa,
-
-
-                NombreContacto = clienteDto.NombreContacto,
-                CargoContacto = clienteDto.CargoContacto,
-                EmailContacto = clienteDto.EmailContacto,
-                TelefonoContacto = clienteDto.TelefonoContacto,
-
-                UserId = user.Id, // Asignar el ID del usuario registrado
-                AgenteVentaId = user.Id
-            };
-
-            _context.ClientesMayoristas.Add(clienteMayorista);
-            await _context.SaveChangesAsync();
-
-            // Paso 3: Enviar notificaciones a los administradores
-            try
-            {
-                var adminRoleId = _context.Roles.Where(r => r.Name == "Admin").Select(r => r.Id).FirstOrDefault();
-                List<string> userIds = _context.UserRoles.Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToList();
-
-                foreach (var idAdmin in userIds)
-                {
-                    var notificacion = new Notificacion
-                    {
-                        IdUsuario = idAdmin,
-                        Mensaje = $"Se agregó un nuevo cliente mayorista: {clienteMayorista.NombreEmpresa}",
-                        Fecha = DateTime.Now,
-                        Tipo = 6,
-                        Visto = false
-                    };
-                    _context.Notificaciones.Add(notificacion);
-                }
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                // Manejo de excepción opcional
-            }
-
-            return Ok(new { message = "Cliente mayorista insertado.", id = clienteMayorista.Id });
-        }
-        */
 
         private bool ClienteMayoristaExists(int id)
         {

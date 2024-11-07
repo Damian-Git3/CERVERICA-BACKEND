@@ -2,32 +2,44 @@ using CERVERICA.Controllers;
 using CERVERICA.Data;
 using CERVERICA.Middleware;
 using CERVERICA.Models;
-using CERVERICA.Routines;
+using CERVERICA.Providers;
 using CERVERICA.Services;
+using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Net;
+using Stripe;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+Env.Load();
+
+builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Services.AddHttpLogging(logging =>
+{
+    logging.LoggingFields = HttpLoggingFields.All;
+    logging.RequestHeaders.Add("sec-ch-ua");
+    logging.ResponseHeaders.Add("MyResponseHeader");
+    logging.MediaTypeOptions.AddText("application/javascript");
+    logging.RequestBodyLogLimit = 4096;
+    logging.ResponseBodyLogLimit = 4096;
+});
+builder.Services.AddLogging(op => op.Services.AddSingleton<ILoggerProvider, CoolConsoleLoggerProvider>());
 
 // Agregar servicios al contenedor
 builder.Services.AddScoped<FirebaseNotificationService>();
-
-//builder.WebHost.ConfigureKestrel(serverOptions =>
-//{
-//    serverOptions.Listen(IPAddress.Parse("127.0.0.1"), 5000);
-//});
 
 // Obtenemos la configuraci�n del JWTSettings de appsettings
 var JWTSettings = builder.Configuration.GetSection("JWTSetting");
 
 // Configuraci�n para SQL Server
-var connectionString = builder.Configuration.GetConnectionString("cadenaSQL");
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Env.GetString("cadenaSQL")));
 
 // Agregamos la configuraci�n para ASP.NET Core Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
@@ -77,7 +89,9 @@ builder.Services.AddAuthentication(opt =>
 builder.Services.AddControllers();
 
 builder.Services.AddScoped<RoutineController>();
+/*
 builder.Services.AddHostedService<HostedServiceRoutines>();
+*/
 
 builder.Services.AddEndpointsApiExplorer();
 
@@ -108,7 +122,7 @@ builder.Services.AddSwaggerGen(c =>
                 In = ParameterLocation.Header,
             },
             new List<string>()
-        }   
+        }
     });
 });
 
@@ -137,9 +151,10 @@ app.UseCors("NuevaPolitica");
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.UseMiddleware<UserIdMiddleware>();
-
 app.MapControllers();
+app.UseHttpLogging();
+app.UseMiddleware<RequestLoggingMiddleware>();
 
 app.Run();
+

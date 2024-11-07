@@ -482,7 +482,7 @@ namespace CERVERICA.Controllers
                 {
                     return BadRequest(new { Message = "Debe ingresar los litros finales para calcular la merma." });
                 }
-                if (finalizeDto.MermaLitros != null)
+                if (finalizeDto.MermaLitros != null )
                 {
                     return BadRequest(new { Message = "No se puede calcular la merma si ya se ingreso un valor." });
                 }

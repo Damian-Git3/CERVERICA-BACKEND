@@ -10,8 +10,9 @@ namespace CERVERICA.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        [ForeignKey("Usuario")]
+        [ForeignKey(nameof(Usuario))]
         public string IdUsuario { get; set; }
+        public virtual ApplicationUser? Usuario { get; set; }
 
         [Required]
         public DateTime Fecha { get; set; }
@@ -24,5 +25,17 @@ namespace CERVERICA.Models
 
         [Required]
         public bool Visto { get; set; }
+
+        [Required]
+        public Categoria Categoria { get; set; }
     }
+
+    public enum Categoria
+    {
+        Promocion = 1,
+        Informe = 2,
+        AtencionAlCliente = 3,
+        Empleado = 4
+    }
+
 }
