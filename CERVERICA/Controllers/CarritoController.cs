@@ -42,9 +42,26 @@ namespace CERVERICA.Controllers
                 });
             }
 
+            var carritoUsuario = await _db.Carritos
+            .Where(c => c.IdUsuario == currentUserId)
+            .FirstOrDefaultAsync();
+
+            if (carritoUsuario == null)
+            {
+                // Crear un nuevo carrito para el usuario actual
+                carritoUsuario = new Carrito
+                {
+                    IdUsuario = currentUserId,
+                    FechaModificacion = DateTime.Now
+                };
+
+                _db.Carritos.Add(carritoUsuario);
+                await _db.SaveChangesAsync();
+            }
+
             var nuevoProductoCarrito = new ProductoCarrito();
-            nuevoProductoCarrito.IdUsuario = user.Id;
             nuevoProductoCarrito.IdReceta = productoCarritoAgregar.IdReceta;
+            nuevoProductoCarrito.IdCarrito = carritoUsuario.Id;
             nuevoProductoCarrito.CantidadPaquete = productoCarritoAgregar.CantidadLote;
             nuevoProductoCarrito.Cantidad = productoCarritoAgregar.Cantidad;
 
@@ -74,10 +91,27 @@ namespace CERVERICA.Controllers
                 });
             }
 
+            var carritoUsuario = await _db.Carritos
+            .Where(c => c.IdUsuario == currentUserId)
+            .FirstOrDefaultAsync();
+
+            if (carritoUsuario == null)
+            {
+                // Crear un nuevo carrito para el usuario actual
+                carritoUsuario = new Carrito
+                {
+                    IdUsuario = currentUserId,
+                    FechaModificacion = DateTime.Now
+                };
+
+                _db.Carritos.Add(carritoUsuario);
+                await _db.SaveChangesAsync();
+            }
+
             // Buscar el producto en el carrito del usuario
             var productoEnCarrito = await _db.ProductosCarrito.FirstOrDefaultAsync(p =>
-                p.IdUsuario == user.Id &&
-                p.IdReceta == productoCarritoActualizar.IdReceta &&
+                p.IdCarrito == carritoUsuario.Id &&
+            p.IdReceta == productoCarritoActualizar.IdReceta &&
                 p.CantidadPaquete == productoCarritoActualizar.CantidadLote);
 
             if (productoEnCarrito is null)
@@ -118,7 +152,24 @@ namespace CERVERICA.Controllers
                 });
             }
 
-            var productoCarritoEliminar = await _db.ProductosCarrito.FirstOrDefaultAsync(f => f.IdUsuario == user.Id && f.IdReceta == productoCarritoEliminarDTO.IdReceta && f.CantidadPaquete == productoCarritoEliminarDTO.CantidadLote);
+            var carritoUsuario = await _db.Carritos
+.Where(c => c.IdUsuario == currentUserId)
+.FirstOrDefaultAsync();
+
+            if (carritoUsuario == null)
+            {
+                // Crear un nuevo carrito para el usuario actual
+                carritoUsuario = new Carrito
+                {
+                    IdUsuario = currentUserId,
+                    FechaModificacion = DateTime.Now
+                };
+
+                _db.Carritos.Add(carritoUsuario);
+                await _db.SaveChangesAsync();
+            }
+
+            var productoCarritoEliminar = await _db.ProductosCarrito.FirstOrDefaultAsync(f => f.IdCarrito == carritoUsuario.Id && f.IdReceta == productoCarritoEliminarDTO.IdReceta && f.CantidadPaquete == productoCarritoEliminarDTO.CantidadLote);
 
             if (productoCarritoEliminar == null)
             {
@@ -147,8 +198,24 @@ namespace CERVERICA.Controllers
                 });
             }
 
+            var carritoUsuario = await _db.Carritos
+            .Where(c => c.IdUsuario == currentUserId)
+            .FirstOrDefaultAsync();
+
+            if (carritoUsuario == null)
+            {
+                carritoUsuario = new Carrito
+                {
+                    IdUsuario = currentUserId,
+                    FechaModificacion = DateTime.Now
+                };
+
+                _db.Carritos.Add(carritoUsuario);
+                await _db.SaveChangesAsync();
+            }
+
             var productosCarrito = await _db.ProductosCarrito
-            .Where(f => f.IdUsuario == user.Id)
+            .Where(pc => pc.IdCarrito == carritoUsuario.Id)
             .Include(f => f.Receta)
             .ToListAsync();
 
@@ -169,8 +236,25 @@ namespace CERVERICA.Controllers
         {
             var idUsuarioPeticion = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+            var carritoUsuario = await _db.Carritos
+.Where(c => c.IdUsuario == idUsuarioPeticion)
+.FirstOrDefaultAsync();
+
+            if (carritoUsuario == null)
+            {
+                // Crear un nuevo carrito para el usuario actual
+                carritoUsuario = new Carrito
+                {
+                    IdUsuario = idUsuarioPeticion,
+                    FechaModificacion = DateTime.Now
+                };
+
+                _db.Carritos.Add(carritoUsuario);
+                await _db.SaveChangesAsync();
+            }
+
             var productosCarrito = await _db.ProductosCarrito
-            .Where(f => f.IdUsuario == idUsuarioPeticion)
+                .Where(p => p.IdCarrito == carritoUsuario.Id)
             .Include(f => f.Receta)
             .ToListAsync();
 
@@ -193,8 +277,6 @@ namespace CERVERICA.Controllers
                         precioPaquete = (long)(productoCarrito.Receta.PrecioPaquete24 * 100);
                         break;
                 }
-
-                Console.WriteLine("Precio paquete" + precioPaquete);
 
                 return new SessionLineItemOptions
                 {

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using CERVERICA.DTO.Usuarios;
+using CERVERICA.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CERVERICA.Dtos
 {
@@ -45,12 +47,18 @@ namespace CERVERICA.Dtos
         public string Nombre { get; set; }
         public bool Estatus { get; set; }
     }
-
     public class SolicitudValoracionDTO
     {
-        public int IdSolicitudAsistencia { get; set; } 
+        public int IdSolicitudAsistencia { get; set; }
         public float Valoracion { get; set; }
         public string Mensaje { get; set; }
+    }
+
+    public class ReasignarAgenteDTO
+    {
+        public int IdSolicitudAsistencia { get; set; }
+        public string IdAgenteVenta { get; set; }
+        
     }
 
 }
