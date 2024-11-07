@@ -3,8 +3,8 @@ using CERVERICA.Data;
 using CERVERICA.Middleware;
 using CERVERICA.Models;
 using CERVERICA.Providers;
-using CERVERICA.Routines;
 using CERVERICA.Services;
+using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Identity;
@@ -14,6 +14,8 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+Env.Load();
+
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
 builder.Logging.ClearProviders();
@@ -32,17 +34,11 @@ builder.Services.AddLogging(op => op.Services.AddSingleton<ILoggerProvider, Cool
 // Agregar servicios al contenedor
 builder.Services.AddScoped<FirebaseNotificationService>();
 
-//builder.WebHost.ConfigureKestrel(serverOptions =>
-//{
-//    serverOptions.Listen(IPAddress.Parse("127.0.0.1"), 5000);
-//});
-
 // Obtenemos la configuraci�n del JWTSettings de appsettings
 var JWTSettings = builder.Configuration.GetSection("JWTSetting");
 
 // Configuraci�n para SQL Server
-var connectionString = builder.Configuration.GetConnectionString("cadenaSQL");
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Env.GetString("cadenaSQL")));
 
 // Agregamos la configuraci�n para ASP.NET Core Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
@@ -125,7 +121,7 @@ builder.Services.AddSwaggerGen(c =>
                 In = ParameterLocation.Header,
             },
             new List<string>()
-        }   
+        }
     });
 });
 
@@ -157,7 +153,7 @@ app.UseAuthorization();
 app.UseMiddleware<UserIdMiddleware>();
 app.MapControllers();
 app.UseHttpLogging();
-//app.UseMiddleware<RequestLoggingMiddleware>();
+app.UseMiddleware<RequestLoggingMiddleware>();
 
 app.Run();
 

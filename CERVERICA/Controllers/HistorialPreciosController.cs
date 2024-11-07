@@ -25,9 +25,17 @@ namespace CERVERICA.Controllers
         [HttpPost]
         public async Task<ActionResult<object>> CrearHistorial(HistorialPreciosInsert hp)
         {
-
             try
             {
+                _logger.LogDebug("Iniciando la creación del historial de precios para la receta con Id: {IdReceta}", hp.IdReceta);
+
+                var receta = await _context.Recetas.FindAsync(hp.IdReceta);
+
+                if (receta == null)
+                {
+                    _logger.LogWarning("Receta no encontrada con Id: {IdReceta}", hp.IdReceta);
+                    return NotFound(new { message = "Receta no encontrada" });
+                }
 
                 var historial = new HistorialPrecios
                 {
@@ -42,46 +50,26 @@ namespace CERVERICA.Controllers
                 };
 
                 _context.HistorialPrecios.Add(historial);
+
+                receta.PrecioPaquete1 = (float)hp.Paquete1;
+                receta.PrecioPaquete6 = (float)hp.Paquete6;
+                receta.PrecioPaquete12 = (float)hp.Paquete12;
+                receta.PrecioPaquete24 = (float)hp.Paquete24;
+
+                _logger.LogDebug("Guardando cambios en la base de datos");
                 await _context.SaveChangesAsync();
 
+                _logger.LogInformation("Historial de precios creado correctamente con Id: {Id}", historial.Id);
                 return Ok(new { message = "Historial Creado Correctamente", id = historial.Id });
-
             }
             catch (Exception ex)
             {
-                // Log the exception (optional)
                 _logger.LogError(ex, "Error Creando historial de precios");
 
-                // Return a generic error response
                 return StatusCode(500, new { message = "Ocurrió un error al crear el historial de precios.", details = ex.Message });
             }
-
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<HistorialPrecioResponse>> GetHistorialPrecios(int id)
-        {
-            try
-            {
-                _logger.LogDebug("GetHistorialPrecios: {Id}", id);
-                var historialEntity = await _context.HistorialPrecios.FindAsync(id);
-
-                if (historialEntity == null)
-                {
-                    return NotFound();
-                }
-
-                var historial = new HistorialPrecioResponse(historialEntity);
-
-                return Ok(historial);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error obteniendo el historial de precios");
-
-                return StatusCode(500, new { message = "Ocurrio un error al obtener el historial de precio" });
-            }
-        }
 
         [HttpGet]
         [Route("ListarRecetas")]
