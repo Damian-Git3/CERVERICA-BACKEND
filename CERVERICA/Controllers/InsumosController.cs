@@ -33,6 +33,7 @@ public class InsumosController : ControllerBase
                 CostoUnitario = insumo.CostoUnitario,
                 Merma = insumo.Merma,
                 Activo = insumo.Activo,
+                Fijo = insumo.Fijo,
                 CantidadTotalLotes = _context.LotesInsumos
                     .Where(lote => lote.IdInsumo == insumo.Id)
                     .Sum(lote => (float?)lote.Cantidad) ?? 0  // Nueva lógica para sumar las cantidades
@@ -84,6 +85,7 @@ public class InsumosController : ControllerBase
             CantidadMaxima = insumoDto.CantidadMaxima ?? 0,
             CantidadMinima = insumoDto.CantidadMinima ?? 0,
             Merma = insumoDto.Merma ?? 0,
+            Fijo = insumoDto.Fijo,
             Activo = true
         };
 

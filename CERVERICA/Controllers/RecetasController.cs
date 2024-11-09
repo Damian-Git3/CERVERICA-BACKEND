@@ -79,7 +79,9 @@ namespace CERVERICA.Controllers
                         Id = ir.IdInsumo,
                         Cantidad = ir.Cantidad,
                         Nombre = ir.Insumo.Nombre,
-                        UnidadMedida = ir.Insumo.UnidadMedida
+                        UnidadMedida = ir.Insumo.UnidadMedida,
+                        Fijo = ir.Insumo.Fijo
+
                     }).ToList(),
                     PasosReceta = r.PasosReceta.Select(pr => new PasosRecetaDto
                     {

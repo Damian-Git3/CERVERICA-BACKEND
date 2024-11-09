@@ -12,7 +12,8 @@ namespace CERVERICA.DTO.Ventas
 
         [Required(ErrorMessage = "El total de cervezas es obligatorio.")]
         [Range(0.01, double.MaxValue, ErrorMessage = "El total de cervezas debe ser mayor que cero.")]
-        public float TotalCervezas { get; set; }
+        public int TotalCervezas { get; set; }
+        public float Total { get; set; }
 
         [Required(ErrorMessage = "El monto de venta es obligatorio.")]
         [Range(0.01, double.MaxValue, ErrorMessage = "El monto de venta debe ser mayor que cero.")]
