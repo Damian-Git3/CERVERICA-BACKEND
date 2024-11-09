@@ -224,7 +224,6 @@ namespace CERVERICA.Data
             base.OnModelCreating(modelBuilder);
 
             // Seed de datos
-
             modelBuilder.Entity<IdentityRole>().HasData(
                 new IdentityRole { Id = "1", Name = "Operador", NormalizedName = "OPERADOR" },
                 new IdentityRole { Id = "2", Name = "Admin", NormalizedName = "ADMIN" },

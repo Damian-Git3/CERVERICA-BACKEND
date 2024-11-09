@@ -83,7 +83,7 @@ namespace CERVERICA.Controllers
                     {
                         Id = r.Id,
                         Nombre = r.Nombre,
-                        Precio = (float)Math.Round(r.PrecioPaquete1.HasValue ? (float)r.PrecioPaquete1.Value : 0f, 2),
+                        Precio = (float)Math.Round(r.PrecioPaquete1, 2),
                         Imagen = r.Imagen,
                         Activo = r.Activo
                     })
@@ -111,11 +111,11 @@ namespace CERVERICA.Controllers
                     {
                         Id = r.Id,
                         Nombre = r.Nombre,
-                        PrecioLitro = (float)Math.Round((float)r.PrecioLitro, 2),
-                        PrecioPaquet1 = (float)(r.PrecioPaquete1.HasValue ? Math.Round((float)r.PrecioPaquete1.Value, 2) : 0),
-                        PrecioPaquete6 = (float)Math.Round((float)r.PrecioPaquete6, 2),
-                        PrecioPaquete12 = (float)Math.Round((float)r.PrecioPaquete12, 2),
-                        PrecioPaquete24 = (float)Math.Round((float)r.PrecioPaquete24, 2),
+                        PrecioLitro = (float)Math.Round(r.PrecioLitro, 2),
+                        PrecioPaquet1 = (float)Math.Round(r.PrecioPaquete1, 2),
+                        PrecioPaquete6 = (float)Math.Round(r.PrecioPaquete6, 2),
+                        PrecioPaquete12 = (float)Math.Round(r.PrecioPaquete12, 2),
+                        PrecioPaquete24 = (float)Math.Round(r.PrecioPaquete24, 2),
                         Imagen = r.Imagen,
                         Estatus = r.Activo
                     }).FirstOrDefaultAsync();

@@ -15,6 +15,8 @@ namespace CERVERICA.Controllers
     {
         private readonly ApplicationDbContext _context;
 
+        private const string AdminRoleName = "Admin";
+
         public RecetaController(ApplicationDbContext context)
         {
             _context = context;
@@ -103,7 +105,9 @@ namespace CERVERICA.Controllers
         [HttpPost]
         public async Task<ActionResult<Receta>> PostReceta(RecetaInsertDto recetaDto)
         {
-            
+            Debug.WriteLine("##########################################################################");
+            Debug.WriteLine("RecetaDto: " + recetaDto);
+            Debug.WriteLine("##########################################################################");
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -181,11 +185,9 @@ namespace CERVERICA.Controllers
 
             try
             {
+                var adminRoleId = await _context.Roles.Where(r => r.Name == AdminRoleName).Select(r => r.Id).FirstOrDefaultAsync();
 
-                //encontrar la id del rol Admin
-                var adminRoleId = _context.Roles.Where(r => r.Name == "Admin").Select(r => r.Id).FirstOrDefault();
-
-                List<String> userIds = _context.UserRoles.Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToList();
+                List<String> userIds = await _context.UserRoles.Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToListAsync();
 
                 foreach (var idAdmin in userIds)
                 {
@@ -246,7 +248,7 @@ namespace CERVERICA.Controllers
             foreach (var ingredienteDto in recetaDto.IngredientesReceta)
             {
                 var ingredienteExistente = ingredientesExistentes
-                    .FirstOrDefault(i => i.IdInsumo == ingredienteDto.Id);
+                    .Find(i => i.IdInsumo == ingredienteDto.Id);
 
                 if (ingredienteExistente != null)
                 {
@@ -324,8 +326,7 @@ namespace CERVERICA.Controllers
         /* OBTENER PASOS RECETA */
 
         [HttpGet("{id}/pasos")]
-        public async Task<ActionResult<IEnumerable<PasosRecetaDto>>>
-            GetPasosReceta(int id)
+        public async Task<ActionResult<IEnumerable<PasosRecetaDto>>> GetPasosReceta(int id)
         {
             var receta = await _context.Recetas
                 .Include(r => r.PasosReceta)
