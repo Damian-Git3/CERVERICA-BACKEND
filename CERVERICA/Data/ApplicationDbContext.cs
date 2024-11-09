@@ -225,20 +225,20 @@ namespace CERVERICA.Data
 
             // Seed de datos
             
-            /*modelBuilder.Entity<IdentityRole>().HasData(
+            modelBuilder.Entity<IdentityRole>().HasData(
                 new IdentityRole { Id = "1", Name = "Operador", NormalizedName = "OPERADOR" },
                 new IdentityRole { Id = "2", Name = "Admin", NormalizedName = "ADMIN" },
                 new IdentityRole { Id = "3", Name = "Mayorista", NormalizedName = "MAYORISTA" },
                 new IdentityRole { Id = "4", Name = "Cliente", NormalizedName = "CLIENTE" },
                 new IdentityRole { Id = "5", Name = "Agente", NormalizedName = "AGENTE" },
                 new IdentityRole { Id = "6", Name = "Cocinero", NormalizedName = "COCINERO" }
-            );*/
+            );
 
             // Hasher para las contraseñas
             var hasher = new PasswordHasher<ApplicationUser>();
 
             // Usuarios de cada rol
-            /*modelBuilder.Entity<ApplicationUser>().HasData(
+            modelBuilder.Entity<ApplicationUser>().HasData(
                 new ApplicationUser
                 {
                     Id = "U1",
@@ -359,10 +359,10 @@ namespace CERVERICA.Data
                     FullName = "Agente 3 de Ventas",
                     Activo = true
                 }
-            );*/
+            );
 
             // Asignación de roles a los usuarios
-            /*modelBuilder.Entity<IdentityUserRole<string>>().HasData(
+            modelBuilder.Entity<IdentityUserRole<string>>().HasData(
                 new IdentityUserRole<string> { UserId = "U1", RoleId = "1" }, // Operador
                 new IdentityUserRole<string> { UserId = "U2", RoleId = "2" }, // Admin
                 new IdentityUserRole<string> { UserId = "U3", RoleId = "3" }, // Mayorista
@@ -373,7 +373,7 @@ namespace CERVERICA.Data
                 new IdentityUserRole<string> { UserId = "U8", RoleId = "4" }, // Cliente
                 new IdentityUserRole<string> { UserId = "U9", RoleId = "5" }, // Agente
                 new IdentityUserRole<string> { UserId = "U10", RoleId = "5" } // Agente
-            );*/
+            );
         }
     }
 }

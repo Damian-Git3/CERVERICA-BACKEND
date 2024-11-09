@@ -11,16 +11,10 @@ namespace CERVERICA.Controllers
     [Route("api/[controller]")]
     [ApiController]
     //[Authorize(Roles = "Vendedor")]
-    public class ProduccionController : ControllerBase
+    public class ProduccionController(ApplicationDbContext context, ILogger<ProduccionController> logger) : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
-        private readonly ILogger<ProduccionController> _logger;
-
-        public ProduccionController(ApplicationDbContext context, ILogger<ProduccionController> logger)
-        {
-            _context = context;
-            _logger = logger;
-        }
+        private readonly ApplicationDbContext _context = context;
+        private readonly ILogger<ProduccionController> _logger = logger;
 
         // GET: api/Produccion
         [HttpGet]
@@ -29,7 +23,7 @@ namespace CERVERICA.Controllers
             var producciones = await _context.Producciones
                 .Where(p => p.Estatus != 4)
                 .Include(p => p.Receta)
-                    .ThenInclude(r => r.IngredientesReceta)
+                    .ThenInclude(r => r.IngredientesReceta!)
                     .ThenInclude(ir => ir.Insumo)
                 .Select(p => new ProduccionesDto
                 {
@@ -48,8 +42,9 @@ namespace CERVERICA.Controllers
                         PrecioLitro = p.Receta.PrecioLitro,
                         CostoProduccion = p.Receta.CostoProduccion,
                         Imagen = p.Receta.Imagen,
+                        RutaFondo = p.Receta.RutaFondo,
                         Activo = p.Receta.Activo
-                    },
+                    },  
                     NombreReceta = p.Receta.Nombre,
                     FechaSolicitud = p.FechaSolicitud,
                     Paso = p.Paso,
@@ -69,14 +64,13 @@ namespace CERVERICA.Controllers
             return Ok(producciones);
         }
 
-
         // GET: api/Produccion/5
         [HttpGet("{id}")]
         public async Task<ActionResult<ProduccionDto>> GetProduccion(int id)
         {
             var produccion = await _context.Producciones
                 .Include(p => p.Receta)
-                    .ThenInclude(r => r.IngredientesReceta)
+                    .ThenInclude(r => r.IngredientesReceta!)
                         .ThenInclude(ir => ir.Insumo)
                 .Include(p => p.ProduccionLoteInsumos)
                 .Where(p => p.Id == id)
@@ -482,7 +476,7 @@ namespace CERVERICA.Controllers
                 {
                     return BadRequest(new { Message = "Debe ingresar los litros finales para calcular la merma." });
                 }
-                if (finalizeDto.MermaLitros != null )
+                if (finalizeDto.MermaLitros != null)
                 {
                     return BadRequest(new { Message = "No se puede calcular la merma si ya se ingreso un valor." });
                 }
@@ -1093,7 +1087,7 @@ namespace CERVERICA.Controllers
         {
             var idUsuario = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var producciones = await _context.Producciones
-                .Where(p => p.Estatus == 2 && p.IdUsuarioProduccion ==idUsuario)
+                .Where(p => p.Estatus == 2 && p.IdUsuarioProduccion == idUsuario)
                 .Include(p => p.Receta)
                     .ThenInclude(r => r.IngredientesReceta)
                     .ThenInclude(ir => ir.Insumo)

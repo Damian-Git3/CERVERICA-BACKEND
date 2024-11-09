@@ -540,11 +540,11 @@ namespace CERVERICA.Controllers
 
                         float montoVenta = detalle.Pack switch
                         {
-                            1 => receta.PrecioPaquete1 ?? 0,
-                            6 => receta.PrecioPaquete6 ?? 0,
-                            12 => receta.PrecioPaquete12 ?? 0,
-                            24 => receta.PrecioPaquete24 ?? 0,
-                            _ => 0
+                            1 => receta.PrecioPaquete1,
+                            6 => receta.PrecioPaquete6,
+                            12 => receta.PrecioPaquete12,
+                            24 => receta.PrecioPaquete24,
+                            _ => 0f
                         };
 
                         if (montoVenta == 0)
