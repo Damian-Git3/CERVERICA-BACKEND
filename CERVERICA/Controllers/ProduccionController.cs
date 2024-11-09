@@ -185,6 +185,58 @@ namespace CERVERICA.Controllers
                     return NotFound(new { message = "Usuario no existe. Escoja otro usuario de Producción." });
                 }
 
+                //calcular el numero de botella de 355 ml que se pueden llenar y si no hay stock de botellas rechazar la solicitud
+                var medidaEnvase = 355;
+                var litrosEstimados = receta.LitrosEstimados * solicitudDto.NumeroTandas;
+                var mililitrosEstimados = litrosEstimados * 1000;
+
+                var botellasNecesarias = Math.Ceiling(mililitrosEstimados / medidaEnvase);
+
+                //consultar el stock de botellas con Id = 2 en la tabla de insumos y lotes de insumos
+                var stockBotellas = await _context.LotesInsumos
+                    .Where(li => li.IdInsumo == 2 && li.FechaCaducidad > DateTime.Today)
+                    .SumAsync(li => li.Cantidad);
+
+
+                if (botellasNecesarias > stockBotellas)
+                {
+                    return BadRequest(new { message = "No hay suficientes botellas de 355 ml en stock para la producción." });
+                }
+
+                //consultar todas todas las producciones en estatus 1, 2 y 3
+                var produccionesEnProceso = await _context.Producciones
+                    .Where(p => p.Estatus == 1 || p.Estatus == 2 || p.Estatus == 3)
+                    .ToListAsync();
+
+                var sumatoriaMililitrosEsperados = 0.0;
+
+                //recorrer las producciones en proceso y sumar los litros esperados de cada una de ellas
+                foreach (var prod in produccionesEnProceso)
+                {
+
+                    //hacer una consulta para obtener los litros estimados de la receta de cada produccion
+                    var recetaProdLitrosEstimados = await _context.Recetas
+                        .Where(r => r.Id == prod.IdReceta)
+                        .Select(r => new
+                        {
+                            LitrosEstimados = r.LitrosEstimados
+                        })
+                        .FirstOrDefaultAsync();
+
+                    sumatoriaMililitrosEsperados += Math.Ceiling((float)recetaProdLitrosEstimados.LitrosEstimados * prod.NumeroTandas * 1000);
+                }
+
+                var sumatoriaMililitrosEsperadosConEstaProduccion = sumatoriaMililitrosEsperados + mililitrosEstimados;
+
+                //verificar que la cantidad de botellas en stock alcance para todas las producciones en proceso
+                var botellasNecesariasConEstaProduccion = Math.Ceiling(sumatoriaMililitrosEsperadosConEstaProduccion / medidaEnvase);
+
+                if (botellasNecesariasConEstaProduccion > stockBotellas)
+                {
+                    return BadRequest(new { message = "No hay suficientes botellas de 355 ml en stock para la producción." });
+                }
+
+
                 var produccion = new Produccion
                 {
                     FechaProduccion = DateTime.Now,
@@ -552,6 +604,11 @@ namespace CERVERICA.Controllers
                 return Ok(new { Message = "Producción finalizada como fallida." });
             }
 
+            //consultar el numero de botellas id = 2 en stock
+            var numBotellas = await _context.LotesInsumos
+                .Where(li => li.IdInsumo == 2 && li.FechaCaducidad > DateTime.Today)
+                .SumAsync(li => li.Cantidad);
+
             production.CostoProduccion = production.NumeroTandas * production.Receta.CostoProduccion;
 
             var medidaEnvase = finalizeDto.MedidaEnvase ?? 355;
@@ -561,7 +618,31 @@ namespace CERVERICA.Controllers
 
             float proporcionLitrosStock = mililitrosParaEnvasar / medidaEnvase;
 
-            int cantidadStock = (int)proporcionLitrosStock;
+            int cantidadStock = (int)Math.Floor(proporcionLitrosStock);
+            int BotellasAUsar = cantidadStock;
+
+            if (cantidadStock > numBotellas)
+            {
+                return BadRequest(new { Message = "No hay suficientes botellas de 355 ml en stock para la producción." });
+            }
+
+            //restar las botellas del stock desde la fecha de caducidad mas proxima
+            var lotesBotellas = await _context.LotesInsumos
+                .Where(li => li.IdInsumo == 2 && li.FechaCaducidad > DateTime.Today)
+                .OrderBy(li => li.FechaCaducidad)
+                .ToListAsync();
+
+            foreach (var lote in lotesBotellas)
+            {
+                if (BotellasAUsar <= 0)
+                    break;
+
+                var cantidadUtilizada = (int)Math.Min(lote.Cantidad, BotellasAUsar);
+                lote.Cantidad -= cantidadUtilizada;
+                BotellasAUsar -= cantidadUtilizada;
+                _context.LotesInsumos.Update(lote);
+            }
+
 
             DateTime fechaCaducidad = DateTime.Now.AddDays(production.Receta.TiempoVida);
 
