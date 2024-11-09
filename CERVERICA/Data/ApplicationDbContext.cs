@@ -224,30 +224,42 @@ namespace CERVERICA.Data
             base.OnModelCreating(modelBuilder);
 
             // Seed de datos
-            
-            /*modelBuilder.Entity<IdentityRole>().HasData(
+
+            modelBuilder.Entity<IdentityRole>().HasData(
                 new IdentityRole { Id = "1", Name = "Operador", NormalizedName = "OPERADOR" },
                 new IdentityRole { Id = "2", Name = "Admin", NormalizedName = "ADMIN" },
                 new IdentityRole { Id = "3", Name = "Mayorista", NormalizedName = "MAYORISTA" },
                 new IdentityRole { Id = "4", Name = "Cliente", NormalizedName = "CLIENTE" },
                 new IdentityRole { Id = "5", Name = "Agente", NormalizedName = "AGENTE" },
                 new IdentityRole { Id = "6", Name = "Cocinero", NormalizedName = "COCINERO" }
-            );*/
+            );
+
+            modelBuilder.Entity<CategoriaAsistencia>().HasData(
+               new CategoriaAsistencia { Id = 1, Nombre = "Consulta" },
+               new CategoriaAsistencia { Id = 2, Nombre = "Reclamación" },
+               new CategoriaAsistencia { Id = 3, Nombre = "Soporte" },
+               new CategoriaAsistencia { Id = 4, Nombre = "Revisión" }
+           );
+
+            modelBuilder.Entity<Insumo>().HasData(
+                new Insumo { Id = 1, UnidadMedida="L", Activo=true, Nombre = "Agua", Descripcion = "Agua potable para la elaboración general de recetas, especificar cantidad." },
+                new Insumo { Id = 2, UnidadMedida="PZ", Activo = true, Nombre = "Botellas", Descripcion = "Botellas de vidrio para envasado, cantidad autoconsumida en producción." }
+            );
 
             // Hasher para las contraseñas
             var hasher = new PasswordHasher<ApplicationUser>();
 
             // Usuarios de cada rol
-            /*modelBuilder.Entity<ApplicationUser>().HasData(
+            modelBuilder.Entity<ApplicationUser>().HasData(
                 new ApplicationUser
                 {
                     Id = "U1",
                     UserName = "operador precargado",
                     NormalizedUserName = "OPERADOR PRECARGADO",
-                    Email = "operador@example.com",
-                    NormalizedEmail = "OPERADOR@EXAMPLE.COM",
+                    Email = "operador@gmail.com",
+                    NormalizedEmail = "OPERADOR@GMAIL.COM",
                     EmailConfirmed = true,
-                    PasswordHash = hasher.HashPassword(null, "Contra1234?"),
+                    PasswordHash = hasher.HashPassword(null, "Contra123?"),
                     FullName = "Operador General",
                     Activo = true
                 },
@@ -256,10 +268,10 @@ namespace CERVERICA.Data
                     Id = "U2",
                     UserName = "admin precargado",
                     NormalizedUserName = "ADMIN PRECARGADO",
-                    Email = "admin@example.com",
-                    NormalizedEmail = "ADMIN@EXAMPLE.COM",
+                    Email = "admin@gmail.com",
+                    NormalizedEmail = "ADMIN@GMAIL.COM",
                     EmailConfirmed = true,
-                    PasswordHash = hasher.HashPassword(null, "Contra1234?"),
+                    PasswordHash = hasher.HashPassword(null, "Contra123?"),
                     FullName = "Administrador Principal",
                     Activo = true
                 },
@@ -268,10 +280,10 @@ namespace CERVERICA.Data
                     Id = "U3",
                     UserName = "mayorista precargado",
                     NormalizedUserName = "MAYORISTA PRECARGADO",
-                    Email = "mayorista@example.com",
-                    NormalizedEmail = "MAYORISTA@EXAMPLE.COM",
+                    Email = "mayorista@gmail.com",
+                    NormalizedEmail = "MAYORISTA@GMAIL.COM",
                     EmailConfirmed = true,
-                    PasswordHash = hasher.HashPassword(null, "Contra1234?"),
+                    PasswordHash = hasher.HashPassword(null, "Contra123?"),
                     FullName = "Mayorista Distribuidor",
                     Activo = true
                 },
@@ -280,10 +292,10 @@ namespace CERVERICA.Data
                     Id = "U4",
                     UserName = "cliente precargado",
                     NormalizedUserName = "CLIENTE PRECARGADO",
-                    Email = "cliente@example.com",
-                    NormalizedEmail = "CLIENTE@EXAMPLE.COM",
+                    Email = "cliente@gmail.com",
+                    NormalizedEmail = "CLIENTE@GMAIL.COM",
                     EmailConfirmed = true,
-                    PasswordHash = hasher.HashPassword(null, "Contra1234?"),
+                    PasswordHash = hasher.HashPassword(null, "Contra123?"),
                     FullName = "Cliente Regular",
                     Activo = true
                 },
@@ -292,10 +304,10 @@ namespace CERVERICA.Data
                     Id = "U5",
                     UserName = "agente precargado",
                     NormalizedUserName = "AGENTE PRECARGADO",
-                    Email = "agente@example.com",
-                    NormalizedEmail = "AGENTE@EXAMPLE.COM",
+                    Email = "agente@gmail.com",
+                    NormalizedEmail = "AGENTE@GMAIL.COM",
                     EmailConfirmed = true,
-                    PasswordHash = hasher.HashPassword(null, "Contra1234?"),
+                    PasswordHash = hasher.HashPassword(null, "Contra123?"),
                     FullName = "Agente de Ventas",
                     Activo = true
                 },
@@ -304,10 +316,10 @@ namespace CERVERICA.Data
                     Id = "U6",
                     UserName = "cocinero precargado",
                     NormalizedUserName = "COCINERO PRECARGADO",
-                    Email = "cocinero@example.com",
-                    NormalizedEmail = "COCINERO@EXAMPLE.COM",
+                    Email = "cocinero@gmail.com",
+                    NormalizedEmail = "COCINERO@GMAIL.COM",
                     EmailConfirmed = true,
-                    PasswordHash = hasher.HashPassword(null, "Contra1234?"),
+                    PasswordHash = hasher.HashPassword(null, "Contra123?"),
                     FullName = "Cocinero Principal",
                     Activo = true
                 },
@@ -316,10 +328,10 @@ namespace CERVERICA.Data
                     Id = "U7",
                     UserName = "mayorista 2 precargado",
                     NormalizedUserName = "MAYORISTA 2 PRECARGADO",
-                    Email = "mayorista2@example.com",
-                    NormalizedEmail = "MAYORISTA2@EXAMPLE.COM",
+                    Email = "mayorista2@gmail.com",
+                    NormalizedEmail = "MAYORISTA2@GMAIL.COM",
                     EmailConfirmed = true,
-                    PasswordHash = hasher.HashPassword(null, "Contra1234?"),
+                    PasswordHash = hasher.HashPassword(null, "Contra123?"),
                     FullName = "Mayorista 2 Distribuidor",
                     Activo = true
                 },
@@ -328,10 +340,10 @@ namespace CERVERICA.Data
                     Id = "U8",
                     UserName = "cliente 2 precargado",
                     NormalizedUserName = "CLIENTE 2 PRECARGADO",
-                    Email = "cliente 2 @example.com",
-                    NormalizedEmail = "CLIENTE2@EXAMPLE.COM",
+                    Email = "cliente2@gmail.com",
+                    NormalizedEmail = "CLIENTE2@GMAIL.COM",
                     EmailConfirmed = true,
-                    PasswordHash = hasher.HashPassword(null, "Contra1234?"),
+                    PasswordHash = hasher.HashPassword(null, "Contra123?"),
                     FullName = "Cliente 2 Regular",
                     Activo = true
                 },
@@ -340,10 +352,10 @@ namespace CERVERICA.Data
                     Id = "U9",
                     UserName = "agente 2 precargado",
                     NormalizedUserName = "AGENTE 2 PRECARGADO",
-                    Email = "agente2@example.com",
-                    NormalizedEmail = "AGENTE2@EXAMPLE.COM",
+                    Email = "agente2@gmail.com",
+                    NormalizedEmail = "AGENTE2@GMAIL.COM",
                     EmailConfirmed = true,
-                    PasswordHash = hasher.HashPassword(null, "Contra1234?"),
+                    PasswordHash = hasher.HashPassword(null, "Contra123?"),
                     FullName = "Agente 2 de Ventas",
                     Activo = true
                 },
@@ -352,17 +364,17 @@ namespace CERVERICA.Data
                     Id = "U10",
                     UserName = "agente 3 precargado",
                     NormalizedUserName = "AGENTE 3 PRECARGADO",
-                    Email = "agente3@example.com",
-                    NormalizedEmail = "AGENTE3@EXAMPLE.COM",
+                    Email = "agente3@gmail.com",
+                    NormalizedEmail = "AGENTE3@GMAIL.COM",
                     EmailConfirmed = true,
-                    PasswordHash = hasher.HashPassword(null, "Contra1234?"),
+                    PasswordHash = hasher.HashPassword(null, "Contra123?"),
                     FullName = "Agente 3 de Ventas",
                     Activo = true
                 }
-            );*/
+            );
 
             // Asignación de roles a los usuarios
-            /*modelBuilder.Entity<IdentityUserRole<string>>().HasData(
+            modelBuilder.Entity<IdentityUserRole<string>>().HasData(
                 new IdentityUserRole<string> { UserId = "U1", RoleId = "1" }, // Operador
                 new IdentityUserRole<string> { UserId = "U2", RoleId = "2" }, // Admin
                 new IdentityUserRole<string> { UserId = "U3", RoleId = "3" }, // Mayorista
@@ -373,7 +385,7 @@ namespace CERVERICA.Data
                 new IdentityUserRole<string> { UserId = "U8", RoleId = "4" }, // Cliente
                 new IdentityUserRole<string> { UserId = "U9", RoleId = "5" }, // Agente
                 new IdentityUserRole<string> { UserId = "U10", RoleId = "5" } // Agente
-            );*/
+            );
         }
     }
 }
