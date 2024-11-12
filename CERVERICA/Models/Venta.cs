@@ -18,6 +18,7 @@ namespace CERVERICA.Models
 
         [Required]
         public float Total { get; set; }
+        public int TotalCervezas { get; set; }
 
         [Required]
         public bool Mayoreo { get; set; } = false;
