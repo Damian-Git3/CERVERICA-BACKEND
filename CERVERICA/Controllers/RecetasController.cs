@@ -28,7 +28,7 @@ namespace CERVERICA.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<RecetasDto>>> GetRecetas()
         {
-            
+
             RecetasDto[] recetas = await _context.Recetas
                 .Select(r => new RecetasDto
                 {
@@ -83,7 +83,7 @@ namespace CERVERICA.Controllers
                         Id = ir.IdInsumo,
                         Nombre = ir.Insumo.Nombre,
                         UnidadMedida = ir.Insumo.UnidadMedida,
-                        Fijo = ir.Insumo.Fijo
+                        Fijo = ir.Insumo.Fijo,
                         Cantidad = ir.Cantidad,
 
                     }).ToList(),
