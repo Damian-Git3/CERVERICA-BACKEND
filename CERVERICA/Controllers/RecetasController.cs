@@ -15,6 +15,10 @@ namespace CERVERICA.Controllers
     {
         private readonly ApplicationDbContext _context;
 
+        private const string AdminRoleName = "Admin";
+
+        private const string RecetaNoExisteMessage = "Receta no existe.";
+
         public RecetaController(ApplicationDbContext context)
         {
             _context = context;
@@ -28,12 +32,12 @@ namespace CERVERICA.Controllers
                 .Select(r => new RecetasDto
                 {
                     Id = r.Id,
-                    LitrosEstimados = r.LitrosEstimados,
-                    PrecioLitro = r.PrecioLitro,
-                    Descripcion = r.Descripcion,
                     Nombre = r.Nombre,
+                    Descripcion = r.Descripcion ?? string.Empty,
+                    PrecioLitro = r.PrecioLitro,
+                    LitrosEstimados = r.LitrosEstimados,
+                    Imagen = r.Imagen ?? string.Empty,
                     CostoProduccion = r.CostoProduccion,
-                    Imagen = r.Imagen,
                     TiempoVida = r.TiempoVida,
                     FechaRegistrado = r.FechaRegistrado,
                     Activo = r.Activo,
@@ -50,8 +54,7 @@ namespace CERVERICA.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<RecetaDetallesDto>> GetReceta(int id)
         {
-            var receta = await _context
-                .Recetas
+            var receta = await _context.Recetas
                 .Include(r => r.IngredientesReceta)
                 .ThenInclude(ir => ir.Insumo)
                 .Include(r => r.PasosReceta)
@@ -62,25 +65,25 @@ namespace CERVERICA.Controllers
                     LitrosEstimados = r.LitrosEstimados,
                     PrecioLitro = r.PrecioLitro,
                     PrecioPaquete1 = r.PrecioPaquete1,
-                    PrecioPaquete6 = r.PrecioPaquete6,
                     PrecioPaquete12 = r.PrecioPaquete12,
+                    PrecioPaquete6 = r.PrecioPaquete6,
                     PrecioPaquete24 = r.PrecioPaquete24,
-                    Especificaciones = r.Especificaciones,
+                    TiempoVida = r.TiempoVida,
+                    Especificaciones = r.Especificaciones ?? string.Empty,
+                    RutaFondo = r.RutaFondo ?? string.Empty,
                     Puntuacion = r.Puntuacion,
-                    RutaFondo = r.RutaFondo,
-                    Descripcion = r.Descripcion,
+                    Descripcion = r.Descripcion ?? string.Empty,
                     Nombre = r.Nombre,
                     CostoProduccion = r.CostoProduccion,
                     Imagen = r.Imagen,
-                    TiempoVida = r.TiempoVida,
                     Activo = r.Activo,
                     IngredientesReceta = r.IngredientesReceta.Select(ir => new IngredienteRecetaDto
                     {
                         Id = ir.IdInsumo,
-                        Cantidad = ir.Cantidad,
                         Nombre = ir.Insumo.Nombre,
                         UnidadMedida = ir.Insumo.UnidadMedida,
                         Fijo = ir.Insumo.Fijo
+                        Cantidad = ir.Cantidad,
 
                     }).ToList(),
                     PasosReceta = r.PasosReceta.Select(pr => new PasosRecetaDto
@@ -94,18 +97,19 @@ namespace CERVERICA.Controllers
 
             if (receta == null)
             {
-                return NotFound(new { message = "Receta no existe." });
+                return NotFound(new { message = RecetaNoExisteMessage });
             }
 
             return Ok(receta);
-
         }
 
         // POST: api/recetas
         [HttpPost]
         public async Task<ActionResult<Receta>> PostReceta(RecetaInsertDto recetaDto)
         {
-            
+            Debug.WriteLine("##########################################################################");
+            Debug.WriteLine("RecetaDto: " + recetaDto);
+            Debug.WriteLine("##########################################################################");
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -183,11 +187,9 @@ namespace CERVERICA.Controllers
 
             try
             {
+                var adminRoleId = await _context.Roles.Where(r => r.Name == AdminRoleName).Select(r => r.Id).FirstOrDefaultAsync();
 
-                //encontrar la id del rol Admin
-                var adminRoleId = _context.Roles.Where(r => r.Name == "Admin").Select(r => r.Id).FirstOrDefault();
-
-                List<String> userIds = _context.UserRoles.Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToList();
+                List<String> userIds = await _context.UserRoles.Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToListAsync();
 
                 foreach (var idAdmin in userIds)
                 {
@@ -248,7 +250,7 @@ namespace CERVERICA.Controllers
             foreach (var ingredienteDto in recetaDto.IngredientesReceta)
             {
                 var ingredienteExistente = ingredientesExistentes
-                    .FirstOrDefault(i => i.IdInsumo == ingredienteDto.Id);
+                    .Find(i => i.IdInsumo == ingredienteDto.Id);
 
                 if (ingredienteExistente != null)
                 {
@@ -326,8 +328,7 @@ namespace CERVERICA.Controllers
         /* OBTENER PASOS RECETA */
 
         [HttpGet("{id}/pasos")]
-        public async Task<ActionResult<IEnumerable<PasosRecetaDto>>>
-            GetPasosReceta(int id)
+        public async Task<ActionResult<IEnumerable<PasosRecetaDto>>> GetPasosReceta(int id)
         {
             var receta = await _context.Recetas
                 .Include(r => r.PasosReceta)
