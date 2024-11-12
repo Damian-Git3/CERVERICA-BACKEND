@@ -232,6 +232,37 @@ namespace CERVERICA.Controllers
                 return NotFound(new { message = "Receta no encontrada." });
             }
 
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            //verificar que el insumo id = 1 exista en la receta a insertar
+            if (!recetaDto.IngredientesReceta.Any(i => i.Id == 1))
+            {
+                return BadRequest(new { message = "La receta debe contener agua." });
+            }
+
+            //Verificar que se vaya a insertar por lo menos 80% de agua de los litros finales de la receta
+            float litrosAgua = recetaDto.IngredientesReceta.Where(i => i.Id == 1).Select(i => i.Cantidad).FirstOrDefault();
+
+            if (litrosAgua < recetaDto.LitrosEstimados * 0.8)
+            {
+                return BadRequest(new { message = "La receta debe contener al menos 80% de agua." });
+            }
+
+            //verificar que no exista una receta con el mismo nombre
+            if (_context.Recetas.Any(r => r.Nombre == recetaDto.Nombre))
+            {
+                return BadRequest(new { message = "Ya existe una receta con el mismo nombre." });
+            }
+
+            //verificar que no haya agregado insumo id = 2 (botellas en la receta)
+            if (recetaDto.IngredientesReceta.Any(i => i.Id == 2))
+            {
+                return BadRequest(new { message = "No se puede agregar botellas a la receta. Se calcularán automaticamente durante el envasado." });
+            }
+
             // Actualizar propiedades de la receta
             receta.LitrosEstimados = recetaDto.LitrosEstimados;
             receta.PrecioPaquete1 = recetaDto.PrecioPaquete1;
