@@ -12,21 +12,21 @@ namespace CERVERICA.Models
         [Required]
         public float LitrosEstimados { get; set; }
 
-        public float PrecioUnitarioMinimoMayoreo { get; set; }
+        public float? PrecioUnitarioMinimoMayoreo { get; set; }
 
-        public float PrecioUnitarioBaseMayoreo { get; set; }
+        public float? PrecioUnitarioBaseMayoreo { get; set; }
 
-        public float PorcentajeDescuento { get; set; }
+        public float? PorcentajeDescuento { get; set; }
 
         public float PrecioLitro { get; set; }
         public float PrecioPaquete1 { get; set; }
         public float PrecioPaquete6 { get; set; }
         public float PrecioPaquete12 { get; set; }
         public float PrecioPaquete24 { get; set; }
-        public int LotesMinimos { get; set; }
-        public int LotesMaximos { get; set; }
+        public int? LotesMinimos { get; set; }
+        public int? LotesMaximos { get; set; }
 
-        public float Puntuacion { get; set; }
+        public float? Puntuacion { get; set; }
 
         public string? Especificaciones { get; set; }
         public string? Descripcion { get; set; }

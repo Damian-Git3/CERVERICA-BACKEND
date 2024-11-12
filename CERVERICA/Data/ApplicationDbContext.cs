@@ -32,6 +32,8 @@ namespace CERVERICA.Data
         public DbSet<FavoritosComprador> FavoritosComprador { get; set; }
         public DbSet<ProductoCarrito> ProductosCarrito { get; set; }
         public DbSet<Notificacion> Notificaciones { get; set; }
+
+        //Tablas añadidas para el CRM
         public DbSet<PuntosFidelidad> PuntosFidelidad { get; set; }
         public DbSet<TransaccionPuntos> TransaccionesPuntos { get; set; }
         public DbSet<ReglaPuntos> ReglasPuntos { get; set; }
@@ -58,16 +60,6 @@ namespace CERVERICA.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
-            /*modelBuilder.Entity<IdentityRole>()
-            .HasData(
-                new IdentityRole { Name = "Mayorista", NormalizedName = "MAYORISTA" },
-                new IdentityRole { Name = "Cocinero", NormalizedName = "COCINERO" },
-                new IdentityRole { Name = "Admin", NormalizedName = "ADMIN" },
-                new IdentityRole { Name = "Cliente", NormalizedName = "CLIENTE" },
-                new IdentityRole { Name = "Operador", NormalizedName = "OPERADOR" },
-                new IdentityRole { Name = "Agente", NormalizedName = "Agente" }
-
-            );*/
             modelBuilder.Entity<SolicitudAsistencia>()
                .HasOne(p => p.CategoriaAsistencia)
                .WithMany(pe => pe.SolicitudesAsistencia)
@@ -100,7 +92,7 @@ namespace CERVERICA.Data
 
             modelBuilder.Entity<Pago>()
                .HasOne(p => p.PedidoMayoreo)
-               .WithMany(pe => pe.Pagos) 
+               .WithMany(pe => pe.Pagos)
                .HasForeignKey(p => p.IdPedidoMayoreo)
                .OnDelete(DeleteBehavior.Restrict);
 
@@ -240,6 +232,14 @@ namespace CERVERICA.Data
                new CategoriaAsistencia { Id = 4, Nombre = "Revisión" }
            );
 
+            modelBuilder.Entity<CategoriaCerveza>().HasData(
+                    new CategoriaCerveza { Id = 1, Nombre = "Mayoreo", Estatus = true },
+                    new CategoriaCerveza { Id = 2, Nombre = "Ale", Estatus = true },
+                    new CategoriaCerveza { Id = 3, Nombre = "Stout", Estatus = true },
+                    new CategoriaCerveza { Id = 4, Nombre = "Pilsner", Estatus = true },
+                    new CategoriaCerveza { Id = 5, Nombre = "Lager", Estatus = true }
+                );
+
             modelBuilder.Entity<Insumo>().HasData(
                 new Insumo { Id = 1, UnidadMedida="L", Activo=true, Nombre = "Agua", Descripcion = "Agua potable para la elaboración general de recetas, especificar cantidad." },
                 new Insumo { Id = 2, UnidadMedida="PZ", Activo = true, Nombre = "Botellas", Descripcion = "Botellas de vidrio para envasado, cantidad autoconsumida en producción." }
@@ -260,7 +260,8 @@ namespace CERVERICA.Data
                     EmailConfirmed = true,
                     PasswordHash = hasher.HashPassword(null, "Contra123?"),
                     FullName = "Operador General",
-                    Activo = true
+                    Activo = true,
+                    PhoneNumber = "1234567890",
                 },
                 new ApplicationUser
                 {
@@ -272,7 +273,8 @@ namespace CERVERICA.Data
                     EmailConfirmed = true,
                     PasswordHash = hasher.HashPassword(null, "Contra123?"),
                     FullName = "Administrador Principal",
-                    Activo = true
+                    Activo = true,
+                    PhoneNumber = "1234567890",
                 },
                 new ApplicationUser
                 {
@@ -283,6 +285,7 @@ namespace CERVERICA.Data
                     NormalizedEmail = "MAYORISTA@GMAIL.COM",
                     EmailConfirmed = true,
                     PasswordHash = hasher.HashPassword(null, "Contra123?"),
+                    PhoneNumber = "1234567890",
                     FullName = "Mayorista Distribuidor",
                     Activo = true
                 },
@@ -296,6 +299,7 @@ namespace CERVERICA.Data
                     EmailConfirmed = true,
                     PasswordHash = hasher.HashPassword(null, "Contra123?"),
                     FullName = "Cliente Regular",
+                    PhoneNumber = "1234567890",
                     Activo = true
                 },
                 new ApplicationUser
@@ -303,6 +307,7 @@ namespace CERVERICA.Data
                     Id = "U5",
                     UserName = "agente precargado",
                     NormalizedUserName = "AGENTE PRECARGADO",
+                    PhoneNumber = "1234567890",
                     Email = "agente@gmail.com",
                     NormalizedEmail = "AGENTE@GMAIL.COM",
                     EmailConfirmed = true,
@@ -318,6 +323,7 @@ namespace CERVERICA.Data
                     Email = "cocinero@gmail.com",
                     NormalizedEmail = "COCINERO@GMAIL.COM",
                     EmailConfirmed = true,
+                    PhoneNumber = "1234567890",
                     PasswordHash = hasher.HashPassword(null, "Contra123?"),
                     FullName = "Cocinero Principal",
                     Activo = true
@@ -331,6 +337,7 @@ namespace CERVERICA.Data
                     NormalizedEmail = "MAYORISTA2@GMAIL.COM",
                     EmailConfirmed = true,
                     PasswordHash = hasher.HashPassword(null, "Contra123?"),
+                    PhoneNumber = "1234567890",
                     FullName = "Mayorista 2 Distribuidor",
                     Activo = true
                 },
@@ -344,7 +351,8 @@ namespace CERVERICA.Data
                     EmailConfirmed = true,
                     PasswordHash = hasher.HashPassword(null, "Contra123?"),
                     FullName = "Cliente 2 Regular",
-                    Activo = true
+                    Activo = true,
+                    PhoneNumber = "1234567890",
                 },
                 new ApplicationUser
                 {
@@ -354,6 +362,7 @@ namespace CERVERICA.Data
                     Email = "agente2@gmail.com",
                     NormalizedEmail = "AGENTE2@GMAIL.COM",
                     EmailConfirmed = true,
+                    PhoneNumber = "1234567890",
                     PasswordHash = hasher.HashPassword(null, "Contra123?"),
                     FullName = "Agente 2 de Ventas",
                     Activo = true
@@ -367,10 +376,44 @@ namespace CERVERICA.Data
                     NormalizedEmail = "AGENTE3@GMAIL.COM",
                     EmailConfirmed = true,
                     PasswordHash = hasher.HashPassword(null, "Contra123?"),
+                    PhoneNumber = "1234567890",
                     FullName = "Agente 3 de Ventas",
                     Activo = true
                 }
             );
+
+            modelBuilder.Entity<ClienteMayorista>().HasData(
+                new ClienteMayorista
+                {
+                    Id = 1,
+                    IdUsuario = "U3",
+                    IdAgenteVenta = "U5",
+                    NombreEmpresa = "Empresa 1",
+                    RFCEmpresa = "RABC030212GH2",
+                    DireccionEmpresa = "Calle 123, Colonia Centro, Ciudad de México",
+                    EmailEmpresa = "empresa1@empresa1.com",
+                    TelefonoEmpresa = "1234567890",
+                    NombreContacto = "Cliente mayorista 1",
+                    EmailContacto = "mayorista@gmail.com",
+                    TelefonoContacto = "0987654321",
+                    CargoContacto = "Gerente de compras"
+                },
+                new ClienteMayorista
+                {
+                    Id = 2,
+                    IdUsuario = "U7",
+                    IdAgenteVenta = "U9",
+                    NombreEmpresa = "Empresa 2",
+                    RFCEmpresa = "UFYT030212GH3",
+                    DireccionEmpresa = "Calle 321, Colonia Norte, León",
+                    EmailEmpresa = "empresa2@empresa2.com",
+                    TelefonoEmpresa = "0987654321",
+                    NombreContacto = "Cliente mayorista 2",
+                    EmailContacto = "mayorista2@gmail.com",
+                    TelefonoContacto = "0987654321",
+                    CargoContacto = "Gerente de compras"
+                }
+                );
 
             // Asignación de roles a los usuarios
             modelBuilder.Entity<IdentityUserRole<string>>().HasData(
@@ -385,6 +428,13 @@ namespace CERVERICA.Data
                 new IdentityUserRole<string> { UserId = "U9", RoleId = "5" }, // Agente
                 new IdentityUserRole<string> { UserId = "U10", RoleId = "5" } // Agente
             );
+
+
+
+
+            //insertar ClienteMayorista con los datos de usuarios 
+
+
         }
     }
 }
