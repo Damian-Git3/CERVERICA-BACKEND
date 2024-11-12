@@ -82,6 +82,7 @@ namespace CERVERICA.Controllers
                         Id = ir.IdInsumo,
                         Nombre = ir.Insumo.Nombre,
                         UnidadMedida = ir.Insumo.UnidadMedida,
+                        Fijo = ir.Insumo.Fijo
                         Cantidad = ir.Cantidad,
 
                     }).ToList(),

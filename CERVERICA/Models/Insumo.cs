@@ -33,6 +33,8 @@ namespace CERVERICA.Models
 
         [Required]
         public bool Activo { get; set; }
+        [Required]
+        public bool Fijo { get; set; }
 
         public ICollection<LoteInsumo> LotesInsumos { get; set; }
         public ICollection<IngredienteReceta> IngredientesReceta { get; set; }
