@@ -251,11 +251,12 @@ namespace CERVERICA.Controllers
                 return BadRequest(new { message = "La receta debe contener al menos 80% de agua." });
             }
 
-            //verificar que no exista una receta con el mismo nombre
-            if (_context.Recetas.Any(r => r.Nombre == recetaDto.Nombre))
+            //verificar que no exista una receta con el mismo nombre exceptuando la receta actual
+            if (_context.Recetas.Any(r => r.Nombre == recetaDto.Nombre && r.Id != recetaDto.Id))
             {
                 return BadRequest(new { message = "Ya existe una receta con el mismo nombre." });
             }
+
 
             //verificar que no haya agregado insumo id = 2 (botellas en la receta)
             if (recetaDto.IngredientesReceta.Any(i => i.Id == 2))
