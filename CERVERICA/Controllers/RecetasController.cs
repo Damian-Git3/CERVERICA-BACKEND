@@ -26,6 +26,7 @@ namespace CERVERICA.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<RecetasDto>>> GetRecetas()
         {
+            
             RecetasDto[] recetas = await _context.Recetas
                 .Select(r => new RecetasDto
                 {
