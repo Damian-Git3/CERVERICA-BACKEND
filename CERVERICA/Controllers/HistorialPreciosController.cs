@@ -40,21 +40,22 @@ namespace CERVERICA.Controllers
                 var historial = new HistorialPrecios
                 {
                     IdReceta = hp.IdReceta,
-                    Paquete1 = hp.Paquete1,
-                    Paquete6 = hp.Paquete6,
-                    Paquete12 = hp.Paquete12,
-                    Paquete24 = hp.Paquete24,
+                    Paquete1 = hp.PrecioPaquete1,
+                    Paquete6 = hp.PrecioPaquete6,
+                    Paquete12 = hp.PrecioPaquete12,
+                    Paquete24 = hp.PrecioPaquete24,
+                    PrecioUnitarioBaseMayoreo = hp.PrecioBaseMayoreo,
                     CostoProduccionUnidad = 0,
                     PrecioUnitarioMinimoMayoreo = 0,
-                    PrecioUnitarioBaseMayoreo = 0
                 };
 
                 _context.HistorialPrecios.Add(historial);
 
-                receta.PrecioPaquete1 = (float)hp.Paquete1;
-                receta.PrecioPaquete6 = (float)hp.Paquete6;
-                receta.PrecioPaquete12 = (float)hp.Paquete12;
-                receta.PrecioPaquete24 = (float)hp.Paquete24;
+                receta.PrecioPaquete1 = (float)hp.PrecioPaquete1;
+                receta.PrecioPaquete6 = (float)hp.PrecioPaquete6;
+                receta.PrecioPaquete12 = (float)hp.PrecioPaquete12;
+                receta.PrecioPaquete24 = (float)hp.PrecioPaquete24;
+                receta.PrecioUnitarioBaseMayoreo = (float)hp.PrecioBaseMayoreo;
 
                 _logger.LogDebug("Guardando cambios en la base de datos");
                 await _context.SaveChangesAsync();
@@ -112,10 +113,11 @@ namespace CERVERICA.Controllers
                         Id = r.Id,
                         Nombre = r.Nombre,
                         PrecioLitro = (float)Math.Round(r.PrecioLitro, 2),
-                        PrecioPaquet1 = (float)Math.Round(r.PrecioPaquete1, 2),
+                        PrecioPaquete1 = (float)Math.Round(r.PrecioPaquete1, 2),
                         PrecioPaquete6 = (float)Math.Round(r.PrecioPaquete6, 2),
                         PrecioPaquete12 = (float)Math.Round(r.PrecioPaquete12, 2),
                         PrecioPaquete24 = (float)Math.Round(r.PrecioPaquete24, 2),
+                        PrecioUnitarioBaseMayoreo = (float)Math.Round((float)(r.PrecioUnitarioBaseMayoreo ?? 0), 2),
                         Imagen = r.Imagen,
                         Estatus = r.Activo
                     }).FirstOrDefaultAsync();
@@ -147,6 +149,7 @@ namespace CERVERICA.Controllers
                         PrecioPaquete6 = (float)Math.Round((float)r.Paquete6, 2),
                         PrecioPaquete12 = (float)Math.Round((float)r.Paquete12, 2),
                         PrecioPaquete24 = (float)Math.Round((float)r.Paquete24, 2),
+                        PrecioUnitarioBaseMayoreo = (float)Math.Round((float)r.PrecioUnitarioBaseMayoreo, 2),
                     }).ToListAsync();
 
 
