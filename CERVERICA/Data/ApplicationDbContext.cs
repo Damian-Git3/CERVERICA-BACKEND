@@ -226,10 +226,10 @@ namespace CERVERICA.Data
             );
 
             modelBuilder.Entity<CategoriaAsistencia>().HasData(
-               new CategoriaAsistencia { Id = 1, Nombre = "Consulta" },
-               new CategoriaAsistencia { Id = 2, Nombre = "Reclamación" },
-               new CategoriaAsistencia { Id = 3, Nombre = "Soporte" },
-               new CategoriaAsistencia { Id = 4, Nombre = "Revisión" }
+               new CategoriaAsistencia { Id = 1, Nombre = "Consulta", Estatus=true},
+               new CategoriaAsistencia { Id = 2, Nombre = "Reclamación", Estatus = true },
+               new CategoriaAsistencia { Id = 3, Nombre = "Soporte", Estatus = true },
+               new CategoriaAsistencia { Id = 4, Nombre = "Revisión", Estatus = true }
            );
 
             modelBuilder.Entity<CategoriaCerveza>().HasData(
