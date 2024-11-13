@@ -6,6 +6,7 @@ namespace CERVERICA.Dtos
     public class PedidoMayoristaInsertDto
     {
         public int IdMayorista { get; set; }
+        public int IdSolicitudMayorista { get; set; }
         public int PlazoMeses { get; set; }
 
         public string Observaciones { get; set; }

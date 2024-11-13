@@ -44,7 +44,7 @@ namespace CERVERICA.Controllers
                         Imagen = p.Receta.Imagen,
                         RutaFondo = p.Receta.RutaFondo,
                         Activo = p.Receta.Activo
-                    },  
+                    },
                     NombreReceta = p.Receta.Nombre,
                     FechaSolicitud = p.FechaSolicitud,
                     Paso = p.Paso,
@@ -350,7 +350,7 @@ namespace CERVERICA.Controllers
         [HttpPost("comenzarProduccionMayorista/{idProduccion}")]
         public async Task<IActionResult> comenzarProduccionMayorista(int idProduccion)
         {
-            
+
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
@@ -361,7 +361,7 @@ namespace CERVERICA.Controllers
                     .Include(p => p.ProduccionLoteInsumos)
                     .FirstOrDefaultAsync(p => p.Id == idProduccion);
 
-                
+
 
                 if (produccion.Receta == null)
                 {
@@ -437,7 +437,7 @@ namespace CERVERICA.Controllers
 
                 foreach (var ingrediente in listaIngredientesReceta)
                 {
-                    if(ingrediente.Insumo == null)
+                    if (ingrediente.Insumo == null)
                     {
                         return NotFound("Insumo no encontrado.");
                     }
@@ -862,6 +862,7 @@ namespace CERVERICA.Controllers
                         FechaSolicitud = production.FechaSolicitud,
                         IdUsuarioSolicitud = production.IdUsuarioSolicitud,
                         IdUsuarioProduccion = production.IdUsuarioProduccion,
+                        IdUsuarioMayorista = production.IdUsuarioMayorista,
                         Paso = 0,
                         EsMayorista = true,
                         PrecioMayoristaFijado = production.PrecioMayoristaFijado,
@@ -952,7 +953,7 @@ namespace CERVERICA.Controllers
             if (production.EsMayorista != null && production.EsMayorista == true && noApartar == false)
             {
                 //contar el numero de producciones con el mismo idPedidoMayoreo
-                
+
 
                 //traer los stocks con el mismo idPedidoMayoreo
                 var stocksMayoreo = await _context.Stocks
@@ -975,9 +976,11 @@ namespace CERVERICA.Controllers
                         costoVenta += (double)stockMayoreo.PrecioMayoristaFijado;
                     }
 
+                    int totalDeCervezas = (int)Math.Floor((decimal)(production.LitrosFinales * 1000) / medidaEnvase);
+
                     var venta = new Venta
                     {
-                        IdUsuario = production.IdUsuarioSolicitud,
+                        IdUsuario = production.IdUsuarioMayorista,
                         FechaVenta = DateTime.Now,
                         EstatusVenta = EstatusVenta.Recibido,
                         MetodoEnvio = MetodoEnvio.EnvioDomicilio,
@@ -986,6 +989,7 @@ namespace CERVERICA.Controllers
                         NombrePersonaRecibe = clienteMayorista.NombreEmpresa,
                         Calle = clienteMayorista.DireccionEmpresa,
                         Total = (float)costoVenta,
+                        TotalCervezas = totalDeCervezas,
                         Mayoreo = true
 
                     };
@@ -1000,7 +1004,7 @@ namespace CERVERICA.Controllers
                             IdVenta = venta.Id,
                             IdStock = stockMayoreo.Id,
                             Cantidad = stockMayoreo.CantidadApartada,
-                            MontoVenta = stockMayoreo.PrecioMayoristaFijado??0,
+                            MontoVenta = stockMayoreo.PrecioMayoristaFijado ?? 0,
                             Pack = 0,
                             IdReceta = stockMayoreo.IdReceta
                         };
@@ -1120,7 +1124,7 @@ namespace CERVERICA.Controllers
             return Ok(new { Message = "Usuario de producción cambiado." });
         }
 
- 
+
         private async Task ActualizarCostoReceta(int idReceta)
         {
             var receta = await _context.Recetas

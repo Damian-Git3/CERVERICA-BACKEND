@@ -39,7 +39,9 @@ namespace CERVERICA.Models
         [ForeignKey(nameof(UsuarioProduccion))]
         public string IdUsuarioProduccion { get; set; }
         public virtual ApplicationUser? UsuarioProduccion { get; set; }
-
+        [ForeignKey(nameof(UsuarioMayorista))]
+        public string? IdUsuarioMayorista { get; set; }
+        public virtual ApplicationUser? UsuarioMayorista { get; set; }
         [Required]
         public int Paso { get; set; }
 
@@ -48,7 +50,7 @@ namespace CERVERICA.Models
         public bool? EsMayorista { get; set; }
 
         public int? IdPedidoMayoreo { get; set; }
-         
+
         public int? CantidadMayoristaRequerida { get; set; }
 
         public float? PrecioMayoristaFijado { get; set; }
