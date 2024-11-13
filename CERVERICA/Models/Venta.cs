@@ -65,7 +65,8 @@ namespace CERVERICA.Models
     {
         ContraEntrega = 1,
         TarjetaCredito = 2,
-        Stripe = 3
+        Stripe = 3,
+        Plazos = 4
     }
 
     public enum MetodoEnvio

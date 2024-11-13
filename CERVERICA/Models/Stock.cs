@@ -32,6 +32,14 @@ namespace CERVERICA.Models
 
         [ForeignKey(nameof(Usuario))]
         public string IdUsuario { get; set; }
+
+        public bool? EsMayorista { get; set; }
+
+        public int? IdPedidoMayoreo { get; set; }
+
+        public int? CantidadApartada { get; set; }
+
+        public float? PrecioMayoristaFijado { get; set; }
         public virtual ApplicationUser? Usuario { get; set; }
     }
 }
