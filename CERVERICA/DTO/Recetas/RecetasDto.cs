@@ -48,6 +48,7 @@ namespace CERVERICA.Dtos
 
         [Required(ErrorMessage = "El estado activo es obligatorio.")]
         public bool Activo { get; set; }
+        public bool AptaVentaMayorista { get; set; }
         public float? PrecioUnitarioMinimoMayoreo { get; set; }
 
         public float? PrecioUnitarioBaseMayoreo { get; set; }

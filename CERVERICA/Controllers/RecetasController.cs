@@ -1,5 +1,6 @@
 ﻿using CERVERICA.Data;
 using CERVERICA.Dtos;
+using CERVERICA.Migrations;
 using CERVERICA.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -30,6 +31,33 @@ namespace CERVERICA.Controllers
         {
 
             RecetasDto[] recetas = await _context.Recetas
+                .Select(r => new RecetasDto
+                {
+                    Id = r.Id,
+                    Nombre = r.Nombre,
+                    Descripcion = r.Descripcion ?? string.Empty,
+                    PrecioLitro = r.PrecioLitro,
+                    LitrosEstimados = r.LitrosEstimados,
+                    Imagen = r.Imagen ?? string.Empty,
+                    CostoProduccion = r.CostoProduccion,
+                    TiempoVida = r.TiempoVida,
+                    FechaRegistrado = r.FechaRegistrado,
+                    Activo = r.Activo,
+                    PrecioUnitarioBaseMayoreo = r.PrecioUnitarioBaseMayoreo,
+                    PrecioUnitarioMinimoMayoreo = r.PrecioUnitarioMinimoMayoreo
+                })
+                .ToArrayAsync();
+
+            return Ok(recetas);
+        }
+
+        // GET: api/recetas-mayorista
+        [HttpGet("recetas-mayoristas")]
+        public async Task<ActionResult<IEnumerable<RecetasDto>>> GetRecetasMayoristas()
+        {
+
+            RecetasDto[] recetas = await _context.Recetas
+                 .Where(r => r.AptaVentaMayorista == true)
                 .Select(r => new RecetasDto
                 {
                     Id = r.Id,
