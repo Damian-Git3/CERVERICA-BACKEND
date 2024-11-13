@@ -7,5 +7,6 @@
         public double PrecioPaquete6 { get; set; }
         public double PrecioPaquete12 { get; set; }
         public double PrecioPaquete24 { get; set; }
+        public double PrecioUnitarioBaseMayoreo { get; set; }
     }
 }
