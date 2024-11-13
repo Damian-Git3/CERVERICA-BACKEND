@@ -58,7 +58,7 @@ namespace CERVERICA.Controllers
 
                 }
                 //si no hay un precio unitario base mandar error
-                if (receta.PrecioUnitarioBaseMayoreo == 0 || receta.PrecioUnitarioBaseMayoreo==null)
+                if (receta.PrecioUnitarioBaseMayoreo == 0 || receta.PrecioUnitarioBaseMayoreo == null)
                 {
                     return BadRequest("No se ha fijado un precio base para la cerveza");
                 }
@@ -139,6 +139,7 @@ namespace CERVERICA.Controllers
                     FechaSolicitud = DateTime.Now,
                     IdUsuarioSolicitud = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "a0a0aaa0-0000-0aa0-0000-00aaa0aa0a00",
                     IdUsuarioProduccion = operador,
+                    IdUsuarioMayorista = clienteMayorista.IdUsuario,
                     Paso = 0,
                     EsMayorista = true,
                     PrecioMayoristaFijado = precioFijo,
@@ -156,7 +157,21 @@ namespace CERVERICA.Controllers
                                                 .Include(p => p.Pagos)
                                                 .FirstOrDefaultAsync(p => p.Id == pedido.Id);
 
-            return Ok(new { message= "Pedido mayorista realizado exitosamente, se han insertado los pagos y las producciones", ok=true});
+            var solicitudMayorista = await _context.SolicitudesMayorista.FindAsync(pedidoMayoristaDTO.IdSolicitudMayorista);
+
+            var carrito = await _context.Carritos.Where(c => c.IdUsuario == clienteMayorista.IdUsuario).FirstAsync();
+            await _context.ProductosCarrito.Where(c => c.IdCarrito == carrito.Id).ExecuteDeleteAsync();
+            _context.Carritos.Remove(carrito);
+
+
+            if (solicitudMayorista != null)
+            {
+                solicitudMayorista.Estatus = EstatusSolicitudMayorista.Concretado;
+
+                await _context.SaveChangesAsync();
+            }
+
+            return Ok(new { message = "Pedido mayorista realizado exitosamente, se han insertado los pagos y las producciones", ok = true });
         }
 
 
@@ -220,6 +235,7 @@ namespace CERVERICA.Controllers
         }
 
         //GET lista de clientes mayoristas de un agente de venta
+
         [Authorize(Roles="Agente")]
         [HttpGet("mayoristas-asignados")]
         public async Task<ActionResult<IEnumerable<ClienteMayorista>>> GetClientesAgente()
