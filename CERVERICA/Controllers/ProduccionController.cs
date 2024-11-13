@@ -298,7 +298,6 @@ namespace CERVERICA.Controllers
 
                     return BadRequest(mensajeInsumosCantidadesFaltantes);
                 }
-
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
@@ -346,6 +345,182 @@ namespace CERVERICA.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "Error al procesar la solicitud de producción: " + ex.Message);
             }
         }
+
+        // POST: api/Produccion/comenzarProduccionMayorista/5
+        [HttpPost("comenzarProduccionMayorista/{idProduccion}")]
+        public async Task<IActionResult> comenzarProduccionMayorista(int idProduccion)
+        {
+            
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                //traer la produccion
+                var produccion = await _context.Producciones
+                    .Include(p => p.Receta)
+                        .ThenInclude(r => r.IngredientesReceta)
+                    .Include(p => p.ProduccionLoteInsumos)
+                    .FirstOrDefaultAsync(p => p.Id == idProduccion);
+
+                
+
+                if (produccion.Receta == null)
+                {
+                    return NotFound("Receta no encontrada.");
+                }
+
+
+                //calcular el numero de botella de 355 ml que se pueden llenar y si no hay stock de botellas rechazar la solicitud
+                var medidaEnvase = 355;
+                var litrosEstimados = produccion.Receta.LitrosEstimados * produccion.NumeroTandas;
+                var mililitrosEstimados = litrosEstimados * 1000;
+
+                var botellasNecesarias = Math.Ceiling(mililitrosEstimados / medidaEnvase);
+
+                //consultar el stock de botellas con Id = 2 en la tabla de insumos y lotes de insumos
+                var stockBotellas = await _context.LotesInsumos
+                    .Where(li => li.IdInsumo == 2 && li.FechaCaducidad > DateTime.Today)
+                    .SumAsync(li => li.Cantidad);
+
+
+                if (botellasNecesarias > stockBotellas)
+                {
+                    return BadRequest(new { message = "No hay suficientes botellas de 355 ml en stock para la producción." });
+                }
+
+                //consultar todas todas las producciones en estatus 1, 2 y 3
+                var produccionesEnProceso = await _context.Producciones
+                    .Where(p => p.Estatus == 1 || p.Estatus == 2 || p.Estatus == 3)
+                    .ToListAsync();
+
+                var sumatoriaMililitrosEsperados = 0.0;
+
+                //recorrer las producciones en proceso y sumar los litros esperados de cada una de ellas
+                foreach (var prod in produccionesEnProceso)
+                {
+
+                    //hacer una consulta para obtener los litros estimados de la receta de cada produccion
+                    var recetaProdLitrosEstimados = await _context.Recetas
+                        .Where(r => r.Id == prod.IdReceta)
+                        .Select(r => new
+                        {
+                            LitrosEstimados = r.LitrosEstimados
+                        })
+                        .FirstOrDefaultAsync();
+
+                    sumatoriaMililitrosEsperados += Math.Ceiling((float)recetaProdLitrosEstimados.LitrosEstimados * prod.NumeroTandas * 1000);
+                }
+
+                var sumatoriaMililitrosEsperadosConEstaProduccion = sumatoriaMililitrosEsperados + mililitrosEstimados;
+
+                //verificar que la cantidad de botellas en stock alcance para todas las producciones en proceso
+                var botellasNecesariasConEstaProduccion = Math.Ceiling(sumatoriaMililitrosEsperadosConEstaProduccion / medidaEnvase);
+
+                if (botellasNecesariasConEstaProduccion > stockBotellas)
+                {
+                    return BadRequest(new { message = "No hay suficientes botellas de 355 ml en stock para la producción." });
+                }
+
+
+                bool recetaSePuedeProcesar = true;
+                string mensajeInsumosCantidadesFaltantes = "";
+
+                foreach (var ingrediente in produccion.Receta.IngredientesReceta)
+                {
+                    if(ingrediente.Insumo == null)
+                    {
+                        return NotFound("Insumo no encontrado.");
+                    }
+                    var cantidadNecesaria = ingrediente.Cantidad * produccion.NumeroTandas;
+                    var lotesInsumo = await _context.LotesInsumos
+                        .Where(li => li.IdInsumo == ingrediente.IdInsumo && li.FechaCaducidad > DateTime.Today)
+                        .OrderBy(li => li.FechaCaducidad)
+                        .ToListAsync();
+
+                    foreach (var lote in lotesInsumo)
+                    {
+                        if (cantidadNecesaria <= 0)
+                            break;
+
+                        var cantidadUtilizada = Math.Min(lote.Cantidad, cantidadNecesaria);
+                        lote.Cantidad -= cantidadUtilizada;
+                        cantidadNecesaria -= cantidadUtilizada;
+
+                        var produccionLoteInsumo = new ProduccionLoteInsumo
+                        {
+                            IdProduccion = produccion.Id,
+                            IdLoteInsumo = lote.Id,
+                            Cantidad = cantidadUtilizada
+                        };
+                        _context.ProduccionLoteInsumos.Add(produccionLoteInsumo);
+                        _context.LotesInsumos.Update(lote);
+                    }
+
+                    if (cantidadNecesaria > 0)
+                    {
+                        recetaSePuedeProcesar = false;
+                        mensajeInsumosCantidadesFaltantes += $"Faltan {cantidadNecesaria} {ingrediente.Insumo.UnidadMedida} del insumo {ingrediente.Insumo.Nombre}\n";
+                    }
+                }
+
+                if (!recetaSePuedeProcesar)
+                {
+                    //cancelar los cambios
+                    transaction.Rollback();
+
+                    return BadRequest(mensajeInsumosCantidadesFaltantes);
+                }
+
+                produccion.Estatus = 2;
+
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                try
+                {
+
+                    var s = "";
+                    if (produccion.NumeroTandas > 1)
+                    {
+                        s = "s";
+                    }
+                    Notificacion notificacion = new Notificacion
+                    {
+                        IdUsuario = produccion.IdUsuarioSolicitud,
+                        Fecha = DateTime.Now,
+                        Tipo = 5,
+                        Mensaje = "Se ha empezado producción de " + produccion.NumeroTandas + $" tanda{s} de " + produccion.Receta.Nombre,
+                        Visto = false
+                    };
+
+                    _context.Notificaciones.Add(notificacion);
+
+                    Notificacion notificacion2 = new Notificacion
+                    {
+                        IdUsuario = produccion.IdUsuarioProduccion,
+                        Fecha = DateTime.Now,
+                        Tipo = 5,
+                        Mensaje = "Se ha comenzado producción de " + produccion.NumeroTandas + $" tanda{s} de " + produccion.Receta.Nombre,
+                        Visto = false
+                    };
+
+                    _context.Notificaciones.Add(notificacion2);
+                    await _context.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+
+                }
+
+                return Ok(new { id = produccion.Id, message = "Comienzo de produccion de receta realizada. Verifique la reduccion de insumos." });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error al procesar la solicitud de producción: " + ex.Message);
+            }
+        }
+
 
         [HttpPost("resolicitar/{id}")]
         public async Task<IActionResult> RetryProduction(int id)
@@ -518,6 +693,32 @@ namespace CERVERICA.Controllers
 
                 _context.Notificaciones.Add(notificacion);
                 await _context.SaveChangesAsync();
+
+                //si la produccion es mayorista resolicitar la produccion
+                if (production.EsMayorista != null && production.EsMayorista == true)
+                {
+                    var produccion = new Produccion
+                    {
+                        FechaProduccion = DateTime.Now,
+                        FechaProximoPaso = DateTime.Now,
+                        Mensaje = "Es de un pedido mayorista resolicitado",
+                        Estatus = 10, //pedido mayorista
+                        NumeroTandas = production.NumeroTandas,
+                        IdReceta = production.IdReceta,
+                        FechaSolicitud = production.FechaSolicitud,
+                        IdUsuarioSolicitud = production.IdUsuarioSolicitud,
+                        IdUsuarioProduccion = production.IdUsuarioProduccion,
+                        Paso = 0,
+                        EsMayorista = true,
+                        PrecioMayoristaFijado = production.PrecioMayoristaFijado,
+                        IdPedidoMayoreo = production.IdPedidoMayoreo,
+                        CantidadMayoristaRequerida = production.CantidadMayoristaRequerida,
+                        StocksRequeridos = production.StocksRequeridos
+                    };
+                    _context.Producciones.Add(produccion);
+                    await _context.SaveChangesAsync();
+                }
+
                 return Ok(new { Message = "Producción perdida." });
             }
 
@@ -601,13 +802,71 @@ namespace CERVERICA.Controllers
 
                 _context.Notificaciones.Add(notificacion);
                 await _context.SaveChangesAsync();
+
+                //si la produccion es mayorista resolicitar la produccion
+                if (production.EsMayorista != null && production.EsMayorista == true)
+                {
+
+                    var produccion = new Produccion
+                    {
+                        FechaProduccion = DateTime.Now,
+                        FechaProximoPaso = DateTime.Now,
+                        Mensaje = "Es de un pedido mayorista resolicitado",
+                        Estatus = 10, //pedido mayorista
+                        NumeroTandas = production.NumeroTandas,
+                        IdReceta = production.IdReceta,
+                        FechaSolicitud = production.FechaSolicitud,
+                        IdUsuarioSolicitud = production.IdUsuarioSolicitud,
+                        IdUsuarioProduccion = production.IdUsuarioProduccion,
+                        Paso = 0,
+                        EsMayorista = true,
+                        PrecioMayoristaFijado = production.PrecioMayoristaFijado,
+                        IdPedidoMayoreo = production.IdPedidoMayoreo,
+                        CantidadMayoristaRequerida = production.CantidadMayoristaRequerida,
+                        StocksRequeridos = production.StocksRequeridos
+                    };
+                    _context.Producciones.Add(produccion);
+                    await _context.SaveChangesAsync();
+                }
+
                 return Ok(new { Message = "Producción finalizada como fallida." });
+            }
+
+            var noApartar = false;
+            if (production.EsMayorista != null && production.EsMayorista == true)
+            {
+
+                //verificar que la produccion alcance para la cantidad mayorista requerida
+                if (production.CantidadMayoristaRequerida > Math.Floor((double)(production.LitrosFinales / 0.355)))
+                {
+                    noApartar = true;
+                    var produccion = new Produccion
+                    {
+                        FechaProduccion = DateTime.Now,
+                        FechaProximoPaso = DateTime.Now,
+                        Mensaje = "Es de un pedido mayorista resolicitado",
+                        Estatus = 10, //pedido mayorista
+                        NumeroTandas = production.NumeroTandas,
+                        IdReceta = production.IdReceta,
+                        FechaSolicitud = production.FechaSolicitud,
+                        IdUsuarioSolicitud = production.IdUsuarioSolicitud,
+                        IdUsuarioProduccion = production.IdUsuarioProduccion,
+                        Paso = 0,
+                        EsMayorista = true,
+                        PrecioMayoristaFijado = production.PrecioMayoristaFijado,
+                        IdPedidoMayoreo = production.IdPedidoMayoreo,
+                        CantidadMayoristaRequerida = production.CantidadMayoristaRequerida,
+                        StocksRequeridos = production.StocksRequeridos
+                    };
+                    _context.Producciones.Add(produccion);
+                    await _context.SaveChangesAsync();
+                }
             }
 
             //consultar el numero de botellas id = 2 en stock
             var numBotellas = await _context.LotesInsumos
-                .Where(li => li.IdInsumo == 2 && li.FechaCaducidad > DateTime.Today)
-                .SumAsync(li => li.Cantidad);
+                 .Where(li => li.IdInsumo == 2 && li.FechaCaducidad > DateTime.Today)
+                 .SumAsync(li => li.Cantidad);
 
             production.CostoProduccion = production.NumeroTandas * production.Receta.CostoProduccion;
 
@@ -667,8 +926,85 @@ namespace CERVERICA.Controllers
                 IdUsuario = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "a0a0aaa0-0000-0aa0-0000-00aaa0aa0a00"
             };
 
+            if (production.EsMayorista != null && production.EsMayorista == true && noApartar == false)
+            {
+                stock.CantidadApartada = production.CantidadMayoristaRequerida;
+                stock.Cantidad = (int)(cantidadStock - production.CantidadMayoristaRequerida);
+                stock.IdPedidoMayoreo = production.IdPedidoMayoreo;
+                stock.EsMayorista = true;
+                stock.PrecioMayoristaFijado = production.PrecioMayoristaFijado;
+            }
+
             _context.Stocks.Add(stock);
             await _context.SaveChangesAsync();
+
+            if (production.EsMayorista != null && production.EsMayorista == true && noApartar == false)
+            {
+                //contar el numero de producciones con el mismo idPedidoMayoreo
+                
+
+                //traer los stocks con el mismo idPedidoMayoreo
+                var stocksMayoreo = await _context.Stocks
+                    .Where(s => s.IdPedidoMayoreo == production.IdPedidoMayoreo)
+                    .ToListAsync();
+
+                //si el numero de producciones es igual al numero de stocks entonces procesar la venta de mayoreo
+                if (production.StocksRequeridos == stocksMayoreo.Count)
+                {
+                    //Traer el cliente mayorista
+                    var clienteMayorista = await _context.ClientesMayoristas
+                        .Where(p => p.Id == production.IdPedidoMayoreo).FirstOrDefaultAsync();
+
+                    var costoVenta = 0.0;
+                    foreach (var stockMayoreo in stocksMayoreo)
+                    {
+                        costoVenta += (double)stockMayoreo.PrecioMayoristaFijado;
+                    }
+
+                    var venta = new Venta
+                    {
+                        IdUsuario = production.IdUsuarioSolicitud,
+                        FechaVenta = DateTime.Now,
+                        EstatusVenta = EstatusVenta.Recibido,
+                        MetodoEnvio = MetodoEnvio.EnvioDomicilio,
+                        MetodoPago = MetodoPago.Plazos,
+
+                        NombrePersonaRecibe = clienteMayorista.NombreEmpresa,
+                        Calle = clienteMayorista.DireccionEmpresa,
+                        Total = (float)costoVenta,
+                        Mayoreo = true
+
+                    };
+                    _context.Ventas.Add(venta);
+                    await _context.SaveChangesAsync();
+
+                    foreach (var stockMayoreo in stocksMayoreo)
+                    {
+                        //generar un detalle de venta
+                        var detalleVenta = new DetalleVenta
+                        {
+                            IdVenta = venta.Id,
+                            IdStock = stockMayoreo.Id,
+                            Cantidad = stockMayoreo.CantidadApartada,
+                            MontoVenta = stockMayoreo.PrecioMayoristaFijado??0,
+                            Pack = 0,
+                            IdReceta = stockMayoreo.IdReceta
+                        };
+                        _context.DetallesVenta.Add(detalleVenta);
+
+                    }
+                    await _context.SaveChangesAsync();
+
+                    //cambiar el estatus del pedido mayorista a 1
+                    var pedidoMayorista = await _context.PedidosMayoreo.FindAsync(production.IdPedidoMayoreo);
+
+                    pedidoMayorista.Estatus = 1;
+                    _context.Entry(pedidoMayorista).State = EntityState.Modified;
+                    await _context.SaveChangesAsync();
+
+                }
+            }
+
 
             try
             {
@@ -770,31 +1106,7 @@ namespace CERVERICA.Controllers
             return Ok(new { Message = "Usuario de producción cambiado." });
         }
 
-        //[HttpPost("cambiarestdo")]
-        //public async Task<IActionResult> CambiarEstadoProduccion(int idproduccion, byte estatus)
-        //{
-        //    var produccion = await _context.Producciones.FindAsync(idproduccion);
-
-        //    produccion.Estatus = estatus;
-
-        //    _context.Entry(produccion).State = EntityState.Modified;
-        //    await _context.SaveChangesAsync();
-
-        //    return Ok(new { Message = "Estatus de producción a 3 otra vez." });
-        //}
-
-        ////vaciar tabla stock
-        //[HttpPost("vaciarstock")]
-        //public async Task<IActionResult> VaciarStock()
-        //{
-        //    var stocks = await _context.Stocks.ToListAsync();
-
-        //    _context.Stocks.RemoveRange(stocks);
-        //    await _context.SaveChangesAsync();
-
-        //    return Ok(new { Message = "Stock vaciado." });
-        //}
-
+ 
         private async Task ActualizarCostoReceta(int idReceta)
         {
             var receta = await _context.Recetas
@@ -1187,8 +1499,8 @@ namespace CERVERICA.Controllers
                         .Select(pp => pp.Descripcion)
                         .FirstOrDefault() ?? "Sin descripción",
                     IdUsuarioSolicitud = p.IdUsuarioSolicitud,
-                    IdUsuarioProduccion = p.IdUsuarioProduccion
-
+                    IdUsuarioProduccion = p.IdUsuarioProduccion,
+                    EsMayorista = p.EsMayorista ?? false
                 })
                 .ToListAsync();
 

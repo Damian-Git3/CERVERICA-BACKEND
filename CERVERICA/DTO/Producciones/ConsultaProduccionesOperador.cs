@@ -38,5 +38,6 @@ namespace CERVERICA.Dtos
         [Required(ErrorMessage = "La descripción del paso es obligatoria.")]
         [StringLength(250, ErrorMessage = "La descripción del paso no puede exceder los 250 caracteres.")]
         public string DescripcionPaso { get; set; }
+        public bool EsMayorista { get; set; }
     }
 }

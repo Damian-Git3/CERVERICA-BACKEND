@@ -45,6 +45,16 @@ namespace CERVERICA.Models
 
         public float? MermaLitros { get; set; }
 
+        public bool? EsMayorista { get; set; }
+
+        public int? IdPedidoMayoreo { get; set; }
+         
+        public int? CantidadMayoristaRequerida { get; set; }
+
+        public float? PrecioMayoristaFijado { get; set; }
+
+        public int? StocksRequeridos { get; set; }
+
         public ICollection<ProduccionLoteInsumo> ProduccionLoteInsumos { get; set; }
 
     }
