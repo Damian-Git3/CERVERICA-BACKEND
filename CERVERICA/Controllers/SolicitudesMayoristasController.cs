@@ -21,14 +21,30 @@ namespace CERVERICA.Controllers
             _db = db;
         }
 
-        [HttpGet("obtener-solicitudes-mayoristas")]
-        public async Task<ActionResult<SolicitudMayorista>> obtenerSolicitudesMayoristas()
+        [HttpGet("obtener-solicitudes-agente")]
+        public async Task<ActionResult<SolicitudMayorista>> obtenerSolicitudesAgente()
 
         {
             var idUsuario = HttpContext.Items["idUsuario"] as string;
 
             var solicitudesMayoristas = await _db.SolicitudesMayorista
             .Where(s => s.IdAgente == idUsuario)
+            .Include(s => s.Mayorista)
+            .ToListAsync();
+
+            return Ok(solicitudesMayoristas);
+        }
+
+        [HttpGet("obtener-solicitudes-mayorista")]
+        public async Task<ActionResult<SolicitudMayorista>> obtenerSolicitudesMayorista()
+
+        {
+            var idUsuario = HttpContext.Items["idUsuario"] as string;
+
+            var mayorista = await _db.ClientesMayoristas.Where(m => m.IdUsuario == idUsuario).FirstAsync();
+
+            var solicitudesMayoristas = await _db.SolicitudesMayorista
+            .Where(s => s.IdMayorista == mayorista.Id)
             .Include(s => s.Mayorista)
             .ToListAsync();
 

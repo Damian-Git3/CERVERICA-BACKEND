@@ -216,7 +216,7 @@ namespace CERVERICA.Data
             base.OnModelCreating(modelBuilder);
 
             // Seed de datos
-            modelBuilder.Entity<IdentityRole>().HasData(
+            /*modelBuilder.Entity<IdentityRole>().HasData(
                 new IdentityRole { Id = "1", Name = "Operador", NormalizedName = "OPERADOR" },
                 new IdentityRole { Id = "2", Name = "Admin", NormalizedName = "ADMIN" },
                 new IdentityRole { Id = "3", Name = "Mayorista", NormalizedName = "MAYORISTA" },
@@ -427,7 +427,7 @@ namespace CERVERICA.Data
                 new IdentityUserRole<string> { UserId = "U8", RoleId = "4" }, // Cliente
                 new IdentityUserRole<string> { UserId = "U9", RoleId = "5" }, // Agente
                 new IdentityUserRole<string> { UserId = "U10", RoleId = "5" } // Agente
-            );
+            );*/
 
 
 

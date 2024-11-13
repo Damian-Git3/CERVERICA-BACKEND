@@ -47,6 +47,10 @@ namespace CERVERICA.Models
 
         [Required]
         public bool Activo { get; set; }
+
+        [Required]
+        public bool AptaVentaMayorista { get; set; }
+
         [Column(TypeName = "Date")]
         public DateTime FechaRegistrado { get; set; }
 
