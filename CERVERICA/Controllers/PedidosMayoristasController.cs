@@ -192,6 +192,22 @@ namespace CERVERICA.Controllers
             return Ok(pagos);
         }
 
+        // GET pagos de un cliente mayorista
+        [Authorize(Roles = "Mayorista")]
+        [HttpGet("pagos/cliente")]
+        public async Task<ActionResult<IEnumerable<Pago>>> GetPagosMayoristaPropio()
+        {
+            var idUser = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var mayorista = await _context.ClientesMayoristas.FirstOrDefaultAsync(c => c.IdUsuario == idUser);
+
+            var pagos = await _context.Pagos
+                                    .Where(p => p.IdMayorista == mayorista.Id)
+                                    .ToListAsync();
+
+            return Ok(pagos);
+        }
+
         // GET Pagos de un pedido mayorista
         [HttpGet("pagos/pedido/{idPedido}")]
         public async Task<ActionResult<IEnumerable<Pago>>> GetPagosPedido(int idPedido)
@@ -205,7 +221,7 @@ namespace CERVERICA.Controllers
 
         //GET lista de clientes mayoristas de un agente de venta
         [Authorize(Roles="Agente")]
-        [HttpGet("clientes/{idAgente}")]
+        [HttpGet("mayoristas-asignados")]
         public async Task<ActionResult<IEnumerable<ClienteMayorista>>> GetClientesAgente()
         {
             var idAgente = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -239,6 +255,7 @@ namespace CERVERICA.Controllers
             }
 
             pago.Estatus = 2;
+            pago.FechaPago = DateTime.Now;
             await _context.SaveChangesAsync();
 
             return Ok(pago);
