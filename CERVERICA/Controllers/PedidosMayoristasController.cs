@@ -86,7 +86,7 @@ namespace CERVERICA.Controllers
             await _context.SaveChangesAsync();
 
             //crear los pagos ligados al pedido
-            for (int i = 0; i < numeroPagos; i++)
+            for (int i = 1; i <= numeroPagos; i++)
             {
                 var pago = new Pago
                 {
@@ -151,9 +151,12 @@ namespace CERVERICA.Controllers
 
             }
 
+            //obtener el pedido con los pagos y las producciones
+            var pedidoConPagos = await _context.PedidosMayoreo
+                                                .Include(p => p.Pagos)
+                                                .FirstOrDefaultAsync(p => p.Id == pedido.Id);
 
-
-            return Ok(pedido);
+            return Ok(new { message= "Pedido mayorista realizado exitosamente, se han insertado los pagos y las producciones", ok=true});
         }
 
 
@@ -190,7 +193,7 @@ namespace CERVERICA.Controllers
         }
 
         // GET Pagos de un pedido mayorista
-        [HttpGet("pagos/{idPedido}")]
+        [HttpGet("pagos/pedido/{idPedido}")]
         public async Task<ActionResult<IEnumerable<Pago>>> GetPagosPedido(int idPedido)
         {
             var pagos = await _context.Pagos
@@ -235,7 +238,7 @@ namespace CERVERICA.Controllers
                 return NotFound();
             }
 
-            pago.Estatus = 1;
+            pago.Estatus = 2;
             await _context.SaveChangesAsync();
 
             return Ok(pago);

@@ -1,6 +1,5 @@
 ﻿using CERVERICA.Data;
 using CERVERICA.Dtos;
-using CERVERICA.Migrations;
 using CERVERICA.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

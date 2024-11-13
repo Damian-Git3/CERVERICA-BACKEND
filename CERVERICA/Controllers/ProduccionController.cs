@@ -424,7 +424,18 @@ namespace CERVERICA.Controllers
                 bool recetaSePuedeProcesar = true;
                 string mensajeInsumosCantidadesFaltantes = "";
 
-                foreach (var ingrediente in produccion.Receta.IngredientesReceta)
+                //obtener los ingredientes receta con su insumo pertenecientes a produccion.IdReceta
+                var listaIngredientesReceta = await _context.IngredientesReceta
+                    .Where(ir => ir.IdReceta == produccion.IdReceta)
+                    .Select(ir => new
+                    {
+                        IdInsumo = ir.IdInsumo,
+                        Cantidad = ir.Cantidad,
+                        Insumo = ir.Insumo
+                    })
+                    .ToListAsync();
+
+                foreach (var ingrediente in listaIngredientesReceta)
                 {
                     if(ingrediente.Insumo == null)
                     {
@@ -952,8 +963,11 @@ namespace CERVERICA.Controllers
                 if (production.StocksRequeridos == stocksMayoreo.Count)
                 {
                     //Traer el cliente mayorista
-                    var clienteMayorista = await _context.ClientesMayoristas
+                    var pedidoMayoreoParaId = await _context.PedidosMayoreo
                         .Where(p => p.Id == production.IdPedidoMayoreo).FirstOrDefaultAsync();
+
+                    var clienteMayorista = await _context.ClientesMayoristas
+                        .Where(p => p.Id == pedidoMayoreoParaId.IdMayorista).FirstOrDefaultAsync();
 
                     var costoVenta = 0.0;
                     foreach (var stockMayoreo in stocksMayoreo)
@@ -997,7 +1011,7 @@ namespace CERVERICA.Controllers
 
                     //cambiar el estatus del pedido mayorista a 1
                     var pedidoMayorista = await _context.PedidosMayoreo.FindAsync(production.IdPedidoMayoreo);
-
+                    pedidoMayorista.IdVenta = venta.Id;
                     pedidoMayorista.Estatus = 1;
                     _context.Entry(pedidoMayorista).State = EntityState.Modified;
                     await _context.SaveChangesAsync();

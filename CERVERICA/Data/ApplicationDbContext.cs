@@ -216,7 +216,7 @@ namespace CERVERICA.Data
             base.OnModelCreating(modelBuilder);
 
             // Seed de datos
-            /*modelBuilder.Entity<IdentityRole>().HasData(
+            modelBuilder.Entity<IdentityRole>().HasData(
                 new IdentityRole { Id = "1", Name = "Operador", NormalizedName = "OPERADOR" },
                 new IdentityRole { Id = "2", Name = "Admin", NormalizedName = "ADMIN" },
                 new IdentityRole { Id = "3", Name = "Mayorista", NormalizedName = "MAYORISTA" },
@@ -241,8 +241,8 @@ namespace CERVERICA.Data
                 );
 
             modelBuilder.Entity<Insumo>().HasData(
-                new Insumo { Id = 1, UnidadMedida="L", Activo=true, Nombre = "Agua", Descripcion = "Agua potable para la elaboración general de recetas, especificar cantidad." },
-                new Insumo { Id = 2, UnidadMedida="PZ", Activo = true, Nombre = "Botellas", Descripcion = "Botellas de vidrio para envasado, cantidad autoconsumida en producción." }
+                new Insumo { Id = 1, UnidadMedida = "L", Activo = true, Nombre = "Agua", Descripcion = "Agua potable para la elaboración general de recetas, especificar cantidad." },
+                new Insumo { Id = 2, UnidadMedida = "PZ", Activo = true, Nombre = "Botellas", Descripcion = "Botellas de vidrio para envasado, cantidad autoconsumida en producción." }
             );
 
             // Hasher para las contraseñas
@@ -427,13 +427,7 @@ namespace CERVERICA.Data
                 new IdentityUserRole<string> { UserId = "U8", RoleId = "4" }, // Cliente
                 new IdentityUserRole<string> { UserId = "U9", RoleId = "5" }, // Agente
                 new IdentityUserRole<string> { UserId = "U10", RoleId = "5" } // Agente
-            );*/
-
-
-
-
-            //insertar ClienteMayorista con los datos de usuarios 
-
+            );
 
         }
     }

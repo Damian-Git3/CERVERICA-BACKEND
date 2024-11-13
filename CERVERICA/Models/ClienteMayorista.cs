@@ -47,8 +47,10 @@ namespace CERVERICA.Models
         public ICollection<SolicitudesCambioAgente> SolicitudesCambioAgente { get; set; }
 
         // Relación uno a muchos con la tabla PedidoMayoreo
+        [JsonIgnore]
         public ICollection<PedidoMayoreo> PedidosMayoreo { get; set; }
 
+        [JsonIgnore]
         public ICollection<Pago> Pagos { get; set; }
     }
 }
