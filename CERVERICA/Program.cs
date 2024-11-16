@@ -89,9 +89,6 @@ builder.Services.AddAuthentication(opt =>
 builder.Services.AddControllers();
 
 builder.Services.AddScoped<RoutineController>();
-/*
-builder.Services.AddHostedService<HostedServiceRoutines>();
-*/
 
 builder.Services.AddEndpointsApiExplorer();
 
