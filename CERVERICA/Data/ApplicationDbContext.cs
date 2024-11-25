@@ -215,7 +215,7 @@ namespace CERVERICA.Data
 
             base.OnModelCreating(modelBuilder);
 
-            /*// Seed de datos
+            // Seed de datos
             modelBuilder.Entity<IdentityRole>().HasData(
                 new IdentityRole { Id = "1", Name = "Operador", NormalizedName = "OPERADOR" },
                 new IdentityRole { Id = "2", Name = "Admin", NormalizedName = "ADMIN" },
@@ -223,6 +223,39 @@ namespace CERVERICA.Data
                 new IdentityRole { Id = "4", Name = "Cliente", NormalizedName = "CLIENTE" },
                 new IdentityRole { Id = "5", Name = "Agente", NormalizedName = "AGENTE" },
                 new IdentityRole { Id = "6", Name = "Cocinero", NormalizedName = "COCINERO" }
+            );
+
+            modelBuilder.Entity<Proveedor>().HasData(
+                new Proveedor
+                {
+                    Id = 1,
+                    Empresa = "Bonafont",
+                    Telefono = "1234567890",
+                    Direccion = "Bonafont Avenue 728",
+                    Email = "bonafont@bonafont.com",
+                    NombreContacto = "Bonafont",
+                    Activo = true
+                },
+                new Proveedor
+                {
+                    Id = 2,
+                    Empresa = "Maseca",
+                    Telefono = "0987654321",
+                    Direccion = "Maseca Boulevard 283",
+                    Email = "maseca@maseca.com",
+                    NombreContacto = "Maseca",
+                    Activo = true
+                },
+                new Proveedor
+                {
+                    Id = 3,
+                    Empresa = "LaCosteña",
+                    Telefono = "7364093846",
+                    Direccion = "LaCosteña street 632",
+                    Email = "lacostena@lacostena.com",
+                    NombreContacto = "LaCosteña",
+                    Activo = true
+                }
             );
 
             modelBuilder.Entity<CategoriaAsistencia>().HasData(
@@ -233,7 +266,7 @@ namespace CERVERICA.Data
            );
 
             modelBuilder.Entity<CategoriaCerveza>().HasData(
-                    new CategoriaCerveza { Id = 1, Nombre = "Mayoreo", Estatus = true },
+                    new CategoriaCerveza { Id = 1, Nombre = "Witbier", Estatus = true },
                     new CategoriaCerveza { Id = 2, Nombre = "Ale", Estatus = true },
                     new CategoriaCerveza { Id = 3, Nombre = "Stout", Estatus = true },
                     new CategoriaCerveza { Id = 4, Nombre = "Pilsner", Estatus = true },
@@ -241,8 +274,16 @@ namespace CERVERICA.Data
                 );
 
             modelBuilder.Entity<Insumo>().HasData(
-                new Insumo { Id = 1, UnidadMedida = "L", Activo = true, Nombre = "Agua", Descripcion = "Agua potable para la elaboración general de recetas, especificar cantidad." },
-                new Insumo { Id = 2, UnidadMedida = "PZ", Activo = true, Nombre = "Botellas", Descripcion = "Botellas de vidrio para envasado, cantidad autoconsumida en producción." }
+                new Insumo { Id = 1, UnidadMedida = "L", Activo = true, Nombre = "Agua", CantidadMinima = 100, CantidadMaxima = 10000, CostoUnitario = (float)0.15, Descripcion = "Ingrediente base que constituye la mayor parte de la cerveza y afecta su calidad y sabor." },
+                new Insumo { Id = 2, UnidadMedida = "PZ", Activo = true, Nombre = "Botellas", CantidadMinima = 281, CantidadMaxima = 10000, CostoUnitario = (float)6, Descripcion = "Envases utilizados para almacenar y distribuir la cerveza terminada. Medida unica de 355 ml." },
+                new Insumo { Id = 3, UnidadMedida = "KG", Activo = true, Nombre = "Levadura", CantidadMinima = 5, CantidadMaxima = 50, CostoUnitario = (float)500, Descripcion = "Microorganismo esencial para la fermentación, que convierte los azúcares en alcohol y dióxido de carbono." },
+                new Insumo { Id = 4, UnidadMedida = "KG", Activo = true, Nombre = "Lúpulo", CantidadMinima = 1, CantidadMaxima = 50, CostoUnitario = (float)800, Descripcion = "Flor utilizada para aportar amargor, aroma y propiedades conservantes a la cerveza." },
+                new Insumo { Id = 5, UnidadMedida = "KG", Activo = true, Nombre = "Trigo", CantidadMinima = 10, CantidadMaxima = 100, CostoUnitario = (float)20, Descripcion = "Cereal usado como complemento de la malta para dar cuerpo y un toque especial al sabor." },
+                new Insumo { Id = 6, UnidadMedida = "KG", Activo = true, Nombre = "Maiz", CantidadMinima = 0, CantidadMaxima = 50, CostoUnitario = (float)0, Descripcion = "Adjunto utilizado para aligerar el cuerpo de la cerveza y aportar un perfil más suave." },
+                new Insumo { Id = 7, UnidadMedida = "KG", Activo = true, Nombre = "Avena", CantidadMinima = 5, CantidadMaxima = 50, CostoUnitario = (float)22, Descripcion = "Ingrediente que aporta una textura cremosa y mejora la sensación en boca de la cerveza." },
+                new Insumo { Id = 8, UnidadMedida = "KG", Activo = true, Nombre = "Malta", CantidadMinima = 100, CantidadMaxima = 1000, CostoUnitario = (float)25, Descripcion = "Grano germinado que proporciona azúcares fermentables, color y sabor a la cerveza." },
+                new Insumo { Id = 9, UnidadMedida = "KG", Activo = true, Nombre = "Sal", CantidadMinima = (float)0.05, CantidadMaxima = 5, CostoUnitario = (float)10, Descripcion = "Ingrediente utilizado en ciertos estilos de cerveza para realzar sabores y crear perfiles únicos." },
+                new Insumo { Id = 10, UnidadMedida = "KG", Activo = true, Nombre = "Azúcar", CantidadMinima = 5, CantidadMaxima = 50, CostoUnitario = (float)18, Descripcion = "Ingrediente que puede usarse para incrementar el contenido alcohólico o para la carbonatación." }
             );
 
             // Hasher para las contraseñas
@@ -427,7 +468,237 @@ namespace CERVERICA.Data
                 new IdentityUserRole<string> { UserId = "U8", RoleId = "4" }, // Cliente
                 new IdentityUserRole<string> { UserId = "U9", RoleId = "5" }, // Agente
                 new IdentityUserRole<string> { UserId = "U10", RoleId = "5" } // Agente
-            );*/
+            );
+
+            modelBuilder.Entity<Receta>().HasData(
+                new Receta
+                {
+                    Id = 1,
+                    Nombre = "Lager",
+                    Descripcion = "Una cerveza ligera, de sabor suave y bajo amargor.",
+                    Especificaciones = "Alcohol (ABV): ~4.5% | Amargor (IBU): 15-20 | Color (SRM): 2-4 | Carbonatación: Alta (~2.5-3.0 volúmenes de CO₂). | Fermentación: 3-4 semanas (10-12 °C).",
+                    LitrosEstimados = 100,
+                    PrecioLitro = (float)9.23,
+                    PrecioPaquete1 = (float)15.00,
+                    PrecioPaquete6 = (float)85.50,
+                    PrecioPaquete12 = (float)162.00,
+                    PrecioPaquete24 = (float)306.00,
+                    PrecioUnitarioBaseMayoreo = (float)13.50,
+                    CostoProduccion = 0,
+                    TiempoVida = 300,
+                    Activo = true,
+                    AptaVentaMayorista = true,
+                    FechaRegistrado = DateTime.Now,
+                    Imagen = "https://chelar.com.mx/wp-content/uploads/2020/04/minerva-lager-light.png",
+                    RutaFondo = "https://cdn.pixabay.com/photo/2018/04/23/11/40/abstract-3343966_640.jpg"
+                },
+                new Receta
+                {
+                    Id = 2,
+                    Nombre = "Witbier",
+                    Descripcion = "Cerveza de trigo estilo belga, refrescante y ligeramente especiado.",
+                    Especificaciones = "Alcohol (ABV): ~4.8% | Amargor (IBU): 10-15 | Color (SRM): 3-5 | Carbonatación: Alta (~2.5-3.0 volúmenes de CO₂). | Fermentación: 2-3 semanas (~18-22 °C).",
+                    LitrosEstimados = 100,
+                    PrecioLitro = (float)8.60,
+                    PrecioPaquete1 = (float)14.50,
+                    PrecioPaquete6 = (float)82.65,
+                    PrecioPaquete12 = (float)156.60,
+                    PrecioPaquete24 = (float)294.00,
+                    PrecioUnitarioBaseMayoreo = (float)11.50,
+                    CostoProduccion = 0,
+                    TiempoVida = 300,
+                    Activo = true,
+                    AptaVentaMayorista = true,
+                    FechaRegistrado = DateTime.Now,
+                    Imagen = "https://cerveceriaallende.mx/wp-content/uploads/elementor/thumbs/trigo-qj4t8utib67oooek6mcnhy200ptu0c01gs7vqzd7gk.png",
+                    RutaFondo = "https://www.creativefabrica.com/wp-content/uploads/2021/07/31/Sunburst-blue-Background-Wallpaper-Free-Graphics-15314141-1-1-580x352.jpg"
+                },
+                new Receta
+                {
+                    Id = 3,
+                    Nombre = "Stout",
+                    Descripcion = "Una cerveza robusta, con sabores a malta tostada y cuerpo cremoso.",
+                    Especificaciones = "Alcohol (ABV): ~6.0% | Amargor (IBU): 30-40 | Color (SRM): 30-40 | Carbonatación: Media (~2.0-2.5 volúmenes de CO₂).| Fermentación: 4-5 semanas (~18-20 °C).",
+                    LitrosEstimados = 100,
+                    PrecioLitro = (float)12.16,
+                    PrecioPaquete1 = (float)16.50,
+                    PrecioPaquete6 = (float)93.83,
+                    PrecioPaquete12 = (float)178.20,
+                    PrecioPaquete24 = (float)336.00,
+                    PrecioUnitarioBaseMayoreo = (float)14.50,
+                    CostoProduccion = 0,
+                    TiempoVida = 300,
+                    Activo = true,
+                    AptaVentaMayorista = true,
+                    FechaRegistrado = DateTime.Now,
+                    Imagen = "https://labelga.com.mx/cdn/shop/products/MinervaStout.001.png?v=1648506482",
+                    RutaFondo = "https://static.vecteezy.com/system/resources/thumbnails/001/849/553/small/modern-gold-background-free-vector.jpg"
+                }
+                );
+
+            modelBuilder.Entity<IngredienteReceta>().HasData(
+                // Ingredientes para Lager (Id = 1)
+                new IngredienteReceta { IdReceta = 1, IdInsumo = 1, Cantidad = (float)90},  // Agua
+                new IngredienteReceta { IdReceta = 1, IdInsumo = 8, Cantidad = (float)18 },   // Malta
+                new IngredienteReceta { IdReceta = 1, IdInsumo = 4, Cantidad = (float)0.25 }, // Lúpulo
+                new IngredienteReceta { IdReceta = 1, IdInsumo = 3, Cantidad = (float)0.5 },  // Levadura
+                new IngredienteReceta { IdReceta = 1, IdInsumo = 10, Cantidad = (float)0.5 }, // Azúcar
+
+                // Ingredientes para Witbier (Id = 2)
+                new IngredienteReceta { IdReceta = 2, IdInsumo = 1, Cantidad = (float)91 },  // Agua
+                new IngredienteReceta { IdReceta = 2, IdInsumo = 8, Cantidad = (float)12 },   // Malta
+                new IngredienteReceta { IdReceta = 2, IdInsumo = 5, Cantidad = (float)6 },    // Trigo
+                new IngredienteReceta { IdReceta = 2, IdInsumo = 4, Cantidad = (float)0.15 }, // Lúpulo
+                new IngredienteReceta { IdReceta = 2, IdInsumo = 3, Cantidad = (float)0.6 },  // Levadura
+                new IngredienteReceta { IdReceta = 2, IdInsumo = 9, Cantidad = (float)0.05 }, // Sal
+                new IngredienteReceta { IdReceta = 2, IdInsumo = 10, Cantidad = (float)0.3 }, // Azúcar
+
+                // Ingredientes para Stout (Id = 3)
+                new IngredienteReceta { IdReceta = 3, IdInsumo = 1, Cantidad = (float)88 },  // Agua
+                new IngredienteReceta { IdReceta = 3, IdInsumo = 8, Cantidad = (float)20 },   // Malta
+                new IngredienteReceta { IdReceta = 3, IdInsumo = 7, Cantidad = (float)3 },    // Avena
+                new IngredienteReceta { IdReceta = 3, IdInsumo = 4, Cantidad = (float)0.35 }, // Lúpulo
+                new IngredienteReceta { IdReceta = 3, IdInsumo = 3, Cantidad = (float)0.7 },  // Levadura
+                new IngredienteReceta { IdReceta = 3, IdInsumo = 10, Cantidad = (float)0.4 }  // Azúcar
+            );
+
+            modelBuilder.Entity<LoteInsumo>().HasData(
+                // Agua - Bonafont
+                new LoteInsumo
+                {
+                    Id = 1,
+                    IdProveedor = 1,
+                    IdInsumo = 1,
+                    IdUsuario = "U2",
+                    Cantidad = (float)3000,
+                    FechaCaducidad = DateTime.Now.AddMonths(6),
+                    FechaCompra = DateTime.Now,
+                    PrecioUnidad = (float)0.15,
+                    MontoCompra = (float)450,
+                    Merma = 0
+                },
+
+                // Malta - Maseca
+                new LoteInsumo
+                {
+                    Id = 2,
+                    IdProveedor = 2,
+                    IdInsumo = 8,
+                    IdUsuario = "U2",
+                    Cantidad = (float)500,
+                    FechaCaducidad = DateTime.Now.AddMonths(12),
+                    FechaCompra = DateTime.Now,
+                    PrecioUnidad = (float)25,
+                    MontoCompra = (float)12500,
+                    Merma = 0
+                },
+
+                // Lúpulo - La Costeña
+                new LoteInsumo
+                {
+                    Id = 3,
+                    IdProveedor = 3,
+                    IdInsumo = 4,
+                    IdUsuario = "U2",
+                    Cantidad = (float)7.5,
+                    FechaCaducidad = DateTime.Now.AddMonths(18),
+                    FechaCompra = DateTime.Now,
+                    PrecioUnidad = (float)800,
+                    MontoCompra = (float)6000,
+                    Merma = 0
+                },
+
+                // Levadura - La Costeña
+                new LoteInsumo
+                {
+                    Id = 4,
+                    IdProveedor = 3,
+                    IdInsumo = 3,
+                    IdUsuario = "U2",
+                    Cantidad = (float)18,
+                    FechaCaducidad = DateTime.Now.AddMonths(9),
+                    FechaCompra = DateTime.Now,
+                    PrecioUnidad = (float)500,
+                    MontoCompra = (float)9000,
+                    Merma = 0
+                },
+
+                // Trigo - Maseca
+                new LoteInsumo
+                {
+                    Id = 5,
+                    IdProveedor = 2,
+                    IdInsumo = 5,
+                    IdUsuario = "U2",
+                    Cantidad = (float)60,
+                    FechaCaducidad = DateTime.Now.AddMonths(12),
+                    FechaCompra = DateTime.Now,
+                    PrecioUnidad = (float)20,
+                    MontoCompra = (float)1200,
+                    Merma = 0
+                },
+
+                // Avena - Maseca
+                new LoteInsumo
+                {
+                    Id = 6,
+                    IdProveedor = 2,
+                    IdInsumo = 7,
+                    IdUsuario = "U2",
+                    Cantidad = (float)30,
+                    FechaCaducidad = DateTime.Now.AddMonths(12),
+                    FechaCompra = DateTime.Now,
+                    PrecioUnidad = (float)22,
+                    MontoCompra = (float)660,
+                    Merma = 0
+                },
+
+                // Sal - La Costeña
+                new LoteInsumo
+                {
+                    Id = 7,
+                    IdProveedor = 3,
+                    IdInsumo = 9,
+                    IdUsuario = "U2",
+                    Cantidad = (float)0.5,
+                    FechaCaducidad = DateTime.Now.AddMonths(5),
+                    FechaCompra = DateTime.Now,
+                    PrecioUnidad = (float)10,
+                    MontoCompra = (float)5,
+                    Merma = 0
+                },
+
+                // Azúcar - La Costeña
+                new LoteInsumo
+                {
+                    Id = 8,
+                    IdProveedor = 3,
+                    IdInsumo = 10,
+                    IdUsuario = "U2",
+                    Cantidad = (float)12,
+                    FechaCaducidad = DateTime.Now.AddMonths(18),
+                    FechaCompra = DateTime.Now,
+                    PrecioUnidad = (float)18,
+                    MontoCompra = (float)216,
+                    Merma = 0
+                },
+
+                // Botellas - Bonafont
+                new LoteInsumo
+                {
+                    Id = 9,
+                    IdProveedor = 1,
+                    IdInsumo = 2,
+                    IdUsuario = "U2",
+                    Cantidad = (float)8460,
+                    FechaCaducidad = DateTime.Now.AddMonths(60),
+                    FechaCompra = DateTime.Now,
+                    PrecioUnidad = (float)6,
+                    MontoCompra = (float)50760,
+                    Merma = 0
+                }
+            );
+
 
         }
     }

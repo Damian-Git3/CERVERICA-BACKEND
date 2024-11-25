@@ -744,7 +744,7 @@ namespace CERVERICA.Controllers
                     receta.PrecioPaquete24 = nuevoCostoLitro * 24;
                 }
 
-
+                receta.PrecioLitro = (float)Math.Round(costoTotal/receta.LitrosEstimados, 2);
                 receta.CostoProduccion = costoTotal;
 
                 _context.Entry(receta).State = EntityState.Modified;
