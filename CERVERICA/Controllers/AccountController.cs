@@ -266,6 +266,66 @@ namespace CERVERICA.Controllers
             });
         }
 
+        [HttpGet("validate-token")]
+        public async Task<ActionResult<AuthResponseDto>> ValidateToken()
+        {
+            try
+            {
+                var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+                var idUsuario = HttpContext.Items["idUsuario"] as string;
+
+                if (string.IsNullOrEmpty(idUsuario))
+                {
+                    return Unauthorized(new AuthResponseDto
+                    {
+                        IsSuccess = false,
+                        Message = "Token inválido o expirado"
+                    });
+                }
+
+                // Buscar el usuario por ID
+                var user = await _userManager.FindByIdAsync(idUsuario);
+
+                if (user == null)
+                {
+                    return NotFound(new AuthResponseDto
+                    {
+                        IsSuccess = false,
+                        Message = "Usuario no encontrado"
+                    });
+                }
+
+                if (!user.Activo)
+                {
+                    return BadRequest(new AuthResponseDto
+                    {
+                        IsSuccess = false,
+                        Message = "Tu cuenta está inactiva. Contacta a soporte al cliente"
+                    });
+                }
+
+                // Devolver la respuesta exitosa con la información del usuario y los tokens existentes
+                return Ok(new AuthResponseDto
+                {
+                    Token = token,                     // Retornamos el mismo token
+                    RefreshToken = user.RefreshToken,  // Retornamos el refresh token existente
+                    IsSuccess = true,
+                    Message = "Token válido",
+                    IdUsuario = user.Id,
+                    Nombre = user.FullName,
+                    Email = user.Email,
+                    Rol = (await _userManager.GetRolesAsync(user)).FirstOrDefault()
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new AuthResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "Error interno del servidor al validar el token"
+                });
+            }
+        }
 
         [HttpPost("logout")]
         public async Task<ActionResult<AuthResponseDto>> Logout()
