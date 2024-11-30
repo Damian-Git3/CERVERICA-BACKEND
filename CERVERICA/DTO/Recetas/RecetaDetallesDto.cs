@@ -1,6 +1,4 @@
-﻿using CERVERICA.Models;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace CERVERICA.Dtos
 {
@@ -28,6 +26,7 @@ namespace CERVERICA.Dtos
 
         [Range(0, float.MaxValue, ErrorMessage = "El precio del paquete de 24 debe ser un valor positivo.")]
         public float? PrecioPaquete24 { get; set; }
+        public float? PrecioBaseMayoreo { get; set; }
 
         [Range(0, 5, ErrorMessage = "La puntuación debe estar entre 0 y 5.")]
         public float? Puntuacion { get; set; }
