@@ -15,6 +15,10 @@ namespace CERVERICA.Controllers
     {
         private readonly ApplicationDbContext _context;
 
+        private const string AdminRoleName = "Admin";
+
+        private const string RecetaNoExisteMessage = "Receta no existe.";
+
         public RecetaController(ApplicationDbContext context)
         {
             _context = context;
@@ -24,16 +28,44 @@ namespace CERVERICA.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<RecetasDto>>> GetRecetas()
         {
+
             RecetasDto[] recetas = await _context.Recetas
                 .Select(r => new RecetasDto
                 {
                     Id = r.Id,
-                    LitrosEstimados = r.LitrosEstimados,
-                    PrecioLitro = r.PrecioLitro,
-                    Descripcion = r.Descripcion,
                     Nombre = r.Nombre,
+                    Descripcion = r.Descripcion ?? string.Empty,
+                    PrecioLitro = r.PrecioLitro,
+                    LitrosEstimados = r.LitrosEstimados,
+                    Imagen = r.Imagen ?? string.Empty,
                     CostoProduccion = r.CostoProduccion,
-                    Imagen = r.Imagen,
+                    TiempoVida = r.TiempoVida,
+                    FechaRegistrado = r.FechaRegistrado,
+                    Activo = r.Activo,
+                    PrecioUnitarioBaseMayoreo = r.PrecioUnitarioBaseMayoreo,
+                    PrecioUnitarioMinimoMayoreo = r.PrecioUnitarioMinimoMayoreo
+                })
+                .ToArrayAsync();
+
+            return Ok(recetas);
+        }
+
+        // GET: api/recetas-mayorista
+        [HttpGet("recetas-mayoristas")]
+        public async Task<ActionResult<IEnumerable<RecetasDto>>> GetRecetasMayoristas()
+        {
+
+            RecetasDto[] recetas = await _context.Recetas
+                 .Where(r => r.AptaVentaMayorista == true)
+                .Select(r => new RecetasDto
+                {
+                    Id = r.Id,
+                    Nombre = r.Nombre,
+                    Descripcion = r.Descripcion ?? string.Empty,
+                    PrecioLitro = r.PrecioLitro,
+                    LitrosEstimados = r.LitrosEstimados,
+                    Imagen = r.Imagen ?? string.Empty,
+                    CostoProduccion = r.CostoProduccion,
                     TiempoVida = r.TiempoVida,
                     FechaRegistrado = r.FechaRegistrado,
                     Activo = r.Activo,
@@ -50,8 +82,7 @@ namespace CERVERICA.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<RecetaDetallesDto>> GetReceta(int id)
         {
-            var receta = await _context
-                .Recetas
+            var receta = await _context.Recetas
                 .Include(r => r.IngredientesReceta)
                 .ThenInclude(ir => ir.Insumo)
                 .Include(r => r.PasosReceta)
@@ -62,31 +93,31 @@ namespace CERVERICA.Controllers
                     LitrosEstimados = r.LitrosEstimados,
                     PrecioLitro = r.PrecioLitro,
                     PrecioPaquete1 = r.PrecioPaquete1,
-                    PrecioPaquete6 = r.PrecioPaquete6,
                     PrecioPaquete12 = r.PrecioPaquete12,
+                    PrecioPaquete6 = r.PrecioPaquete6,
                     PrecioPaquete24 = r.PrecioPaquete24,
-<<<<<<< Updated upstream
                     Especificaciones = r.Especificaciones,
-=======
                     PrecioBaseMayoreo = r.PrecioUnitarioBaseMayoreo,
                     TiempoVida = r.TiempoVida,
                     Especificaciones = r.Especificaciones ?? string.Empty,
                     RutaFondo = r.RutaFondo ?? string.Empty,
->>>>>>> Stashed changes
+                    TiempoVida = r.TiempoVida,
+                    Especificaciones = r.Especificaciones ?? string.Empty,
+                    RutaFondo = r.RutaFondo ?? string.Empty,
                     Puntuacion = r.Puntuacion,
-                    RutaFondo = r.RutaFondo,
-                    Descripcion = r.Descripcion,
+                    Descripcion = r.Descripcion ?? string.Empty,
                     Nombre = r.Nombre,
                     CostoProduccion = r.CostoProduccion,
                     Imagen = r.Imagen,
-                    TiempoVida = r.TiempoVida,
                     Activo = r.Activo,
                     IngredientesReceta = r.IngredientesReceta.Select(ir => new IngredienteRecetaDto
                     {
                         Id = ir.IdInsumo,
-                        Cantidad = ir.Cantidad,
                         Nombre = ir.Insumo.Nombre,
-                        UnidadMedida = ir.Insumo.UnidadMedida
+                        UnidadMedida = ir.Insumo.UnidadMedida,
+                        Fijo = ir.Insumo.Fijo,
+                        Cantidad = ir.Cantidad,
+
                     }).ToList(),
                     PasosReceta = r.PasosReceta.Select(pr => new PasosRecetaDto
                     {
@@ -99,11 +130,10 @@ namespace CERVERICA.Controllers
 
             if (receta == null)
             {
-                return NotFound(new { message = "Receta no existe." });
+                return NotFound(new { message = RecetaNoExisteMessage });
             }
 
             return Ok(receta);
-
         }
 
         // POST: api/recetas
@@ -111,18 +141,39 @@ namespace CERVERICA.Controllers
         public async Task<ActionResult<Receta>> PostReceta(RecetaInsertDto recetaDto)
         {
             Debug.WriteLine("##########################################################################");
-            Debug.WriteLine("##########################################################################");
-            Debug.WriteLine("##########################################################################");
-            Debug.WriteLine("##########################################################################");
             Debug.WriteLine("RecetaDto: " + recetaDto);
-            Debug.WriteLine("##########################################################################");
-            Debug.WriteLine("##########################################################################");
-            Debug.WriteLine("##########################################################################");
             Debug.WriteLine("##########################################################################");
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
+
+            //verificar que el insumo id = 1 exista en la receta a insertar
+            if (!recetaDto.IngredientesReceta.Any(i => i.Id == 1))
+            {
+                return BadRequest(new { message = "La receta debe contener agua." });
+            }
+
+            //Verificar que se vaya a insertar por lo menos 80% de agua de los litros finales de la receta
+            float litrosAgua = recetaDto.IngredientesReceta.Where(i => i.Id == 1).Select(i => i.Cantidad).FirstOrDefault();
+
+            if (litrosAgua < recetaDto.LitrosEstimados * 0.8)
+            {
+                return BadRequest(new { message = "La receta debe contener al menos 80% de agua." });
+            }
+
+            //verificar que no exista una receta con el mismo nombre
+            if (_context.Recetas.Any(r => r.Nombre == recetaDto.Nombre))
+            {
+                return BadRequest(new { message = "Ya existe una receta con el mismo nombre." });
+            }
+
+            //verificar que no haya agregado insumo id = 2 (botellas en la receta)
+            if (recetaDto.IngredientesReceta.Any(i => i.Id == 2))
+            {
+                return BadRequest(new { message = "No se puede agregar botellas a la receta. Se calcularán automaticamente durante el envasado." });
+            }
+
 
             var receta = new Receta
             {
@@ -169,11 +220,9 @@ namespace CERVERICA.Controllers
 
             try
             {
+                var adminRoleId = await _context.Roles.Where(r => r.Name == AdminRoleName).Select(r => r.Id).FirstOrDefaultAsync();
 
-                //encontrar la id del rol Admin
-                var adminRoleId = _context.Roles.Where(r => r.Name == "Admin").Select(r => r.Id).FirstOrDefault();
-
-                List<String> userIds = _context.UserRoles.Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToList();
+                List<String> userIds = await _context.UserRoles.Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToListAsync();
 
                 foreach (var idAdmin in userIds)
                 {
@@ -215,6 +264,38 @@ namespace CERVERICA.Controllers
                 return NotFound(new { message = "Receta no encontrada." });
             }
 
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            //verificar que el insumo id = 1 exista en la receta a insertar
+            if (!recetaDto.IngredientesReceta.Any(i => i.Id == 1))
+            {
+                return BadRequest(new { message = "La receta debe contener agua." });
+            }
+
+            //Verificar que se vaya a insertar por lo menos 80% de agua de los litros finales de la receta
+            float litrosAgua = recetaDto.IngredientesReceta.Where(i => i.Id == 1).Select(i => i.Cantidad).FirstOrDefault();
+
+            if (litrosAgua < recetaDto.LitrosEstimados * 0.8)
+            {
+                return BadRequest(new { message = "La receta debe contener al menos 80% de agua." });
+            }
+
+            //verificar que no exista una receta con el mismo nombre exceptuando la receta actual
+            if (_context.Recetas.Any(r => r.Nombre == recetaDto.Nombre && r.Id != recetaDto.Id))
+            {
+                return BadRequest(new { message = "Ya existe una receta con el mismo nombre." });
+            }
+
+
+            //verificar que no haya agregado insumo id = 2 (botellas en la receta)
+            if (recetaDto.IngredientesReceta.Any(i => i.Id == 2))
+            {
+                return BadRequest(new { message = "No se puede agregar botellas a la receta. Se calcularán automaticamente durante el envasado." });
+            }
+
             // Actualizar propiedades de la receta
             receta.LitrosEstimados = recetaDto.LitrosEstimados;
             receta.PrecioPaquete1 = recetaDto.PrecioPaquete1;
@@ -234,7 +315,7 @@ namespace CERVERICA.Controllers
             foreach (var ingredienteDto in recetaDto.IngredientesReceta)
             {
                 var ingredienteExistente = ingredientesExistentes
-                    .FirstOrDefault(i => i.IdInsumo == ingredienteDto.Id);
+                    .Find(i => i.IdInsumo == ingredienteDto.Id);
 
                 if (ingredienteExistente != null)
                 {
@@ -312,8 +393,7 @@ namespace CERVERICA.Controllers
         /* OBTENER PASOS RECETA */
 
         [HttpGet("{id}/pasos")]
-        public async Task<ActionResult<IEnumerable<PasosRecetaDto>>>
-            GetPasosReceta(int id)
+        public async Task<ActionResult<IEnumerable<PasosRecetaDto>>> GetPasosReceta(int id)
         {
             var receta = await _context.Recetas
                 .Include(r => r.PasosReceta)
@@ -668,12 +748,7 @@ namespace CERVERICA.Controllers
                 {
                     receta.PrecioPaquete24 = nuevoCostoLitro * 24;
                 }
-
-<<<<<<< Updated upstream
-
-=======
-                receta.PrecioLitro = (float)Math.Round(costoTotal / receta.LitrosEstimados, 2);
->>>>>>> Stashed changes
+                receta.PrecioLitro = (float)Math.Round(costoTotal / receta.LitrosEstimados, 2);                
                 receta.CostoProduccion = costoTotal;
 
                 _context.Entry(receta).State = EntityState.Modified;

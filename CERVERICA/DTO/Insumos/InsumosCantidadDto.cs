@@ -29,6 +29,7 @@ namespace CERVERICA.Dtos
         public float Merma { get; set; }
 
         public bool Activo { get; set; }
+        public bool Fijo { get; set; }
 
         [Range(0, float.MaxValue, ErrorMessage = "La cantidad total de lotes debe ser un valor positivo.")]
         public float CantidadTotalLotes { get; set; }

@@ -14,7 +14,6 @@ namespace CERVERICA.Models
         public DateTime FechaInicio { get; set; }
         public DateTime? FechaCierre { get; set; }
         public EstatusSolicitudMayorista Estatus { get; set; }
-        public TipoSolicitudMayorista Tipo { get; set; }
         public string? mensajeRechazo { get; set; }
         [ForeignKey(nameof(Mayorista))]
         public int IdMayorista { get; set; }
@@ -28,16 +27,10 @@ namespace CERVERICA.Models
 
     public enum EstatusSolicitudMayorista
     {
-        Prospecto = 1,
-        NuevoPedido = 2,
-        Contactado = 3,
-        Cerrado = 4,
-        Cancelado = 5
-    }
-
-    public enum TipoSolicitudMayorista
-    {
-        Prospecto = 1,
-        NuevoPedido = 2
+        NuevoPedido = 1,
+        Confirmando = 2,
+        Concretado = 3,
+        Cancelado = 4,
+        Rechazado = 5,
     }
 }

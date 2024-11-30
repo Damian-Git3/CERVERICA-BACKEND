@@ -22,17 +22,17 @@ namespace CERVERICA.Models
 
         public DateTime FechaVencimiento { get; set; }
 
-        public DateTime FechaPago { get; set; }
+        public DateTime? FechaPago { get; set; }
 
         public float Monto { get; set; }
 
-        public EstatusPago Estatus { get; set; }
+        public int Estatus { get; set; }
 
-        public enum EstatusPago
-        {
-            Pendiente = 1,
-            Pagado = 2,
-            Cancelado = 3,
-        }
+        //public enum EstatusPago
+        //{
+        //    Pendiente = 1,
+        //    Pagado = 2,
+        //    impago = 3,
+        //}
     }
 }

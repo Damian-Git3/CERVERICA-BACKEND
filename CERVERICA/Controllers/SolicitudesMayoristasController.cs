@@ -21,14 +21,50 @@ namespace CERVERICA.Controllers
             _db = db;
         }
 
-        [HttpGet("obtener-solicitudes-mayoristas")]
-        public async Task<ActionResult<SolicitudMayorista>> obtenerSolicitudesMayoristas()
+        [HttpPost]
+        public async Task<ActionResult<SolicitudMayorista>> crearSolicitudMayorista()
+        {
+            var idUsuario = HttpContext.Items["idUsuario"] as string;
+            var mayorista = await _db.ClientesMayoristas.Where(m => m.IdUsuario == idUsuario).FirstAsync();
+
+            var nuevaSolicitudMayorista = new SolicitudMayorista
+            {
+                FechaInicio = DateTime.Now,
+                Estatus = EstatusSolicitudMayorista.Confirmando,
+                IdMayorista = mayorista.Id,
+                IdAgente = mayorista.IdAgenteVenta
+            };
+
+            _db.SolicitudesMayorista.Add(nuevaSolicitudMayorista);
+
+            await _db.SaveChangesAsync();
+
+            return Ok("Solicitud generada correctamente");
+        }
+
+        [HttpGet("obtener-solicitudes-agente")]
+        public async Task<ActionResult<SolicitudMayorista>> obtenerSolicitudesAgente()
 
         {
             var idUsuario = HttpContext.Items["idUsuario"] as string;
 
             var solicitudesMayoristas = await _db.SolicitudesMayorista
             .Where(s => s.IdAgente == idUsuario)
+            .Include(s => s.Mayorista)
+            .ToListAsync();
+
+            return Ok(solicitudesMayoristas);
+        }
+
+        [HttpGet("obtener-solicitudes-mayorista")]
+        public async Task<ActionResult<SolicitudMayorista>> obtenerSolicitudesMayorista()
+
+        {
+            var idUsuario = HttpContext.Items["idUsuario"] as string;
+            var mayorista = await _db.ClientesMayoristas.Where(m => m.IdUsuario == idUsuario).FirstAsync();
+
+            var solicitudesMayoristas = await _db.SolicitudesMayorista
+            .Where(s => s.IdMayorista == mayorista.Id)
             .Include(s => s.Mayorista)
             .ToListAsync();
 
@@ -80,5 +116,28 @@ namespace CERVERICA.Controllers
             return Ok("Solicitud cancelada exitosamente.");
         }
 
+
+        [HttpGet("obtener-carrito-solicitud/{idSolicitud}")]
+        public async Task<ActionResult<ProductoCarrito[]>> obtenerProductosCarrito(int idSolicitud)
+        {
+            var solicitudMayorista = await _db.SolicitudesMayorista
+            .Where(c => c.Id == idSolicitud)
+            .FirstOrDefaultAsync();
+
+            var clienteMayorista = await _db.ClientesMayoristas
+            .Where(c => c.Id == solicitudMayorista.IdMayorista)
+            .FirstOrDefaultAsync();
+
+            var carritoUsuario = await _db.Carritos
+            .Where(c => c.IdUsuario == clienteMayorista.IdUsuario)
+            .FirstOrDefaultAsync();
+
+            var productosCarrito = await _db.ProductosCarrito
+            .Where(pc => pc.IdCarrito == carritoUsuario.Id)
+            .Include(f => f.Receta)
+            .ToListAsync();
+
+            return Ok(productosCarrito);
+        }
     }
 }

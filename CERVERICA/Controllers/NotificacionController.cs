@@ -33,7 +33,7 @@ namespace CERVERICA.Controllers
 
                 //List<Notificacion> notificaciones = await _context.Notificaciones.Where(n => n.IdUsuario == currentUserId).ToListAsync();
                 //devolver solo las notificaciones con fecha y hora menor a la actual
-                List<Notificacion> notificaciones = await _context.Notificaciones.Where(n => n.IdUsuario == currentUserId && n.Fecha <= DateTime.Now && n.Visto == false).ToListAsync();
+                List<Notificacion> notificaciones = await _context.Notificaciones.Where(n => n.IdUsuario == currentUserId && n.Fecha <= DateTime.Now).ToListAsync();
                 //ordenar las notificaciones por fecha descendente
                 notificaciones = notificaciones.OrderByDescending(n => n.Fecha).ToList();
 

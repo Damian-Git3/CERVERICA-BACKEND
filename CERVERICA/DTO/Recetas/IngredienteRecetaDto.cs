@@ -14,5 +14,6 @@ namespace CERVERICA.Dtos
 
         [Required(ErrorMessage = "La unidad de medida es obligatoria.")]
         public string UnidadMedida { get; set; }
+        public bool Fijo { get; set; }
     }
 }

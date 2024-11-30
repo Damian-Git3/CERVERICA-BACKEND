@@ -18,6 +18,7 @@ namespace CERVERICA.Models
 
         [Required]
         public float Total { get; set; }
+        public int TotalCervezas { get; set; }
 
         [Required]
         public bool Mayoreo { get; set; } = false;
@@ -64,7 +65,8 @@ namespace CERVERICA.Models
     {
         ContraEntrega = 1,
         TarjetaCredito = 2,
-        Stripe = 3
+        Stripe = 3,
+        Plazos = 4
     }
 
     public enum MetodoEnvio

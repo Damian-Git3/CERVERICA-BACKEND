@@ -23,5 +23,6 @@ namespace CERVERICA.Dtos
 
         [Range(0, float.MaxValue, ErrorMessage = "La merma debe ser un valor positivo.")]
         public float? Merma { get; set; } = 0;
+        public bool Fijo { get; set; } 
     }
 }
