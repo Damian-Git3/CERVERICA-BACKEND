@@ -489,8 +489,8 @@ namespace CERVERICA.Data
                     Activo = true,
                     AptaVentaMayorista = true,
                     FechaRegistrado = DateTime.Now,
-                    Imagen = "https://chelar.com.mx/wp-content/uploads/2020/04/minerva-lager-light.png",
-                    RutaFondo = "https://cdn.pixabay.com/photo/2018/04/23/11/40/abstract-3343966_640.jpg"
+                    Imagen = "https://www.bajabrewingcompany.com/images/beers/bottle_surfa_mx.png",
+                    RutaFondo = "'https://www.bajabrewingcompany.com/images/beers/back_surfa.jpg'"
                 },
                 new Receta
                 {
@@ -510,8 +510,8 @@ namespace CERVERICA.Data
                     Activo = true,
                     AptaVentaMayorista = true,
                     FechaRegistrado = DateTime.Now,
-                    Imagen = "https://cerveceriaallende.mx/wp-content/uploads/elementor/thumbs/trigo-qj4t8utib67oooek6mcnhy200ptu0c01gs7vqzd7gk.png",
-                    RutaFondo = "https://www.creativefabrica.com/wp-content/uploads/2021/07/31/Sunburst-blue-Background-Wallpaper-Free-Graphics-15314141-1-1-580x352.jpg"
+                    Imagen = "https://www.bajabrewingcompany.com/images/beers/bottle_ayipa_mx.png",
+                    RutaFondo = "https://www.bajabrewingcompany.com/images/beers/back_ay.jpg"
                 },
                 new Receta
                 {
@@ -531,8 +531,8 @@ namespace CERVERICA.Data
                     Activo = true,
                     AptaVentaMayorista = true,
                     FechaRegistrado = DateTime.Now,
-                    Imagen = "https://labelga.com.mx/cdn/shop/products/MinervaStout.001.png?v=1648506482",
-                    RutaFondo = "https://static.vecteezy.com/system/resources/thumbnails/001/849/553/small/modern-gold-background-free-vector.jpg"
+                    Imagen = "https://www.bajabrewingcompany.com/images/beers/bottle_cabotella_mx.png",
+                    RutaFondo = "https://www.bajabrewingcompany.com/images/beers/back_cabotella.jpg"
                 }
                 );
 

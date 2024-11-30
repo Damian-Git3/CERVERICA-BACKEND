@@ -49,7 +49,7 @@ namespace CERVERICA.Controllers
                 Valor = cuponDTO.Valor,
                 Usos = cuponDTO.Usos,
                 MontoMaximo = cuponDTO.MontoMaximo,
-                CategoriaComprador = cuponDTO.CategoriaComprador,
+                MontoMinimo = cuponDTO.MontoMinimo,
                 Activo = cuponDTO.Activo
                 // No se incluyen IdUsuario ni IdReceta en el DTO
             };
@@ -94,7 +94,7 @@ namespace CERVERICA.Controllers
             cuponExistente.Valor = cuponDTO.Valor;
             cuponExistente.Usos = cuponDTO.Usos;
             cuponExistente.MontoMaximo = cuponDTO.MontoMaximo;
-            cuponExistente.CategoriaComprador = cuponDTO.CategoriaComprador;
+            cuponExistente.MontoMinimo = cuponDTO.MontoMinimo;
             cuponExistente.Activo = cuponDTO.Activo;
 
             // Si es necesario, también puedes asignar otros campos como IdUsuario o IdReceta si el DTO lo tiene.
