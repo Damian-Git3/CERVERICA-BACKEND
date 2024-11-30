@@ -27,11 +27,8 @@ namespace CERVERICA.DTO.Cupones
         [Required]
         public int Usos { get; set; }
 
-        [Required]
         public decimal MontoMaximo { get; set; }
-
-        [Required]
-        public CategoriaComprador CategoriaComprador { get; set; }
+        public decimal MontoMinimo { get; set; }
 
         [Required]
         public bool Activo { get; set; }
