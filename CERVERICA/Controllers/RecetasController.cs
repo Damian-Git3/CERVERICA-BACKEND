@@ -96,14 +96,10 @@ namespace CERVERICA.Controllers
                     PrecioPaquete12 = r.PrecioPaquete12,
                     PrecioPaquete6 = r.PrecioPaquete6,
                     PrecioPaquete24 = r.PrecioPaquete24,
-                    Especificaciones = r.Especificaciones,
                     PrecioBaseMayoreo = r.PrecioUnitarioBaseMayoreo,
-                    TiempoVida = r.TiempoVida,
                     Especificaciones = r.Especificaciones ?? string.Empty,
                     RutaFondo = r.RutaFondo ?? string.Empty,
                     TiempoVida = r.TiempoVida,
-                    Especificaciones = r.Especificaciones ?? string.Empty,
-                    RutaFondo = r.RutaFondo ?? string.Empty,
                     Puntuacion = r.Puntuacion,
                     Descripcion = r.Descripcion ?? string.Empty,
                     Nombre = r.Nombre,
@@ -748,7 +744,7 @@ namespace CERVERICA.Controllers
                 {
                     receta.PrecioPaquete24 = nuevoCostoLitro * 24;
                 }
-                receta.PrecioLitro = (float)Math.Round(costoTotal / receta.LitrosEstimados, 2);                
+                receta.PrecioLitro = (float)Math.Round(costoTotal / receta.LitrosEstimados, 2);
                 receta.CostoProduccion = costoTotal;
 
                 _context.Entry(receta).State = EntityState.Modified;
