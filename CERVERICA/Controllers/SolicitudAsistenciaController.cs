@@ -347,7 +347,7 @@ namespace CERVERICA.Controllers
 
             asistencia.FechaCierre = DateTime.Now;
             asistencia.Estatus = 3; // Cerrada
-            asistencia.Descripcion = solicitudDTO.Descripcion;
+            //asistencia.Descripcion = solicitudDTO.Descripcion;
 
             await _context.SaveChangesAsync();
             return Ok();
