@@ -14,6 +14,7 @@ using System.Security.Claims;
 
 namespace CERVERICA.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class VentasController : ControllerBase
