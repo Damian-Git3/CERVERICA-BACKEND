@@ -1,4 +1,5 @@
-﻿using MailKit.Net.Smtp;
+﻿using DotNetEnv;
+using MailKit.Net.Smtp;
 using MimeKit;
 
 namespace CERVERICA.Services
@@ -15,7 +16,7 @@ namespace CERVERICA.Services
             try
             {
                 var message = new MimeMessage();
-                message.From.Add(new MailboxAddress("Damian Gamboa", "damiangl0310@gmail.com"));
+                message.From.Add(new MailboxAddress("CERVERICA", Env.GetString("MAIL")));
                 message.To.Add(new MailboxAddress("", to));
                 message.Subject = subject;
 
@@ -37,8 +38,8 @@ namespace CERVERICA.Services
                 using var client = new SmtpClient();
                 await client.ConnectAsync("smtp.gmail.com", 587, MailKit.Security.SecureSocketOptions.StartTls);
 
-                // Note: only needed if the SMTP server requires authentication
-                await client.AuthenticateAsync("damiangl0310@gmail.com", "rpfp ulxr iaxo dabg");
+                // Note: only needed if the SMTP server requires authentication Env.GetString("TOKEN_MAIL")
+                await client.AuthenticateAsync(Env.GetString("MAIL"), Env.GetString("TOKEN_MAIL"));
 
                 await client.SendAsync(message);
                 await client.DisconnectAsync(true);

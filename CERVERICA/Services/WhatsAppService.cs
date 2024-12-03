@@ -1,31 +1,39 @@
-﻿using RestSharp;
+﻿using DotNetEnv;
+using RestSharp;
+
 
 namespace CERVERICA.Services
 {
     public class WhatsAppService
     {
-        private static readonly ILogger<WhatsAppService> _logger = LoggerFactory.Create(builder =>
-        {
-            builder.AddConsole();
-        }).CreateLogger<WhatsAppService>();
+        private readonly ILogger<WhatsAppService> _logger;
 
-        public static async Task SendWhatsAppMessage(string message, string number)
+        public WhatsAppService()
+        {
+        }
+
+        public WhatsAppService(ILogger<WhatsAppService> logger)
+        {
+            _logger = logger;
+
+        }
+
+        public async Task SendWhatsAppMessage(string message, string number)
         {
             try
             {
-                /*var url = "https://api.ultramsg.com/instance98771/messages/chat";*/
-                var url = "https://api.ultramsg.com/instance98773/messages/chat";
+                var url = Env.GetString("INSTANCIA_WSP");
                 var client = new RestClient(url);
-
                 var request = new RestRequest(url, Method.Post);
+
                 request.AddHeader("content-type", "application/x-www-form-urlencoded");
-                request.AddParameter("token", "zzjqyxcyp3frf6us");
-                request.AddParameter("to", number);
+                request.AddParameter("token", Env.GetString("TOKEN_WSP"));
+                request.AddParameter("to", "+52" + number);
                 request.AddParameter("body", message);
 
                 RestResponse response = await client.ExecuteAsync(request);
                 var output = response.Content;
-                Console.WriteLine(output);
+                _logger.LogInformation("WhatsApp message sent: {Output}", output);
             }
             catch (Exception ex)
             {

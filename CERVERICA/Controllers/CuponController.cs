@@ -49,7 +49,7 @@ namespace CERVERICA.Controllers
                 Valor = cuponDTO.Valor,
                 Usos = cuponDTO.Usos,
                 MontoMaximo = cuponDTO.MontoMaximo,
-                CategoriaComprador = cuponDTO.CategoriaComprador,
+                MontoMinimo = cuponDTO.MontoMinimo,
                 Activo = cuponDTO.Activo
                 // No se incluyen IdUsuario ni IdReceta en el DTO
             };
@@ -60,11 +60,10 @@ namespace CERVERICA.Controllers
             return Created("api/cupones/registrar-cupon", cupon);
         }
 
-
         [HttpPut("actualizar-cupon/{id}")]
-        public async Task<ActionResult<Cupones>> ActualizarCupon(int id, [FromBody] Cupones cupon)
+        public async Task<ActionResult<Cupones>> ActualizarCupon(int id, [FromBody] CuponDTO cuponDTO)
         {
-            if (cupon == null)
+            if (cuponDTO == null)
             {
                 return BadRequest(new AuthResponseDto
                 {
@@ -73,7 +72,7 @@ namespace CERVERICA.Controllers
                 });
             }
 
-            // Buscar el cupon existente por ID
+            // Buscar el cupón existente por ID
             var cuponExistente = await _db.Cupones.FindAsync(id);
 
             if (cuponExistente == null)
@@ -85,26 +84,28 @@ namespace CERVERICA.Controllers
                 });
             }
 
-            // Actualizar los campos necesarios
-            cuponExistente.IdUsuario = cupon.IdUsuario;
-            cuponExistente.IdReceta = cupon.IdReceta;
-            cuponExistente.FechaCreacion = cupon.FechaCreacion;
-            cuponExistente.FechaExpiracion = cupon.FechaExpiracion;
-            cuponExistente.Codigo = cupon.Codigo;
-            cuponExistente.Tipo = cupon.Tipo;
-            cuponExistente.Paquete = cupon.Paquete;
-            cuponExistente.Cantidad = cupon.Cantidad;
-            cuponExistente.Valor = cupon.Valor;
-            cuponExistente.Usos = cupon.Usos;
-            cuponExistente.MontoMaximo = cupon.MontoMaximo;
-            cuponExistente.CategoriaComprador = cupon.CategoriaComprador;
-            cuponExistente.Activo = cupon.Activo;
+            // Asignar los valores del DTO al cupón existente
+            cuponExistente.FechaCreacion = cuponDTO.FechaCreacion;
+            cuponExistente.FechaExpiracion = cuponDTO.FechaExpiracion;
+            cuponExistente.Codigo = cuponDTO.Codigo;
+            cuponExistente.Tipo = cuponDTO.Tipo;
+            cuponExistente.Paquete = cuponDTO.Paquete;
+            cuponExistente.Cantidad = cuponDTO.Cantidad;
+            cuponExistente.Valor = cuponDTO.Valor;
+            cuponExistente.Usos = cuponDTO.Usos;
+            cuponExistente.MontoMaximo = cuponDTO.MontoMaximo;
+            cuponExistente.MontoMinimo = cuponDTO.MontoMinimo;
+            cuponExistente.Activo = cuponDTO.Activo;
+
+            // Si es necesario, también puedes asignar otros campos como IdUsuario o IdReceta si el DTO lo tiene.
+            // Si no, asegúrate de que esos campos se mantengan igual en el modelo.
 
             _db.Cupones.Update(cuponExistente);
             await _db.SaveChangesAsync();
 
             return Ok(cuponExistente);
         }
+
 
         [HttpGet("obtener-cupon/{id}")]
         public async Task<ActionResult<Cupones>> ObtenerCupon(int id)

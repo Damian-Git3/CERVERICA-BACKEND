@@ -31,9 +31,6 @@ namespace CERVERICA.Models
         [Required]
         public int NumeroValoracionesEditadas { get; set; }
 
-        [Required]
-        public CategoriaComprador CategoriaComprador { get; set; }
-
         public int AtrasoPagos { get; set; }
 
         [Required]

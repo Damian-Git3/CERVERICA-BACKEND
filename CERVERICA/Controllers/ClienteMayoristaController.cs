@@ -99,7 +99,6 @@ namespace CERVERICA.Controllers
                     return BadRequest(roleResult.Errors);
                 }
 
-                // Paso 2: Seleccionar el agente de ventas con menos clientes asignados
                 var agenteVentasRoleId = _context.Roles.Where(r => r.Name == "Agente").Select(r => r.Id).FirstOrDefault();
 
                 var agentesVentas = _context.UserRoles
@@ -166,7 +165,7 @@ namespace CERVERICA.Controllers
                 }
                 await _context.SaveChangesAsync();
 
-                var nuevaSolicitudMayorista = new SolicitudMayorista
+                /*var nuevaSolicitudMayorista = new SolicitudMayorista
                 {
                     FechaInicio = DateTime.Now,
                     Estatus = EstatusSolicitudMayorista.Prospecto,
@@ -177,10 +176,9 @@ namespace CERVERICA.Controllers
 
                 _context.SolicitudesMayorista.Add(nuevaSolicitudMayorista);
 
-                await _context.SaveChangesAsync();
-                await _context.Database.CommitTransactionAsync();
+                await _context.SaveChangesAsync();*/
 
-                if (agenteAsignadoId != null)
+                /*if (agenteAsignadoId != null)
                 {
                     var phoneNumber = _context.Users
                             .Where(a => a.Id == agenteAsignadoId)
@@ -188,7 +186,9 @@ namespace CERVERICA.Controllers
                             .FirstOrDefault();
 
                     await WhatsAppService.SendWhatsAppMessage("Tienes un nuevo cliente!", "+52" + phoneNumber);
-                }
+                }*/
+
+                await _context.Database.CommitTransactionAsync();
 
                 return Ok(new
                 {

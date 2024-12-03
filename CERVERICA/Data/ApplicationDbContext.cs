@@ -32,6 +32,8 @@ namespace CERVERICA.Data
         public DbSet<FavoritosComprador> FavoritosComprador { get; set; }
         public DbSet<ProductoCarrito> ProductosCarrito { get; set; }
         public DbSet<Notificacion> Notificaciones { get; set; }
+
+        //Tablas añadidas para el CRM
         public DbSet<PuntosFidelidad> PuntosFidelidad { get; set; }
         public DbSet<TransaccionPuntos> TransaccionesPuntos { get; set; }
         public DbSet<ReglaPuntos> ReglasPuntos { get; set; }
@@ -58,16 +60,6 @@ namespace CERVERICA.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
-            /*modelBuilder.Entity<IdentityRole>()
-            .HasData(
-                new IdentityRole { Name = "Mayorista", NormalizedName = "MAYORISTA" },
-                new IdentityRole { Name = "Cocinero", NormalizedName = "COCINERO" },
-                new IdentityRole { Name = "Admin", NormalizedName = "ADMIN" },
-                new IdentityRole { Name = "Cliente", NormalizedName = "CLIENTE" },
-                new IdentityRole { Name = "Operador", NormalizedName = "OPERADOR" },
-                new IdentityRole { Name = "Agente", NormalizedName = "Agente" }
-
-            );*/
             modelBuilder.Entity<SolicitudAsistencia>()
                .HasOne(p => p.CategoriaAsistencia)
                .WithMany(pe => pe.SolicitudesAsistencia)
@@ -100,7 +92,7 @@ namespace CERVERICA.Data
 
             modelBuilder.Entity<Pago>()
                .HasOne(p => p.PedidoMayoreo)
-               .WithMany(pe => pe.Pagos) 
+               .WithMany(pe => pe.Pagos)
                .HasForeignKey(p => p.IdPedidoMayoreo)
                .OnDelete(DeleteBehavior.Restrict);
 
@@ -224,54 +216,117 @@ namespace CERVERICA.Data
             base.OnModelCreating(modelBuilder);
 
             // Seed de datos
-            
-            /*modelBuilder.Entity<IdentityRole>().HasData(
+            modelBuilder.Entity<IdentityRole>().HasData(
                 new IdentityRole { Id = "1", Name = "Operador", NormalizedName = "OPERADOR" },
                 new IdentityRole { Id = "2", Name = "Admin", NormalizedName = "ADMIN" },
                 new IdentityRole { Id = "3", Name = "Mayorista", NormalizedName = "MAYORISTA" },
                 new IdentityRole { Id = "4", Name = "Cliente", NormalizedName = "CLIENTE" },
                 new IdentityRole { Id = "5", Name = "Agente", NormalizedName = "AGENTE" },
                 new IdentityRole { Id = "6", Name = "Cocinero", NormalizedName = "COCINERO" }
-            );*/
+            );
+
+            modelBuilder.Entity<Proveedor>().HasData(
+                new Proveedor
+                {
+                    Id = 1,
+                    Empresa = "Bonafont",
+                    Telefono = "1234567890",
+                    Direccion = "Bonafont Avenue 728",
+                    Email = "bonafont@bonafont.com",
+                    NombreContacto = "Bonafont",
+                    Activo = true
+                },
+                new Proveedor
+                {
+                    Id = 2,
+                    Empresa = "Maseca",
+                    Telefono = "0987654321",
+                    Direccion = "Maseca Boulevard 283",
+                    Email = "maseca@maseca.com",
+                    NombreContacto = "Maseca",
+                    Activo = true
+                },
+                new Proveedor
+                {
+                    Id = 3,
+                    Empresa = "LaCosteña",
+                    Telefono = "7364093846",
+                    Direccion = "LaCosteña street 632",
+                    Email = "lacostena@lacostena.com",
+                    NombreContacto = "LaCosteña",
+                    Activo = true
+                }
+            );
+
+            modelBuilder.Entity<CategoriaAsistencia>().HasData(
+               new CategoriaAsistencia { Id = 1, Nombre = "Consulta", Estatus=true},
+               new CategoriaAsistencia { Id = 2, Nombre = "Reclamación", Estatus = true },
+               new CategoriaAsistencia { Id = 3, Nombre = "Soporte", Estatus = true },
+               new CategoriaAsistencia { Id = 4, Nombre = "Revisión", Estatus = true }
+           );
+
+            modelBuilder.Entity<CategoriaCerveza>().HasData(
+                    new CategoriaCerveza { Id = 1, Nombre = "Witbier", Estatus = true },
+                    new CategoriaCerveza { Id = 2, Nombre = "Ale", Estatus = true },
+                    new CategoriaCerveza { Id = 3, Nombre = "Stout", Estatus = true },
+                    new CategoriaCerveza { Id = 4, Nombre = "Pilsner", Estatus = true },
+                    new CategoriaCerveza { Id = 5, Nombre = "Lager", Estatus = true }
+                );
+
+            modelBuilder.Entity<Insumo>().HasData(
+                new Insumo { Id = 1, UnidadMedida = "L", Activo = true, Nombre = "Agua", CantidadMinima = 100, CantidadMaxima = 10000, CostoUnitario = (float)0.15, Descripcion = "Ingrediente base que constituye la mayor parte de la cerveza y afecta su calidad y sabor." },
+                new Insumo { Id = 2, UnidadMedida = "PZ", Activo = true, Nombre = "Botellas", CantidadMinima = 281, CantidadMaxima = 10000, CostoUnitario = (float)6, Descripcion = "Envases utilizados para almacenar y distribuir la cerveza terminada. Medida unica de 355 ml." },
+                new Insumo { Id = 3, UnidadMedida = "KG", Activo = true, Nombre = "Levadura", CantidadMinima = 5, CantidadMaxima = 50, CostoUnitario = (float)500, Descripcion = "Microorganismo esencial para la fermentación, que convierte los azúcares en alcohol y dióxido de carbono." },
+                new Insumo { Id = 4, UnidadMedida = "KG", Activo = true, Nombre = "Lúpulo", CantidadMinima = 1, CantidadMaxima = 50, CostoUnitario = (float)800, Descripcion = "Flor utilizada para aportar amargor, aroma y propiedades conservantes a la cerveza." },
+                new Insumo { Id = 5, UnidadMedida = "KG", Activo = true, Nombre = "Trigo", CantidadMinima = 10, CantidadMaxima = 100, CostoUnitario = (float)20, Descripcion = "Cereal usado como complemento de la malta para dar cuerpo y un toque especial al sabor." },
+                new Insumo { Id = 6, UnidadMedida = "KG", Activo = true, Nombre = "Maiz", CantidadMinima = 0, CantidadMaxima = 50, CostoUnitario = (float)0, Descripcion = "Adjunto utilizado para aligerar el cuerpo de la cerveza y aportar un perfil más suave." },
+                new Insumo { Id = 7, UnidadMedida = "KG", Activo = true, Nombre = "Avena", CantidadMinima = 5, CantidadMaxima = 50, CostoUnitario = (float)22, Descripcion = "Ingrediente que aporta una textura cremosa y mejora la sensación en boca de la cerveza." },
+                new Insumo { Id = 8, UnidadMedida = "KG", Activo = true, Nombre = "Malta", CantidadMinima = 100, CantidadMaxima = 1000, CostoUnitario = (float)25, Descripcion = "Grano germinado que proporciona azúcares fermentables, color y sabor a la cerveza." },
+                new Insumo { Id = 9, UnidadMedida = "KG", Activo = true, Nombre = "Sal", CantidadMinima = (float)0.05, CantidadMaxima = 5, CostoUnitario = (float)10, Descripcion = "Ingrediente utilizado en ciertos estilos de cerveza para realzar sabores y crear perfiles únicos." },
+                new Insumo { Id = 10, UnidadMedida = "KG", Activo = true, Nombre = "Azúcar", CantidadMinima = 5, CantidadMaxima = 50, CostoUnitario = (float)18, Descripcion = "Ingrediente que puede usarse para incrementar el contenido alcohólico o para la carbonatación." }
+            );
 
             // Hasher para las contraseñas
             var hasher = new PasswordHasher<ApplicationUser>();
 
             // Usuarios de cada rol
-            /*modelBuilder.Entity<ApplicationUser>().HasData(
+            modelBuilder.Entity<ApplicationUser>().HasData(
                 new ApplicationUser
                 {
                     Id = "U1",
                     UserName = "operador precargado",
                     NormalizedUserName = "OPERADOR PRECARGADO",
-                    Email = "operador@example.com",
-                    NormalizedEmail = "OPERADOR@EXAMPLE.COM",
+                    Email = "operador@gmail.com",
+                    NormalizedEmail = "OPERADOR@GMAIL.COM",
                     EmailConfirmed = true,
-                    PasswordHash = hasher.HashPassword(null, "Contra1234?"),
+                    PasswordHash = hasher.HashPassword(null, "Contra123?"),
                     FullName = "Operador General",
-                    Activo = true
+                    Activo = true,
+                    PhoneNumber = "1234567890",
                 },
                 new ApplicationUser
                 {
                     Id = "U2",
                     UserName = "admin precargado",
                     NormalizedUserName = "ADMIN PRECARGADO",
-                    Email = "admin@example.com",
-                    NormalizedEmail = "ADMIN@EXAMPLE.COM",
+                    Email = "admin@gmail.com",
+                    NormalizedEmail = "ADMIN@GMAIL.COM",
                     EmailConfirmed = true,
-                    PasswordHash = hasher.HashPassword(null, "Contra1234?"),
+                    PasswordHash = hasher.HashPassword(null, "Contra123?"),
                     FullName = "Administrador Principal",
-                    Activo = true
+                    Activo = true,
+                    PhoneNumber = "1234567890",
                 },
                 new ApplicationUser
                 {
                     Id = "U3",
                     UserName = "mayorista precargado",
                     NormalizedUserName = "MAYORISTA PRECARGADO",
-                    Email = "mayorista@example.com",
-                    NormalizedEmail = "MAYORISTA@EXAMPLE.COM",
+                    Email = "mayorista@gmail.com",
+                    NormalizedEmail = "MAYORISTA@GMAIL.COM",
                     EmailConfirmed = true,
-                    PasswordHash = hasher.HashPassword(null, "Contra1234?"),
+                    PasswordHash = hasher.HashPassword(null, "Contra123?"),
+                    PhoneNumber = "1234567890",
                     FullName = "Mayorista Distribuidor",
                     Activo = true
                 },
@@ -280,11 +335,12 @@ namespace CERVERICA.Data
                     Id = "U4",
                     UserName = "cliente precargado",
                     NormalizedUserName = "CLIENTE PRECARGADO",
-                    Email = "cliente@example.com",
-                    NormalizedEmail = "CLIENTE@EXAMPLE.COM",
+                    Email = "cliente@gmail.com",
+                    NormalizedEmail = "CLIENTE@GMAIL.COM",
                     EmailConfirmed = true,
-                    PasswordHash = hasher.HashPassword(null, "Contra1234?"),
+                    PasswordHash = hasher.HashPassword(null, "Contra123?"),
                     FullName = "Cliente Regular",
+                    PhoneNumber = "1234567890",
                     Activo = true
                 },
                 new ApplicationUser
@@ -292,10 +348,11 @@ namespace CERVERICA.Data
                     Id = "U5",
                     UserName = "agente precargado",
                     NormalizedUserName = "AGENTE PRECARGADO",
-                    Email = "agente@example.com",
-                    NormalizedEmail = "AGENTE@EXAMPLE.COM",
+                    PhoneNumber = "1234567890",
+                    Email = "agente@gmail.com",
+                    NormalizedEmail = "AGENTE@GMAIL.COM",
                     EmailConfirmed = true,
-                    PasswordHash = hasher.HashPassword(null, "Contra1234?"),
+                    PasswordHash = hasher.HashPassword(null, "Contra123?"),
                     FullName = "Agente de Ventas",
                     Activo = true
                 },
@@ -304,10 +361,11 @@ namespace CERVERICA.Data
                     Id = "U6",
                     UserName = "cocinero precargado",
                     NormalizedUserName = "COCINERO PRECARGADO",
-                    Email = "cocinero@example.com",
-                    NormalizedEmail = "COCINERO@EXAMPLE.COM",
+                    Email = "cocinero@gmail.com",
+                    NormalizedEmail = "COCINERO@GMAIL.COM",
                     EmailConfirmed = true,
-                    PasswordHash = hasher.HashPassword(null, "Contra1234?"),
+                    PhoneNumber = "1234567890",
+                    PasswordHash = hasher.HashPassword(null, "Contra123?"),
                     FullName = "Cocinero Principal",
                     Activo = true
                 },
@@ -316,10 +374,11 @@ namespace CERVERICA.Data
                     Id = "U7",
                     UserName = "mayorista 2 precargado",
                     NormalizedUserName = "MAYORISTA 2 PRECARGADO",
-                    Email = "mayorista2@example.com",
-                    NormalizedEmail = "MAYORISTA2@EXAMPLE.COM",
+                    Email = "mayorista2@gmail.com",
+                    NormalizedEmail = "MAYORISTA2@GMAIL.COM",
                     EmailConfirmed = true,
-                    PasswordHash = hasher.HashPassword(null, "Contra1234?"),
+                    PasswordHash = hasher.HashPassword(null, "Contra123?"),
+                    PhoneNumber = "1234567890",
                     FullName = "Mayorista 2 Distribuidor",
                     Activo = true
                 },
@@ -328,22 +387,24 @@ namespace CERVERICA.Data
                     Id = "U8",
                     UserName = "cliente 2 precargado",
                     NormalizedUserName = "CLIENTE 2 PRECARGADO",
-                    Email = "cliente 2 @example.com",
-                    NormalizedEmail = "CLIENTE2@EXAMPLE.COM",
+                    Email = "cliente2@gmail.com",
+                    NormalizedEmail = "CLIENTE2@GMAIL.COM",
                     EmailConfirmed = true,
-                    PasswordHash = hasher.HashPassword(null, "Contra1234?"),
+                    PasswordHash = hasher.HashPassword(null, "Contra123?"),
                     FullName = "Cliente 2 Regular",
-                    Activo = true
+                    Activo = true,
+                    PhoneNumber = "1234567890",
                 },
                 new ApplicationUser
                 {
                     Id = "U9",
                     UserName = "agente 2 precargado",
                     NormalizedUserName = "AGENTE 2 PRECARGADO",
-                    Email = "agente2@example.com",
-                    NormalizedEmail = "AGENTE2@EXAMPLE.COM",
+                    Email = "agente2@gmail.com",
+                    NormalizedEmail = "AGENTE2@GMAIL.COM",
                     EmailConfirmed = true,
-                    PasswordHash = hasher.HashPassword(null, "Contra1234?"),
+                    PhoneNumber = "1234567890",
+                    PasswordHash = hasher.HashPassword(null, "Contra123?"),
                     FullName = "Agente 2 de Ventas",
                     Activo = true
                 },
@@ -352,17 +413,51 @@ namespace CERVERICA.Data
                     Id = "U10",
                     UserName = "agente 3 precargado",
                     NormalizedUserName = "AGENTE 3 PRECARGADO",
-                    Email = "agente3@example.com",
-                    NormalizedEmail = "AGENTE3@EXAMPLE.COM",
+                    Email = "agente3@gmail.com",
+                    NormalizedEmail = "AGENTE3@GMAIL.COM",
                     EmailConfirmed = true,
-                    PasswordHash = hasher.HashPassword(null, "Contra1234?"),
+                    PasswordHash = hasher.HashPassword(null, "Contra123?"),
+                    PhoneNumber = "1234567890",
                     FullName = "Agente 3 de Ventas",
                     Activo = true
                 }
-            );*/
+            );
+
+            modelBuilder.Entity<ClienteMayorista>().HasData(
+                new ClienteMayorista
+                {
+                    Id = 1,
+                    IdUsuario = "U3",
+                    IdAgenteVenta = "U5",
+                    NombreEmpresa = "Empresa 1",
+                    RFCEmpresa = "RABC030212GH2",
+                    DireccionEmpresa = "Calle 123, Colonia Centro, Ciudad de México",
+                    EmailEmpresa = "empresa1@empresa1.com",
+                    TelefonoEmpresa = "1234567890",
+                    NombreContacto = "Cliente mayorista 1",
+                    EmailContacto = "mayorista@gmail.com",
+                    TelefonoContacto = "0987654321",
+                    CargoContacto = "Gerente de compras"
+                },
+                new ClienteMayorista
+                {
+                    Id = 2,
+                    IdUsuario = "U7",
+                    IdAgenteVenta = "U9",
+                    NombreEmpresa = "Empresa 2",
+                    RFCEmpresa = "UFYT030212GH3",
+                    DireccionEmpresa = "Calle 321, Colonia Norte, León",
+                    EmailEmpresa = "empresa2@empresa2.com",
+                    TelefonoEmpresa = "0987654321",
+                    NombreContacto = "Cliente mayorista 2",
+                    EmailContacto = "mayorista2@gmail.com",
+                    TelefonoContacto = "0987654321",
+                    CargoContacto = "Gerente de compras"
+                }
+                );
 
             // Asignación de roles a los usuarios
-            /*modelBuilder.Entity<IdentityUserRole<string>>().HasData(
+            modelBuilder.Entity<IdentityUserRole<string>>().HasData(
                 new IdentityUserRole<string> { UserId = "U1", RoleId = "1" }, // Operador
                 new IdentityUserRole<string> { UserId = "U2", RoleId = "2" }, // Admin
                 new IdentityUserRole<string> { UserId = "U3", RoleId = "3" }, // Mayorista
@@ -373,7 +468,238 @@ namespace CERVERICA.Data
                 new IdentityUserRole<string> { UserId = "U8", RoleId = "4" }, // Cliente
                 new IdentityUserRole<string> { UserId = "U9", RoleId = "5" }, // Agente
                 new IdentityUserRole<string> { UserId = "U10", RoleId = "5" } // Agente
-            );*/
+            );
+
+            modelBuilder.Entity<Receta>().HasData(
+                new Receta
+                {
+                    Id = 1,
+                    Nombre = "Lager",
+                    Descripcion = "Una cerveza ligera, de sabor suave y bajo amargor.",
+                    Especificaciones = "Alcohol (ABV): ~4.5% | Amargor (IBU): 15-20 | Color (SRM): 2-4 | Carbonatación: Alta (~2.5-3.0 volúmenes de CO₂). | Fermentación: 3-4 semanas (10-12 °C).",
+                    LitrosEstimados = 100,
+                    PrecioLitro = (float)9.23,
+                    PrecioPaquete1 = (float)15.00,
+                    PrecioPaquete6 = (float)85.50,
+                    PrecioPaquete12 = (float)162.00,
+                    PrecioPaquete24 = (float)306.00,
+                    PrecioUnitarioBaseMayoreo = (float)13.50,
+                    CostoProduccion = 0,
+                    TiempoVida = 300,
+                    Activo = true,
+                    AptaVentaMayorista = true,
+                    FechaRegistrado = DateTime.Now,
+                    Imagen = "https://www.bajabrewingcompany.com/images/beers/bottle_surfa_mx.png",
+                    RutaFondo = "'https://www.bajabrewingcompany.com/images/beers/back_surfa.jpg'"
+                },
+                new Receta
+                {
+                    Id = 2,
+                    Nombre = "Witbier",
+                    Descripcion = "Cerveza de trigo estilo belga, refrescante y ligeramente especiado.",
+                    Especificaciones = "Alcohol (ABV): ~4.8% | Amargor (IBU): 10-15 | Color (SRM): 3-5 | Carbonatación: Alta (~2.5-3.0 volúmenes de CO₂). | Fermentación: 2-3 semanas (~18-22 °C).",
+                    LitrosEstimados = 100,
+                    PrecioLitro = (float)8.60,
+                    PrecioPaquete1 = (float)14.50,
+                    PrecioPaquete6 = (float)82.65,
+                    PrecioPaquete12 = (float)156.60,
+                    PrecioPaquete24 = (float)294.00,
+                    PrecioUnitarioBaseMayoreo = (float)11.50,
+                    CostoProduccion = 0,
+                    TiempoVida = 300,
+                    Activo = true,
+                    AptaVentaMayorista = true,
+                    FechaRegistrado = DateTime.Now,
+                    Imagen = "https://www.bajabrewingcompany.com/images/beers/bottle_ayipa_mx.png",
+                    RutaFondo = "https://www.bajabrewingcompany.com/images/beers/back_ay.jpg"
+                },
+                new Receta
+                {
+                    Id = 3,
+                    Nombre = "Stout",
+                    Descripcion = "Una cerveza robusta, con sabores a malta tostada y cuerpo cremoso.",
+                    Especificaciones = "Alcohol (ABV): ~6.0% | Amargor (IBU): 30-40 | Color (SRM): 30-40 | Carbonatación: Media (~2.0-2.5 volúmenes de CO₂).| Fermentación: 4-5 semanas (~18-20 °C).",
+                    LitrosEstimados = 100,
+                    PrecioLitro = (float)12.16,
+                    PrecioPaquete1 = (float)16.50,
+                    PrecioPaquete6 = (float)93.83,
+                    PrecioPaquete12 = (float)178.20,
+                    PrecioPaquete24 = (float)336.00,
+                    PrecioUnitarioBaseMayoreo = (float)14.50,
+                    CostoProduccion = 0,
+                    TiempoVida = 300,
+                    Activo = true,
+                    AptaVentaMayorista = true,
+                    FechaRegistrado = DateTime.Now,
+                    Imagen = "https://www.bajabrewingcompany.com/images/beers/bottle_cabotella_mx.png",
+                    RutaFondo = "https://www.bajabrewingcompany.com/images/beers/back_cabotella.jpg"
+                }
+                );
+
+            modelBuilder.Entity<IngredienteReceta>().HasData(
+                // Ingredientes para Lager (Id = 1)
+                new IngredienteReceta { IdReceta = 1, IdInsumo = 1, Cantidad = (float)90},  // Agua
+                new IngredienteReceta { IdReceta = 1, IdInsumo = 8, Cantidad = (float)18 },   // Malta
+                new IngredienteReceta { IdReceta = 1, IdInsumo = 4, Cantidad = (float)0.25 }, // Lúpulo
+                new IngredienteReceta { IdReceta = 1, IdInsumo = 3, Cantidad = (float)0.5 },  // Levadura
+                new IngredienteReceta { IdReceta = 1, IdInsumo = 10, Cantidad = (float)0.5 }, // Azúcar
+
+                // Ingredientes para Witbier (Id = 2)
+                new IngredienteReceta { IdReceta = 2, IdInsumo = 1, Cantidad = (float)91 },  // Agua
+                new IngredienteReceta { IdReceta = 2, IdInsumo = 8, Cantidad = (float)12 },   // Malta
+                new IngredienteReceta { IdReceta = 2, IdInsumo = 5, Cantidad = (float)6 },    // Trigo
+                new IngredienteReceta { IdReceta = 2, IdInsumo = 4, Cantidad = (float)0.15 }, // Lúpulo
+                new IngredienteReceta { IdReceta = 2, IdInsumo = 3, Cantidad = (float)0.6 },  // Levadura
+                new IngredienteReceta { IdReceta = 2, IdInsumo = 9, Cantidad = (float)0.05 }, // Sal
+                new IngredienteReceta { IdReceta = 2, IdInsumo = 10, Cantidad = (float)0.3 }, // Azúcar
+
+                // Ingredientes para Stout (Id = 3)
+                new IngredienteReceta { IdReceta = 3, IdInsumo = 1, Cantidad = (float)88 },  // Agua
+                new IngredienteReceta { IdReceta = 3, IdInsumo = 8, Cantidad = (float)20 },   // Malta
+                new IngredienteReceta { IdReceta = 3, IdInsumo = 7, Cantidad = (float)3 },    // Avena
+                new IngredienteReceta { IdReceta = 3, IdInsumo = 4, Cantidad = (float)0.35 }, // Lúpulo
+                new IngredienteReceta { IdReceta = 3, IdInsumo = 3, Cantidad = (float)0.7 },  // Levadura
+                new IngredienteReceta { IdReceta = 3, IdInsumo = 10, Cantidad = (float)0.4 }  // Azúcar
+            );
+
+            modelBuilder.Entity<LoteInsumo>().HasData(
+                // Agua - Bonafont
+                new LoteInsumo
+                {
+                    Id = 1,
+                    IdProveedor = 1,
+                    IdInsumo = 1,
+                    IdUsuario = "U2",
+                    Cantidad = (float)3000,
+                    FechaCaducidad = DateTime.Now.AddMonths(6),
+                    FechaCompra = DateTime.Now,
+                    PrecioUnidad = (float)0.15,
+                    MontoCompra = (float)450,
+                    Merma = 0
+                },
+
+                // Malta - Maseca
+                new LoteInsumo
+                {
+                    Id = 2,
+                    IdProveedor = 2,
+                    IdInsumo = 8,
+                    IdUsuario = "U2",
+                    Cantidad = (float)500,
+                    FechaCaducidad = DateTime.Now.AddMonths(12),
+                    FechaCompra = DateTime.Now,
+                    PrecioUnidad = (float)25,
+                    MontoCompra = (float)12500,
+                    Merma = 0
+                },
+
+                // Lúpulo - La Costeña
+                new LoteInsumo
+                {
+                    Id = 3,
+                    IdProveedor = 3,
+                    IdInsumo = 4,
+                    IdUsuario = "U2",
+                    Cantidad = (float)7.5,
+                    FechaCaducidad = DateTime.Now.AddMonths(18),
+                    FechaCompra = DateTime.Now,
+                    PrecioUnidad = (float)800,
+                    MontoCompra = (float)6000,
+                    Merma = 0
+                },
+
+                // Levadura - La Costeña
+                new LoteInsumo
+                {
+                    Id = 4,
+                    IdProveedor = 3,
+                    IdInsumo = 3,
+                    IdUsuario = "U2",
+                    Cantidad = (float)18,
+                    FechaCaducidad = DateTime.Now.AddMonths(9),
+                    FechaCompra = DateTime.Now,
+                    PrecioUnidad = (float)500,
+                    MontoCompra = (float)9000,
+                    Merma = 0
+                },
+
+                // Trigo - Maseca
+                new LoteInsumo
+                {
+                    Id = 5,
+                    IdProveedor = 2,
+                    IdInsumo = 5,
+                    IdUsuario = "U2",
+                    Cantidad = (float)60,
+                    FechaCaducidad = DateTime.Now.AddMonths(12),
+                    FechaCompra = DateTime.Now,
+                    PrecioUnidad = (float)20,
+                    MontoCompra = (float)1200,
+                    Merma = 0
+                },
+
+                // Avena - Maseca
+                new LoteInsumo
+                {
+                    Id = 6,
+                    IdProveedor = 2,
+                    IdInsumo = 7,
+                    IdUsuario = "U2",
+                    Cantidad = (float)30,
+                    FechaCaducidad = DateTime.Now.AddMonths(12),
+                    FechaCompra = DateTime.Now,
+                    PrecioUnidad = (float)22,
+                    MontoCompra = (float)660,
+                    Merma = 0
+                },
+
+                // Sal - La Costeña
+                new LoteInsumo
+                {
+                    Id = 7,
+                    IdProveedor = 3,
+                    IdInsumo = 9,
+                    IdUsuario = "U2",
+                    Cantidad = (float)0.5,
+                    FechaCaducidad = DateTime.Now.AddMonths(5),
+                    FechaCompra = DateTime.Now,
+                    PrecioUnidad = (float)10,
+                    MontoCompra = (float)5,
+                    Merma = 0
+                },
+
+                // Azúcar - La Costeña
+                new LoteInsumo
+                {
+                    Id = 8,
+                    IdProveedor = 3,
+                    IdInsumo = 10,
+                    IdUsuario = "U2",
+                    Cantidad = (float)12,
+                    FechaCaducidad = DateTime.Now.AddMonths(18),
+                    FechaCompra = DateTime.Now,
+                    PrecioUnidad = (float)18,
+                    MontoCompra = (float)216,
+                    Merma = 0
+                },
+
+                // Botellas - Bonafont
+                new LoteInsumo
+                {
+                    Id = 9,
+                    IdProveedor = 1,
+                    IdInsumo = 2,
+                    IdUsuario = "U2",
+                    Cantidad = (float)8460,
+                    FechaCaducidad = DateTime.Now.AddMonths(60),
+                    FechaCompra = DateTime.Now,
+                    PrecioUnidad = (float)6,
+                    MontoCompra = (float)50760,
+                    Merma = 0
+                }
+            );
+
+
         }
     }
 }

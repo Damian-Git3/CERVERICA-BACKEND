@@ -14,6 +14,7 @@ using System.Security.Claims;
 
 namespace CERVERICA.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class VentasController : ControllerBase
@@ -38,7 +39,8 @@ namespace CERVERICA.Controllers
     {
         Id = p.Id,
         FechaVenta = p.FechaVenta,
-        TotalCervezas = p.Total,
+        TotalCervezas = p.TotalCervezas,
+        Total = p.Total,
         MetodoEnvio = p.MetodoEnvio,
         MetodoPago = p.MetodoPago,
         NumeroTarjeta = p.NumeroTarjeta,
@@ -88,7 +90,8 @@ namespace CERVERICA.Controllers
     {
         Id = p.Id,
         FechaVenta = p.FechaVenta,
-        TotalCervezas = p.Total,
+        Total = p.Total,
+        TotalCervezas = p.TotalCervezas,
         MetodoEnvio = p.MetodoEnvio,
         MetodoPago = p.MetodoPago,
         NumeroTarjeta = p.NumeroTarjeta,
@@ -142,12 +145,10 @@ namespace CERVERICA.Controllers
                 {
                     Id = p.Id,
                     FechaVenta = p.FechaVenta,
-                    TotalCervezas = p.Total,
+                    TotalCervezas = p.TotalCervezas,
+                    Total = p.Total,
                     MetodoPago = p.MetodoPago,
                     MetodoEnvio = p.MetodoEnvio,
-                    MontoVenta = _context.DetallesVenta
-                    .Where(d => d.IdVenta == p.Id)
-                    .Sum(d => d.MontoVenta),
                     EstatusVenta = p.EstatusVenta
                 }).ToListAsync();
         }
@@ -160,7 +161,8 @@ namespace CERVERICA.Controllers
                 {
                     Id = p.Id,
                     FechaVenta = p.FechaVenta,
-                    TotalCervezas = p.Total,
+                    TotalCervezas = p.TotalCervezas,
+                    Total = p.Total,
                     MetodoEnvio = p.MetodoEnvio,
                     EstatusVenta = p.EstatusVenta
                 }).ToListAsync();
@@ -487,12 +489,14 @@ namespace CERVERICA.Controllers
                 await _context.SaveChangesAsync();
 
                 float totalVenta = 0;
+                int totalCervezas = 0;
                 var detallesVentas = new List<DetalleVenta>();
 
                 foreach (var detalle in dto.Detalles)
                 {
                     var recetaId = detalle.IdReceta;
                     var cantidadTotalRequerida = detalle.Pack * detalle.Cantidad;
+                    totalCervezas += detalle.Cantidad * detalle.Pack;
 
                     var stocks = await _context.Stocks
                         .Where(s => s.IdReceta == recetaId && s.Cantidad >= detalle.Pack && s.MedidaEnvase == detalle.MedidaEnvase && s.TipoEnvase == detalle.TipoEnvase)
@@ -540,11 +544,11 @@ namespace CERVERICA.Controllers
 
                         float montoVenta = detalle.Pack switch
                         {
-                            1 => receta.PrecioPaquete1 ?? 0,
-                            6 => receta.PrecioPaquete6 ?? 0,
-                            12 => receta.PrecioPaquete12 ?? 0,
-                            24 => receta.PrecioPaquete24 ?? 0,
-                            _ => 0
+                            1 => receta.PrecioPaquete1,
+                            6 => receta.PrecioPaquete6,
+                            12 => receta.PrecioPaquete12,
+                            24 => receta.PrecioPaquete24,
+                            _ => 0f
                         };
 
                         if (montoVenta == 0)
@@ -568,6 +572,7 @@ namespace CERVERICA.Controllers
                 }
 
                 venta.Total = totalVenta;
+                venta.TotalCervezas = totalCervezas;
                 _context.Ventas.Update(venta);
                 _context.DetallesVenta.AddRange(detallesVentas);
 
