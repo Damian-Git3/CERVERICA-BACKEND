@@ -24,8 +24,95 @@ namespace CERVERICA.Controllers
             _db = db;
         }
 
+        [HttpPost("registrar-puntos-fidelidad")]
+        public async Task<ActionResult<PuntosFidelidadDto>> RegistrarPuntosFidelidad([FromBody] RegistrarPuntosFidelidad puntosFidelidadDto)
+        {
+            // Obtener el ID del usuario actual
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _userManager.FindByIdAsync(currentUserId!);
+
+            if (user is null)
+            {
+                return NotFound(new AuthResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "Usuario no encontrado"
+                });
+            }
+
+            // Obtener la regla de puntos desde la base de datos
+            var reglaPuntos = await _db.ReglasPuntos.FirstOrDefaultAsync();
+
+            if (reglaPuntos == null)
+            {
+                return NotFound(new AuthResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "No se encontró la regla de puntos"
+                });
+            }
+
+            // Verificar si el monto de compra es mayor o igual al monto mínimo para otorgar puntos
+            if (puntosFidelidadDto.MontoCompra < reglaPuntos.MontoMinimo)
+            {
+                return BadRequest(new AuthResponseDto
+                {
+                    IsSuccess = false,
+                    Message = $"El monto de compra debe ser mayor o igual a {reglaPuntos.MontoMinimo} para recibir puntos"
+                });
+            }
+
+            // Calcular los puntos basados en el monto de compra y la regla de puntos
+            var puntosAsignados = (int)(puntosFidelidadDto.MontoCompra * reglaPuntos.PorcentajeConversion / 100);
+
+            // Buscar si el usuario ya tiene puntos de fidelidad registrados
+            var puntosFidelidad = await _db.PuntosFidelidad
+                .FirstOrDefaultAsync(p => p.IdUsuario == user.Id);
+
+            // Si no existen puntos de fidelidad, crear nuevos
+            if (puntosFidelidad is null)
+            {
+                puntosFidelidad = new PuntosFidelidad
+                {
+                    IdUsuario = user.Id,
+                    PuntosAcumulados = puntosAsignados,
+                    PuntosRedimidos = 0,
+                    PuntosDisponibles = puntosAsignados,
+                    FechaUltimaActualizacion = puntosFidelidadDto.FechaUltimaActualizacion
+                };
+
+                await _db.PuntosFidelidad.AddAsync(puntosFidelidad);
+            }
+            else
+            {
+                // Si existen puntos de fidelidad, actualizar los valores
+                puntosFidelidad.PuntosAcumulados += puntosAsignados;
+                puntosFidelidad.PuntosDisponibles = puntosFidelidad.PuntosAcumulados - puntosFidelidad.PuntosRedimidos;
+                puntosFidelidad.FechaUltimaActualizacion = puntosFidelidadDto.FechaUltimaActualizacion;
+
+                _db.PuntosFidelidad.Update(puntosFidelidad);
+            }
+
+            // Guardar los cambios en la base de datos
+            await _db.SaveChangesAsync();
+
+            // Mapear el modelo a un DTO de salida
+            var puntosFidelidadResponse = new PuntosFidelidadDto
+            {
+                Id = puntosFidelidad.Id,
+                IdUsuario = puntosFidelidad.IdUsuario,
+                PuntosAcumulados = puntosFidelidad.PuntosAcumulados ?? 0,
+                PuntosRedimidos = puntosFidelidad.PuntosRedimidos ?? 0,
+                PuntosDisponibles = puntosFidelidad.PuntosDisponibles ?? 0,
+                FechaUltimaActualizacion = puntosFidelidad.FechaUltimaActualizacion
+            };
+
+            return Ok(puntosFidelidadResponse);
+        }
+
+
         [HttpGet("obtener-puntos-fidelidad")]
-        public async Task<ActionResult<PuntosFidelidadDto>> ObtenerPuntosFidelidad()
+        public async Task<ActionResult<PuntosFidelidadDto?>> ObtenerPuntosFidelidad()
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var user = await _userManager.FindByIdAsync(currentUserId!);
@@ -39,17 +126,17 @@ namespace CERVERICA.Controllers
                 });
             }
 
+            // Buscar puntos de fidelidad
             var puntosFidelidad = await _db.PuntosFidelidad
-        .FirstOrDefaultAsync(p => p.IdUsuario == user.Id)
-        ?? new PuntosFidelidad // Si no encuentra, crea uno con valores predeterminados de 0
-        {
-            IdUsuario = user.Id,
-            PuntosAcumulados = 0,
-            PuntosRedimidos = 0,
-            PuntosDisponibles = 0,
-            FechaUltimaActualizacion = DateTime.UtcNow
-        };
+                .FirstOrDefaultAsync(p => p.IdUsuario == user.Id);
 
+            // Si no se encuentra, devolver null
+            if (puntosFidelidad is null)
+            {
+                return Ok(null);
+            }
+
+            // Mapear al DTO si existen datos
             var puntosFidelidadDto = new PuntosFidelidadDto
             {
                 Id = puntosFidelidad.Id,
@@ -62,6 +149,7 @@ namespace CERVERICA.Controllers
 
             return Ok(puntosFidelidadDto);
         }
+
 
         [HttpGet("obtener-transacciones")]
         public async Task<ActionResult<List<TransaccionPuntosDto>>> ObtenerTransacciones()
