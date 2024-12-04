@@ -180,5 +180,31 @@ namespace CERVERICA.Controllers
             });
         }
 
+        [HttpGet("buscar-cupon")]
+        public async Task<IActionResult> BuscarCupon([FromQuery] string textoCupon)
+        {
+            if (string.IsNullOrEmpty(textoCupon))
+            {
+                return BadRequest(new AuthResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "Texto de cupón inválido"
+                });
+            }
+
+            var cupon = await _db.Cupones
+                .FirstOrDefaultAsync(c => c.Codigo.Equals(textoCupon));
+
+            if (cupon == null)
+            {
+                return BadRequest(new AuthResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "No se encontró ningún cupón con ese texto"
+                });
+            }
+
+            return Ok(cupon);
+        }
     }
 }

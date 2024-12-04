@@ -33,6 +33,8 @@ namespace CERVERICA.Models
         public MetodoEnvio MetodoEnvio { get; set; }
         [Required]
         public EstatusVenta EstatusVenta { get; set; }
+        public int? CuponId { get; set; } = null;
+        public Cupones? Cupon { get; set; } = null;
 
         //ATRIBUTOS DIRECCIÓN ENVIO
         public string? NombrePersonaRecibe { get; set; }

@@ -25,6 +25,7 @@ namespace CERVERICA.Dtos
 
         public MetodoPago MetodoPago { get; set; }
         public MetodoEnvio MetodoEnvio { get; set; }
+        public int? idCupon { get; set; } = null;
 
         public List<DetalleVentaDto> Detalles { get; set; }
 

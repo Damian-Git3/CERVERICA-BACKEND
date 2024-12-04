@@ -45,6 +45,7 @@ namespace CERVERICA.Controllers
         MetodoPago = p.MetodoPago,
         NumeroTarjeta = p.NumeroTarjeta,
         EstatusVenta = p.EstatusVenta,
+        Cupon = p.Cupon,
         MontoVenta = _context.DetallesVenta
             .Where(d => d.IdVenta == p.Id)
             .Sum(d => d.MontoVenta),
@@ -99,6 +100,7 @@ namespace CERVERICA.Controllers
                     .Where(d => d.IdVenta == p.Id)
                     .Sum(d => d.MontoVenta),
         EstatusVenta = p.EstatusVenta,
+        Cupon = p.Cupon,
         ProductosPedido = _context.DetallesVenta
             .Where(d => d.IdVenta == p.Id)
             .Select(d => new DetalleVentaInformacionDTO
@@ -119,7 +121,7 @@ namespace CERVERICA.Controllers
                     })
                     .FirstOrDefault()
             })
-            .ToArray()
+            .ToArray(),
     })
     .FirstOrDefaultAsync();
 
@@ -149,7 +151,8 @@ namespace CERVERICA.Controllers
                     Total = p.Total,
                     MetodoPago = p.MetodoPago,
                     MetodoEnvio = p.MetodoEnvio,
-                    EstatusVenta = p.EstatusVenta
+                    EstatusVenta = p.EstatusVenta,
+                    Cupon = p.Cupon,
                 }).ToListAsync();
         }
 
@@ -472,7 +475,8 @@ namespace CERVERICA.Controllers
                     FechaVenta = DateTime.Now,
                     EstatusVenta = EstatusVenta.Recibido,
                     MetodoEnvio = dto.MetodoEnvio,
-                    MetodoPago = dto.MetodoPago
+                    MetodoPago = dto.MetodoPago,
+                    CuponId = dto.idCupon,
                 };
 
                 if (dto.MetodoEnvio == MetodoEnvio.EnvioDomicilio)
@@ -568,6 +572,40 @@ namespace CERVERICA.Controllers
 
                         totalVenta += detalleVenta.MontoVenta;
                         detallesVentas.Add(detalleVenta);
+                    }
+                }
+
+                if (dto.idCupon.HasValue)
+                {
+                    var cupon = await _context.Cupones
+                        .FirstOrDefaultAsync(c => c.Id == dto.idCupon.Value);
+
+                    if (cupon != null)
+                    {
+                        switch (cupon.Tipo)
+                        {
+                            case TipoCupon.Porcentaje:
+                                decimal descuentoPorcentual = (decimal)totalVenta * (cupon.Valor / 100m);
+                                totalVenta -= (float)descuentoPorcentual;
+                                break;
+
+                            case TipoCupon.Fijo:
+                                float descuentoFijo = (float)cupon.Valor;
+                                totalVenta -= descuentoFijo;
+                                if (totalVenta < 0) totalVenta = 0;
+                                break;
+                        }
+
+                        totalVenta = Math.Max(0, totalVenta);
+
+                        cupon.Usos++;
+
+                        if (cupon.Usos >= cupon.Cantidad)
+                        {
+                            cupon.Activo = false;
+                        }
+
+                        _context.Cupones.Update(cupon);
                     }
                 }
 
