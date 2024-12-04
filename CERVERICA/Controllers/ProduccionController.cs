@@ -989,7 +989,7 @@ namespace CERVERICA.Controllers
                         NombrePersonaRecibe = clienteMayorista.NombreEmpresa,
                         Calle = clienteMayorista.DireccionEmpresa,
                         Total = (float)costoVenta,
-                        TotalCervezas = totalDeCervezas,
+                        TotalCervezas = production.CantidadMayoristaRequerida ?? totalDeCervezas,
                         Mayoreo = true
 
                     };
