@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 
 namespace CERVERICA.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class CuponController : ControllerBase
@@ -141,5 +140,71 @@ namespace CERVERICA.Controllers
             return Ok(cupones);
         }
 
+        [HttpPost("validar-cupon")]
+        public async Task<IActionResult> ValidarCupon([FromBody] string codigoCupon)
+        {
+            if (string.IsNullOrEmpty(codigoCupon))
+            {
+                return BadRequest(new AuthResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "Código de cupón inválido"
+                });
+            }
+
+            var cupon = await _db.Cupones.FirstOrDefaultAsync(c => c.Codigo == codigoCupon);
+
+            if (cupon == null)
+            {
+                return NotFound(new AuthResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "Cupón no encontrado"
+                });
+            }
+
+            if (!cupon.Activo || cupon.FechaExpiracion < DateTime.Now || cupon.Usos <= 0)
+            {
+                return BadRequest(new AuthResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "Cupón no válido o sin usos disponibles"
+                });
+
+            }
+
+            return Ok(new AuthResponseDto
+            {
+                IsSuccess = true,
+                Message = "Cupón válido",
+            });
+        }
+
+        [HttpGet("buscar-cupon")]
+        public async Task<IActionResult> BuscarCupon([FromQuery] string textoCupon)
+        {
+            if (string.IsNullOrEmpty(textoCupon))
+            {
+                return BadRequest(new AuthResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "Texto de cupón inválido"
+                });
+            }
+
+            var cupon = await _db.Cupones
+                .FirstOrDefaultAsync(c => c.Codigo.Equals(textoCupon));
+
+            if (cupon == null)
+            {
+                return BadRequest(new AuthResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "No se encontró ningún cupón con ese texto"
+                });
+            }
+
+            return Ok(cupon);
+        }
     }
 }

@@ -35,5 +35,6 @@ namespace CERVERICA.DTO.Ventas
 
         [Required(ErrorMessage = "Los productos en el pedido son obligatorios.")]
         public DetalleVentaInformacionDTO[] ProductosPedido { get; set; }
+        public CERVERICA.Models.Cupones? Cupon { get; set; }
     }
 }
